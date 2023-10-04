@@ -1,0 +1,15 @@
+<package> = <signal_info> <signal_number> <optional(data_byte_count (uint32))> <data>
+
+<signal_info (12bits) > = <reserved> <type> <size>
+    <reserved> = 2bits
+    <type> = 0b01 | 0b10
+    <size> = uint8
+<signal_number> = uint20
+<data_byte_count> = uint32 | empty
+
+<data> = <signal_data> | <meta_information>
+<signal_data> = <signal data>
+
+<meta_information> = <metainfo_type> <metainfo_block>
+<metainfo_type> = 2 (uint32) (for msgpack encoding)
+<metainfo_block> = msgpack (BE)
