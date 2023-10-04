@@ -1,0 +1,15 @@
+{
+	"signals" : {
+		"configured_signal" : {
+			"dataType" : "real32",
+			"function" : "sine",
+			"amplitude" : 3.5,
+			"offset" : 3.1,
+			"frequency" : 10,
+			"samplePeriod" : "1ms",
+			"explicitTime": false
+		}
+	 },
+	 "executionTime": "10s",
+	 "processPeriod": "1s"
+}
