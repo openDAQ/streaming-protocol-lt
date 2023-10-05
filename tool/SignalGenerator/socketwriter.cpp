@@ -69,7 +69,7 @@ namespace hbm {
 
 		int SocketWriter::writeMsgPackMetaInformationString(unsigned int signalNumber, const std::vector < uint8_t >& data)
 		{
-			// used by HBK streaming only which uses little endian!
+			// used by openDAQ streaming which uses little endian!
 			static const uint32_t littleMetaType = META_TYPE_MSGPACK;
 			size_t headerSize = createTransportHeader(TYPE_METAINFORMATION, signalNumber, data.size() + sizeof (littleMetaType));
 			/// 3 parts: transport header (evtl. with optional additional length), meta information type, meta information payload
