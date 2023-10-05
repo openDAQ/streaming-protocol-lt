@@ -50,7 +50,20 @@ public:
         std::string method = data[METHOD];
         if (method==META_METHOD_SIGNAL) {
 
-            if(data[PARAMS][META_DEFINITION].contains(META_TIME)) {
+            if (data[PARAMS][META_DEFINITION].contains(META_UNIT)) {
+                unitId = data[PARAMS][META_DEFINITION][META_UNIT][META_UNIT_ID];
+                unitDisplayName = data[PARAMS][META_DEFINITION][META_UNIT][META_DISPLAY_NAME];
+                if (data[PARAMS][META_DEFINITION][META_UNIT].contains(META_QUANTITY)) {
+                    unitQuantity = data[PARAMS][META_DEFINITION][META_UNIT][META_QUANTITY];
+                }
+
+            } else {
+                unitId = Unit::UNIT_ID_NONE;
+                unitDisplayName.clear();
+                unitQuantity.clear();
+            }
+
+            if(unitQuantity == META_TIME ) {
                 std::string ruleAsString = data[PARAMS][META_DEFINITION][META_RULE];
                 if (ruleAsString==META_RULETYPE_EXPLICIT) {
                     timeRule = RULETYPE_EXPLICIT;
@@ -64,17 +77,10 @@ public:
                 if (interpretationObjectIter!=data[PARAMS].end()) {
                     timeInterpretationObject = *interpretationObjectIter;
                 }
-                epoch = data[PARAMS][META_DEFINITION][META_TIME][META_ABSOLUTE_REFERENCE];
-                timeTicksPerSecond = data[PARAMS][META_DEFINITION][META_TIME][META_RESOLUTION][META_DENOMINATOR];
+                epoch = data[PARAMS][META_DEFINITION][META_ABSOLUTE_REFERENCE];
+                timeTicksPerSecond = data[PARAMS][META_DEFINITION][META_RESOLUTION][META_DENOMINATOR];
             } else {
                 dataType = data[PARAMS][META_DEFINITION][META_DATATYPE];
-                if (data[PARAMS][META_DEFINITION].contains(META_UNIT)) {
-                    unitId = data[PARAMS][META_DEFINITION][META_UNIT][META_UNIT_ID];
-                    unitDisplayName = data[PARAMS][META_DEFINITION][META_UNIT][META_DISPLAY_NAME];
-                } else {
-                    unitId = Unit::UNIT_ID_NONE;
-                    unitDisplayName.clear();
-                }
                 auto const interpretationObjectIter = data[PARAMS].find(META_INTERPRETATION);
                 if (interpretationObjectIter!=data[PARAMS].end()) {
                     dataInterpretationObject = *interpretationObjectIter;
@@ -97,6 +103,7 @@ public:
     std::string dataType;
     int32_t unitId;
     std::string unitDisplayName;
+    std::string unitQuantity;
 
     RuleType timeRule;
     uint64_t timeDelta;

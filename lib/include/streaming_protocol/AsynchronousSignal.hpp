@@ -153,9 +153,10 @@ private:
 
         timeSignal[PARAMS][META_DEFINITION][META_UNIT][META_UNIT_ID] = Unit::UNIT_ID_SECONDS;
         timeSignal[PARAMS][META_DEFINITION][META_UNIT][META_DISPLAY_NAME] = "s";
-        timeSignal[PARAMS][META_DEFINITION][META_TIME][META_ABSOLUTE_REFERENCE] = m_epoch;
-        timeSignal[PARAMS][META_DEFINITION][META_TIME][META_RESOLUTION][META_NUMERATOR] = 1;
-        timeSignal[PARAMS][META_DEFINITION][META_TIME][META_RESOLUTION][META_DENOMINATOR] = m_timeTicksPerSecond;
+        timeSignal[PARAMS][META_DEFINITION][META_UNIT][META_QUANTITY] = META_TIME;
+        timeSignal[PARAMS][META_DEFINITION][META_ABSOLUTE_REFERENCE] = m_epoch;
+        timeSignal[PARAMS][META_DEFINITION][META_RESOLUTION][META_NUMERATOR] = 1;
+        timeSignal[PARAMS][META_DEFINITION][META_RESOLUTION][META_DENOMINATOR] = m_timeTicksPerSecond;
         if (!m_timeInterpretationObject.is_null()) {
             timeSignal[PARAMS][META_INTERPRETATION] = m_timeInterpretationObject;
         }
