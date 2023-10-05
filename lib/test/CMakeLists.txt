@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.13)
 set_cmake_folder_context(TARGET_FOLDER_NAME)
 project("streaming_protocol_test")
 
+enable_testing()
+
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   set(GCOV_COMPILE_FLAGS -fno-omit-frame-pointer -fno-optimize-sibling-calls -ftest-coverage -fprofile-arcs)
   set(GCOV_LINK_FLAGS -fprofile-arcs -ftest-coverage)
