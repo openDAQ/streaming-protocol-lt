@@ -22,7 +22,6 @@ else()
 endif()
 
 option(STREAMING_PROTOCOL_POST_BUILD_UNITTEST "Automatically run unit-tests as a post build step" OFF)
-option(STREAMING_PROTOCOL_TOOLS "Enable building some tools that use the streaming_protocol library" OFF)
 option(ENABLE_ASAN "Build with address sanitizer" OFF)
 
 set(OPENDAQ_REPO_PREFIX "git@github.com:blueberrydaq" CACHE STRING "Set this if using a repository mirror")
@@ -58,10 +57,6 @@ endif()
 
 add_subdirectory(external)
 add_subdirectory(src)
-
-if(STREAMING_PROTOCOL_TOOLS)
-    add_subdirectory(tool)
-endif(STREAMING_PROTOCOL_TOOLS)
 
 if(STREAMING_PROTOCOL_POST_BUILD_UNITTEST)
     enable_testing()
