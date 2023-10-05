@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.24)
 
 if (NOT CMAKE_MESSAGE_CONTEXT)
     set(CMAKE_MESSAGE_CONTEXT bbstreaming)
@@ -78,9 +78,13 @@ install(
 )
 
 # install the public headers
-install(
-    DIRECTORY include/${PROJECT_NAME}
-    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+target_include_directories(${PROJECT_NAME} PUBLIC
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+)
+
+target_link_libraries( ${PROJECT_NAME} INTERFACE
+    spdlog
 )
 
 # install a targets file for the generated export set
