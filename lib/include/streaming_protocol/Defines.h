@@ -27,7 +27,6 @@ static const uint32_t SIZE_MASK = 0x0ff00000;
 static const uint32_t SIZE_SHIFT = 20;
 
 // presentation layer
-static const uint32_t METAINFORMATION_JSON = 1; /// Used in openDAQ streaming protocol
 static const uint32_t METAINFORMATION_MSGPACK = 2; /// Used in openDAQ streaming protocol
 
 static const char PARAMS[] = "params";
@@ -117,6 +116,7 @@ static const char META_DELTA[] = "delta";
 static const char META_UNIT[] = "unit";
 static const char META_DISPLAY_NAME[] = "displayName";
 static const char META_UNIT_ID[] = "unitId";
+static const char META_QUANTITY[] = "quantity";
 
 
 
