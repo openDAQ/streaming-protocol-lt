@@ -5,7 +5,6 @@ set(STREAMING_PROTOCOL_STREAMING_INTERFACE_HEADERS
     Defines.h
     jsonrpc_defines.hpp
     Logging.hpp
-    Timefamily.hpp
     TimeResolution.hpp
     Types.h
     Unit.hpp
@@ -34,7 +33,6 @@ set(STREAMING_PROTOCOL_STREAMING_LIB_SOURCES
     ${STREAMING_PROTOCOL_STREAMING_INTERFACE_HEADERS}
     # common
     Logging.cpp
-    Timefamily.cpp
     TimeResolution.cpp
     Unit.cpp
     utils/strings.hpp
