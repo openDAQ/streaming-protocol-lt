@@ -43,8 +43,3 @@ if(STREAMING_PROTOCOL_TOOLS)
     add_subdirectory(tool)
 endif(STREAMING_PROTOCOL_TOOLS)
 
-if(STREAMING_PROTOCOL_POST_BUILD_UNITTEST)
-    enable_testing()
-    add_subdirectory(test)
-endif(STREAMING_PROTOCOL_POST_BUILD_UNITTEST)
-
