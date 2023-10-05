@@ -1,5 +1,5 @@
 ---
-Title:  HBK Signal Definition Examples
+Title:  openDAQ Signal Definition Examples
 Author: Matthias Loy, Helge Rasmussen
 Version: 0.1
 ---
@@ -1228,7 +1228,7 @@ time (uint64)
 
 # Resolution Examples
 
-Here are some time family examples:
+Here are some time resolution examples:
 
 - 1200 Hz = [1/1200]
 - 44100 Hz = [1/44100]
