@@ -26,20 +26,11 @@
 #include "streaming_protocol/AsynchronousSignal.hpp"
 #include "streaming_protocol/BaseSignal.hpp"
 #include "streaming_protocol/iWriter.hpp"
-#include "streaming_protocol/Timefamily.hpp"
 
 #include "defines.h"
 
 
 namespace daq::streaming_protocol::siggen{
-
-    static TimeFamily getTimeFamily(std::chrono::nanoseconds samplePeriod)
-    {
-         double samplePeriodDouble = std::chrono::duration < double > (samplePeriod).count();
-         TimeFamily timeFamily;
-         timeFamily.setPeriod(samplePeriodDouble);
-         return timeFamily;
-    }
 
     /// A synthetic signal delivers meta information describing the properties of the signal a synthetic measured data.
     /// The properties:
