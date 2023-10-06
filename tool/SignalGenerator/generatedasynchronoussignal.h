@@ -22,7 +22,6 @@
 
 #include "nlohmann/json.hpp"
 
-#include "streaming_protocol/Timefamily.hpp"
 #include "streaming_protocol/iWriter.hpp"
 #include "streaming_protocol/AsynchronousSignal.hpp"
 
@@ -68,11 +67,9 @@ namespace daq::streaming_protocol::siggen{
 
             auto duration = std::chrono::duration<double> (m_lastProcessTime.time_since_epoch());
             double timeSinceUnixEpochDouble = duration.count();
-            TimeFamily timeFamily;
 
-            timeFamily.setPeriod(m_samplePeriodDouble);
-            m_timestamp = static_cast < uint64_t > (timeFamily.getBaseFrequency() * timeSinceUnixEpochDouble);
-            m_deltaTime = timeFamily.getMultiplier();
+            m_deltaTime = 1/m_samplePeriodDouble;
+            m_timestamp = timeTicksPerSecond * timeSinceUnixEpochDouble;
         }
         /// not to be copied!
         GeneratedAsynchronousSignal(const GeneratedAsynchronousSignal&) = delete;

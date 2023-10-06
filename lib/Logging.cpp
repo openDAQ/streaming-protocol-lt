@@ -6,7 +6,7 @@ namespace daq::streaming_protocol
 {
     LogCallback Logging::logCallback()
     {
-        const std::string name = "bbstreaming";
+        const std::string name = "openDaqStreaming";
         static auto logger =
             std::make_shared<spdlog::logger>(name, std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
 
