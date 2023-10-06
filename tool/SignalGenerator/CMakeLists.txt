@@ -7,9 +7,6 @@ project("Signal Generator" VERSION 1.2.0)
 # Has an effect for high output rate or when choosing a short processing period (high interrupt rate).
 option(FEATURE_SIGNAL_GENERATOR_NANOSECOND_RESOLUTION "Time resolution in nanoseconds" OFF)
 
-set(CMAKE_CXX_STANDARD 17)
-
-
 
 # common sources used by all flavors of the signal generator
 set(SIGGEN_COMMON_SOURCES
@@ -25,7 +22,6 @@ set(SIGGEN_COMMON_SOURCES
 
 # common source objects with the actual signal generator logic
 add_library(siggenCommon OBJECT ${SIGGEN_COMMON_SOURCES})
-target_include_directories(siggenCommon PRIVATE "../../include")
 
 if(FEATURE_SIGNAL_GENERATOR_NANOSECOND_RESOLUTION)
     target_compile_definitions(siggenCommon PUBLIC _SIGNAL_GENERATOR_NANOSECOND_RESOLUTION)
@@ -33,8 +29,7 @@ else()
     target_compile_definitions(siggenCommon PUBLIC _SIGNAL_GENERATOR_MICROSECOND_RESOLUTION)
 endif()
 
-
-target_link_libraries(siggenCommon PUBLIC daq::stream nlohmann_json::nlohmann_json spdlog fmt)
+target_link_libraries(siggenCommon PUBLIC daq::streaming_protocol daq::stream nlohmann_json::nlohmann_json spdlog fmt)
 
 
 
@@ -68,7 +63,7 @@ add_executable(siggen2websocket
 
 
 foreach(tgt siggen2file siggen2socket siggen2websocket)
-    target_include_directories(${tgt} PRIVATE "../../include")
+#    target_include_directories(${tgt} PRIVATE "../../include")
     target_compile_features(${tgt} PRIVATE cxx_std_17)
     target_link_libraries(${tgt} PRIVATE
       ${CMAKE_THREAD_LIBS_INIT}
