@@ -35,6 +35,7 @@ enable_testing()
 set(TEST_LIB_SOURCES
     # common
     ../src/Unit.cpp
+    ../src/Logging.cpp
 
     # consumer
     ../src/Controller.cpp
@@ -56,45 +57,44 @@ set(TEST_LIB_SOURCES
     ../src/SynchronousSignal.cpp
 )
 
-set(STREAMING_CLIENT_TEST_LIB streaming_client_test_lib)
-add_library(${STREAMING_CLIENT_TEST_LIB} OBJECT ${TEST_LIB_SOURCES})
+set(STREAMING_PROTOCOL_TEST_LIB streaming_protocol_test_lib)
+add_library(${STREAMING_PROTOCOL_TEST_LIB} OBJECT ${TEST_LIB_SOURCES})
 
-target_compile_options(${STREAMING_CLIENT_TEST_LIB} PRIVATE
+target_compile_options(${STREAMING_PROTOCOL_TEST_LIB} PRIVATE
  $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
   -Wall -Werror ${GCOV_COMPILE_FLAGS} ${ASAN_COMPILE_FLAGS}>
 )
-set_target_properties(${STREAMING_CLIENT_TEST_LIB} PROPERTIES
+set_target_properties(${STREAMING_PROTOCOL_TEST_LIB} PROPERTIES
   CXX_STANDARD_REQUIRED ON
   CXX_STANDARD 17
   CXX_EXTENSIONS OFF
 )
 
-target_link_options(${STREAMING_CLIENT_TEST_LIB} PRIVATE ${GCOV_LINK_FLAGS} )
+target_link_options(${STREAMING_PROTOCOL_TEST_LIB} PRIVATE ${GCOV_LINK_FLAGS} )
 target_link_libraries(
-  ${STREAMING_CLIENT_TEST_LIB}
+  ${STREAMING_PROTOCOL_TEST_LIB}
   PUBLIC ${ASAN_LIB}
          ${GCOV_LIB}
          nlohmann_json::nlohmann_json
          daq::stream
          spdlog
          fmt
-         daq::streaming_protocol
 )
 
-target_include_directories(${STREAMING_CLIENT_TEST_LIB} PRIVATE ../include)
+target_include_directories(${STREAMING_PROTOCOL_TEST_LIB} PUBLIC ../include)
 
-target_compile_definitions(${STREAMING_CLIENT_TEST_LIB} PUBLIC
+target_compile_definitions(${STREAMING_PROTOCOL_TEST_LIB} PUBLIC
     _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS
     BOOST_ALL_NO_LIB
 )
 
 if (WIN32 AND MSVC)
-    target_compile_options(${STREAMING_CLIENT_TEST_LIB} PRIVATE /bigobj)
+    target_compile_options(${STREAMING_PROTOCOL_TEST_LIB} PRIVATE /bigobj)
     if(${MSVC_VERSION} LESS 1920)
-        target_compile_options(${STREAMING_CLIENT_TEST_LIB} PRIVATE /Ob0)
+        target_compile_options(${STREAMING_PROTOCOL_TEST_LIB} PRIVATE /Ob0)
     endif()
 elseif(WIN32 AND CMAKE_COMPILER_IS_GNUCXX)
-    target_compile_options(${STREAMING_CLIENT_TEST_LIB} PRIVATE -Wa,-mbig-obj)
+    target_compile_options(${STREAMING_PROTOCOL_TEST_LIB} PRIVATE -Wa,-mbig-obj)
 endif()
 
 add_executable( StreamMeta.test
@@ -154,7 +154,7 @@ foreach(tgt ${targets})
       ${ASAN_LIB}
       ${GCOV_LIB}
       GTest::GTest GTest::Main
-      ${STREAMING_CLIENT_TEST_LIB}
+      ${STREAMING_PROTOCOL_TEST_LIB}
     )
 
     set_target_properties(${tgt} PROPERTIES
