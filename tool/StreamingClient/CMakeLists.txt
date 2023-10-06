@@ -12,7 +12,6 @@ find_package( Threads )
 set(CLIENT_SOURCES StreamingClient.cpp)
 
 add_executable(streaming_client ${CLIENT_SOURCES})
-target_include_directories(${PROJECT_NAME} PRIVATE "../../include")
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
 
 if (NOT TARGET Boost::program_options)
