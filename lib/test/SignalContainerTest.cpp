@@ -116,33 +116,10 @@ namespace daq::streaming_protocol {
     }
     )"_json;
 
-    /// HBK time family is 1 => f_base = 1 Hz
-    /// delta is one => f_output = 1 Hz
-    static nlohmann::json s_linearHbkTimeSignalMetaInformationDoc = R"(
-    {
-        "method" : "signal",
-        "params" : {
-            "definition" : {
-                "dataType" : "uint64",
-                "rule" : "linear",
-                "linear" : {
-                    "delta" : 1
-                },
-                "time" : {
-                    "timeFamily" : [ 0 ],
-                    "epoch" : "1970-01-01T00:00:00.0"
-                }
-            },
-            "tableId" : "table"
-        }
-    }
-    )"_json;
-
-
-    /// BB time resolution is 1
+    /// openDAQ time resolution is 1
     /// delta is one => f_output = 1 Hz
     /// \note unit "s" as defined in opc-ua standard
-    static nlohmann::json s_linearBBTimeSignalMetaInformationDoc = R"(
+    static nlohmann::json s_linearOpenDAQTimeSignalMetaInformationDoc = R"(
     {
         "method" : "signal",
         "params" : {
@@ -154,33 +131,38 @@ namespace daq::streaming_protocol {
                 },
                 "unit" : {
                     "displayName": "s",
-                    "unitId": 5457219
+                    "unitId": 5457219,
+                    "quantity": "time"
                 },
-                "time" : {
-                    "resolution" : {
-                        "num" : 1,
-                        "denom" : 1
-                    },
-                    "absoluteReference" : "1970-01-01T00:00:00.0"
-                }
+                "resolution" : {
+                    "num" : 1,
+                    "denom" : 1
+                },
+                "absoluteReference" : "1970-01-01T00:00:00.0"
             },
             "tableId" : "table"
         }
     }
     )"_json;
 
-    /// HBK time family is 1 => f_base = 1 Hz
-    static nlohmann::json s_explicitHbkTimeSignalMetaInformationDoc = R"(
+    /// openDAQ time resolution is 1
+    static nlohmann::json s_explicitOpenDAQTimeSignalMetaInformationDoc = R"(
     {
         "method" : "signal",
         "params" : {
             "definition" : {
                 "dataType" : "uint64",
                 "rule" : "explicit",
-                "time" : {
-                    "timeFamily" : [ 0 ],
-                    "epoch" : "1970-01-01T00:00:00.0"
-                }
+                "unit" : {
+                    "displayName": "s",
+                    "unitId": 5457219,
+                    "quantity": "time"
+                },
+                "resolution" : {
+                    "num" : 1,
+                    "denom" : 1
+                },
+                "absoluteReference" : "1970-01-01T00:00:00.0"
             },
             "tableId" : "table"
         }
@@ -372,7 +354,7 @@ namespace daq::streaming_protocol {
         signalContainer.processMetaInformation(s_timeSignalNumber, subscribeMetaInformation);
 
 
-        payload = nlohmann::json::to_msgpack(s_linearHbkTimeSignalMetaInformationDoc);
+        payload = nlohmann::json::to_msgpack(s_linearOpenDAQTimeSignalMetaInformationDoc);
         MetaInformation metaInformation = creataMetaInformation(payload);
         result = signalContainer.processMetaInformation(s_timeSignalNumber, metaInformation);
         ASSERT_EQ(result, 0);
@@ -455,7 +437,7 @@ namespace daq::streaming_protocol {
         result = signalContainer.processMetaInformation(s_anotherDataSignalNumber, metaInformation);
         ASSERT_EQ(result, 0);
 
-        payload = nlohmann::json::to_msgpack(s_linearHbkTimeSignalMetaInformationDoc);
+        payload = nlohmann::json::to_msgpack(s_linearOpenDAQTimeSignalMetaInformationDoc);
         metaInformation = creataMetaInformation(payload);
         result = signalContainer.processMetaInformation(s_timeSignalNumber, metaInformation);
         ASSERT_EQ(result, 0);
@@ -523,7 +505,7 @@ namespace daq::streaming_protocol {
             metaInformation = creataMetaInformation(payload);
             signalContainer.processMetaInformation(s_dataSignalNumber, metaInformation);
 
-            payload = nlohmann::json::to_msgpack(s_linearBBTimeSignalMetaInformationDoc);
+            payload = nlohmann::json::to_msgpack(s_linearOpenDAQTimeSignalMetaInformationDoc);
             metaInformation = creataMetaInformation(payload);
             signalContainer.processMetaInformation(s_timeSignalNumber, metaInformation);
 
@@ -786,7 +768,7 @@ namespace daq::streaming_protocol {
             metaInformation = creataMetaInformation(payload);
             signalContainer.processMetaInformation(s_dataSignalNumber, metaInformation);
 
-            payload = nlohmann::json::to_msgpack(s_linearBBTimeSignalMetaInformationDoc);
+            payload = nlohmann::json::to_msgpack(s_linearOpenDAQTimeSignalMetaInformationDoc);
             metaInformation = creataMetaInformation(payload);
             signalContainer.processMetaInformation(s_timeSignalNumber, metaInformation);
 
@@ -835,7 +817,7 @@ namespace daq::streaming_protocol {
             metaInformation = creataMetaInformation(payload);
             signalContainer.processMetaInformation(s_dataSignalNumber, metaInformation);
 
-            payload = nlohmann::json::to_msgpack(s_explicitHbkTimeSignalMetaInformationDoc);
+            payload = nlohmann::json::to_msgpack(s_explicitOpenDAQTimeSignalMetaInformationDoc);
             metaInformation = creataMetaInformation(payload);
             signalContainer.processMetaInformation(s_timeSignalNumber, metaInformation);
 

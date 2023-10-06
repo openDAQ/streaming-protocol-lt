@@ -45,6 +45,11 @@ void daq::streaming_protocol::BaseSynchronousSignal::setTimeStart(uint64_t timeT
 void daq::streaming_protocol::BaseSynchronousSignal::setOutputRate(uint64_t timeTicks)
 {
     m_outputRateInTicks = timeTicks;
+/// \todo will be enabled again when having incremental changes
+//    nlohmann::json timeSignal;
+//    timeSignal[METHOD] = META_METHOD_SIGNAL;
+//    timeSignal[PARAMS][META_DEFINITION][META_RULETYPE_LINEAR][META_DELTA] = m_outputRateInTicks;
+//    m_writer.writeMetaInformation(m_timeSignalNumber, timeSignal);
 }
 
 void daq::streaming_protocol::BaseSynchronousSignal::writeSignalMetaInformation() const
@@ -71,13 +76,14 @@ void daq::streaming_protocol::BaseSynchronousSignal::writeSignalMetaInformation(
 
     timeSignal[PARAMS][META_DEFINITION][META_UNIT][META_UNIT_ID] = Unit::UNIT_ID_SECONDS;
     timeSignal[PARAMS][META_DEFINITION][META_UNIT][META_DISPLAY_NAME] = "s";
+    timeSignal[PARAMS][META_DEFINITION][META_UNIT][META_QUANTITY] = META_TIME;
     if (!m_timeInterpretationObject.is_null()) {
         timeSignal[PARAMS][META_INTERPRETATION] = m_timeInterpretationObject;
     }
 
-    timeSignal[PARAMS][META_DEFINITION][META_TIME][META_ABSOLUTE_REFERENCE] = m_epoch;
-    timeSignal[PARAMS][META_DEFINITION][META_TIME][META_RESOLUTION][META_NUMERATOR] = 1;
-    timeSignal[PARAMS][META_DEFINITION][META_TIME][META_RESOLUTION][META_DENOMINATOR] = m_timeTicksPerSecond;
+    timeSignal[PARAMS][META_DEFINITION][META_ABSOLUTE_REFERENCE] = m_epoch;
+    timeSignal[PARAMS][META_DEFINITION][META_RESOLUTION][META_NUMERATOR] = 1;
+    timeSignal[PARAMS][META_DEFINITION][META_RESOLUTION][META_DENOMINATOR] = m_timeTicksPerSecond;
     m_writer.writeMetaInformation(m_timeSignalNumber, timeSignal);
 }
 

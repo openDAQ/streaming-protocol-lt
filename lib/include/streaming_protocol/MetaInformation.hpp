@@ -24,9 +24,8 @@
 
 namespace daq::streaming_protocol {
     /// \addtogroup consumer
-    /// several types of meta information are defined.
-    /// -Type 1 means any meta data encoded using JSON (Used in HBM streaming protocol.
-    /// -Type 2 means any meta data encoded using MessagePack (Used in HBK streaming protocol.
+    /// several types of meta information may be defined.
+    /// -Type 2 means any meta data encoded using MessagePack (Used in openDAQ streaming protocol.
     /// Content of the meta information can be retrieved as structured document or in binary form depending on the type.
     class MetaInformation
     {

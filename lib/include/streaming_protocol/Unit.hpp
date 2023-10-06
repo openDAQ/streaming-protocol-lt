@@ -34,5 +34,6 @@ struct Unit {
     /// 0 stands for user defined unit without unit id
     int32_t unitId;
     std::string displayName;
+    std::string quantity;
 };
 }

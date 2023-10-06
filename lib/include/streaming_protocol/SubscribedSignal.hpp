@@ -127,6 +127,11 @@ public:
         return m_unit.displayName;
     }
 
+    std::string unitQuantity() const
+    {
+        return m_unit.quantity;
+    }
+
     int32_t unitId() const
     {
         return m_unit.unitId;

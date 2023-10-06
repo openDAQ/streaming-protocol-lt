@@ -57,7 +57,7 @@ ssize_t SubscribedSignal::processMeasuredData(const unsigned char* pData, size_t
     }
     case RULETYPE_EXPLICIT:
     {
-        // In openDAQ streaming protocol , time stamp and value are delivered separately as explicit values
+        // In openDAQ streaming protocol, time stamp and value are delivered separately as explicit values
         // in the time signal and the data signal.
         // The device will deliver the time stamp before the value => Time (m_time) is already set! 
         // This of course works only when there is one asynchronous value at a time.
@@ -176,10 +176,26 @@ int SubscribedSignal::processSignalMetaInformation(const std::string& method, co
                 STREAMING_PROTOCOL_LOG_I("{}:\n\tSignal definition", m_signalId);
 
                 const nlohmann::json& definitionNode = *definitionIter;
+
+                nlohmann::json::const_iterator linearIter = definitionNode.find(META_RULETYPE_LINEAR);
+                if (linearIter != definitionNode.end()) {
+                    const nlohmann::json& linearNode = *linearIter;
+                    nlohmann::json::const_iterator deltaIter = linearNode.find(META_DELTA);
+                    if (deltaIter != linearNode.end()) {
+                        m_linearDelta = *deltaIter;
+                    }
+                }
+
                 auto ruleIter = definitionNode.find(META_RULE);
                 if (ruleIter != definitionNode.end()) {
                     std::string rule = *ruleIter;
                     if (rule == META_RULETYPE_LINEAR) {
+                        // always make sure that linear rule is valid.
+                        // linear reul has to be delivered in a prior meta information at at the latest with this package.
+                        if (m_linearDelta == 0) {
+                            STREAMING_PROTOCOL_LOG_E("{}: Time delta of 0 is not allowed for linear rule!", m_signalId);
+                            return -1;
+                        }
                         m_ruleType = RULETYPE_LINEAR;
                     } else if (rule == META_RULETYPE_EXPLICIT) {
                         m_ruleType = RULETYPE_EXPLICIT;
@@ -191,14 +207,6 @@ int SubscribedSignal::processSignalMetaInformation(const std::string& method, co
                     }
                 }
 
-                nlohmann::json::const_iterator linearIter = definitionNode.find(META_RULETYPE_LINEAR);
-                if (linearIter != definitionNode.end()) {
-                    const nlohmann::json& linearNode = *linearIter;
-                    nlohmann::json::const_iterator deltaIter = linearNode.find(META_DELTA);
-                    if (deltaIter != linearNode.end()) {
-                        m_linearDelta = *deltaIter;
-                    }
-                }
 
                 size_t dataValueSize = getDataTypeSize(definitionNode);
                 if (dataValueSize) {
@@ -323,48 +331,32 @@ int SubscribedSignal::processSignalMetaInformation(const std::string& method, co
                     if (unitIdIter != unitNode.end()) {
                         m_unit.unitId = *unitIdIter;
                     }
-                }
 
-                auto timeIter = definitionNode.find(META_TIME);
-                if (timeIter != definitionNode.end()) {
-                    m_isTimeSignal = true;
-                    const nlohmann::json& timeNode = *timeIter;
-                    auto resolutionIter = timeNode.find(META_RESOLUTION);
-                    if (resolutionIter!=timeNode.end()) {
-                        const nlohmann::json& resolutionNode = *resolutionIter;
-                        uint64_t numerator = resolutionNode[META_NUMERATOR];
-                        uint64_t denominator = resolutionNode[META_DENOMINATOR];
-                        if (numerator==0 || denominator==0) {
-                            STREAMING_PROTOCOL_LOG_E("\tResolution numerator and denominator may not be 0!");
-                            return -1;
+                    auto unitQuantityIter = unitNode.find(META_QUANTITY);
+                    if (unitQuantityIter != unitNode.end()) {
+                        m_unit.quantity = *unitQuantityIter;
+                        if (m_unit.quantity==META_TIME) {
+                            m_isTimeSignal = true;
                         }
-                        // numerator/denominator gives time between ticks, or period, in the uint of the signal.
-                        if (m_unit.unitId == Unit::UNIT_ID_SECONDS) {
-                            // Unit for time signals is seconds. We want the frequency here!
-                            m_timeBaseFrequency = denominator / numerator;
-                            STREAMING_PROTOCOL_LOG_I("\ttime resolution: {} Hz", resolutionNode.dump());
-                        } else {
-                            STREAMING_PROTOCOL_LOG_E("\tFor time unit 's' is required!");
-                            return -1;
-                        }
-                    }
-
-                    nlohmann::json::const_iterator epochIter = timeNode.find(META_EPOCH);
-                    if (epochIter == timeNode.end()) {
-                        // BB streaming!
-                        epochIter = timeNode.find(META_ABSOLUTE_REFERENCE);
-                    }
-                    if (epochIter != timeNode.end()) {
-                        m_timeBaseEpochAsString = epochIter.value();
-                        STREAMING_PROTOCOL_LOG_I("\ttime base epoch: {}", m_timeBaseEpochAsString);
                     }
                 }
 
-
-                // always make sure that linear rule is valid
-                if (m_ruleType == RULETYPE_LINEAR) {
-                    if (m_linearDelta == 0) {
-                        STREAMING_PROTOCOL_LOG_E("{}: Time delta of 0 is not allowed for linear rule!", m_signalId);
+                auto resolutionIter = definitionNode.find(META_RESOLUTION);
+                if (resolutionIter!=definitionNode.end()) {
+                    const nlohmann::json& resolutionNode = *resolutionIter;
+                    uint64_t numerator = resolutionNode[META_NUMERATOR];
+                    uint64_t denominator = resolutionNode[META_DENOMINATOR];
+                    if (numerator==0 || denominator==0) {
+                        STREAMING_PROTOCOL_LOG_E("\tResolution numerator and denominator may not be 0!");
+                        return -1;
+                    }
+                    // numerator/denominator gives time between ticks, or period, in the uint of the signal.
+                    if (m_unit.unitId == Unit::UNIT_ID_SECONDS) {
+                        // Unit for time signals is seconds. We want the frequency here!
+                        m_timeBaseFrequency = denominator / numerator;
+                        STREAMING_PROTOCOL_LOG_I("\ttime resolution: {} Hz", resolutionNode.dump());
+                    } else {
+                        STREAMING_PROTOCOL_LOG_E("\tFor time unit 's' is required!");
                         return -1;
                     }
                 }

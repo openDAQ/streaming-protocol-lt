@@ -1,26 +1,11 @@
-/*
- * Copyright 2022-2023 Blueberry d.o.o.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 #include <gtest/gtest.h>
 
 #include "nlohmann/json.hpp"
 
-#include "../include/streaming_protocol/Defines.h"
-#include "../include/streaming_protocol/SubscribedSignal.hpp"
-#include "../include/streaming_protocol/Types.h"
+#include "streaming_protocol/Defines.h"
+#include "streaming_protocol/SubscribedSignal.hpp"
+#include "streaming_protocol/Types.h"
+#include "streaming_protocol/Logging.hpp"
 
 
 
@@ -103,12 +88,17 @@ namespace daq::streaming_protocol {
 
         SubscribedSignal timeSignal(signalNumber, logCallback);
 
+        static const std::string unitDisplayName = "s";
+
         /// linear time rule with delta = 0 is not valid!
         nlohmann::json metaTimeSignal;
         metaTimeSignal[META_TABLEID] = tableId;
         metaTimeSignal[META_DEFINITION][META_RULE] = META_RULETYPE_LINEAR;
         metaTimeSignal[META_DEFINITION][META_RULETYPE_LINEAR][META_DELTA] = 0;
         metaTimeSignal[META_DEFINITION][META_DATATYPE] = DATA_TYPE_UINT64;
+        metaTimeSignal[META_DEFINITION][META_UNIT][META_UNIT_ID] = Unit::UNIT_ID_SECONDS;
+        metaTimeSignal[META_DEFINITION][META_UNIT][META_DISPLAY_NAME] = unitDisplayName;
+        metaTimeSignal[META_DEFINITION][META_UNIT][META_QUANTITY] = META_TIME;
 
         int result = timeSignal.processSignalMetaInformation(META_METHOD_SIGNAL, metaTimeSignal);
         ASSERT_EQ(result, -1);
@@ -119,6 +109,10 @@ namespace daq::streaming_protocol {
 
         result = timeSignal.processSignalMetaInformation(META_METHOD_SIGNAL, metaTimeSignal);
         ASSERT_EQ(result, 0);
+
+        ASSERT_EQ(timeSignal.unitId(), Unit::UNIT_ID_SECONDS);
+        ASSERT_EQ(timeSignal.unitDisplayName(), unitDisplayName);
+        ASSERT_EQ(timeSignal.unitQuantity(), META_TIME);
         ASSERT_EQ(timeSignal.tableId(), tableId);
         ASSERT_EQ(timeSignal.interpretationObject(), interpretationObject);
     }
