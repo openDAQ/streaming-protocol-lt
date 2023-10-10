@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.24)
 
-project(streaming_protocol VERSION 0.10.5 LANGUAGES CXX)
+project(streaming_protocol VERSION 0.10.6 LANGUAGES CXX)
 
 if (POLICY CMP0074)
     cmake_policy(SET CMP0074 NEW)
