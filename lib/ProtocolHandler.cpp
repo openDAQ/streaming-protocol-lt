@@ -48,7 +48,9 @@ namespace daq::streaming_protocol {
         try {
             Controller controller(m_ioc, m_streamMeta.streamId(), m_stream->remoteHost(), m_streamMeta.httpControlPort(), m_streamMeta.httpControlPath(), m_streamMeta.httpVersion(), logCallback);
             controller.asyncSubscribe(signalIds, [this](const boost::system::error_code& ec) {
-                STREAMING_PROTOCOL_LOG_E("Control request failed: {}", ec.message());
+                if (ec) {
+                    STREAMING_PROTOCOL_LOG_E("Control request failed: {}", ec.message());
+                }
             });
         }  catch (const std::runtime_error& e) {
             STREAMING_PROTOCOL_LOG_E("{} {}: Won't subscribe!", m_stream->endPointUrl(), e.what());
@@ -60,7 +62,9 @@ namespace daq::streaming_protocol {
         try {
             Controller controller(m_ioc, m_streamMeta.streamId(), m_stream->remoteHost(), m_streamMeta.httpControlPort(), m_streamMeta.httpControlPath(), m_streamMeta.httpVersion(), logCallback);
             controller.asyncUnsubscribe(signalIds, [this](const boost::system::error_code& ec) {
-                STREAMING_PROTOCOL_LOG_E("Control request failed: {}", ec.message());
+                if (ec) {
+                    STREAMING_PROTOCOL_LOG_E("Control request failed: {}", ec.message());
+                }
             });
         } catch(const std::runtime_error& e) {
             STREAMING_PROTOCOL_LOG_E("{} {}: Won't unsubscribe!", m_stream->endPointUrl(), e.what());
