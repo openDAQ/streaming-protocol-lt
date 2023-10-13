@@ -26,7 +26,7 @@ option(STREAMING_PROTOCOL_LIB "Enable building the library implementing the prot
 option(STREAMING_PROTOCOL_TOOLS "Enable building some tools that use the streaming_protocol library" OFF)
 option(STREAMING_PROTOCOL_POST_BUILD_UNITTEST "Automatically run unit-tests as a post build step" OFF)
 
-set(OPENDAQ_REPO_PREFIX "git@github.com:openDAQ" CACHE STRING "Set this if using a repository mirror")
+set(OPENDAQ_REPO_PREFIX "https://github.com/openDAQ" CACHE STRING "Set this if using a repository mirror")
 message(STATUS "openDAQ repository prefix: ${OPENDAQ_REPO_PREFIX}")
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
