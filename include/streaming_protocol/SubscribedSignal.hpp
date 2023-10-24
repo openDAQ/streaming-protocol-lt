@@ -144,6 +144,18 @@ public:
         m_time = timeStamp;
     }
 
+    /// Return the time signal for this signal. Only relevant for data signals.
+    std::shared_ptr<SubscribedSignal> timeSignal() const
+    {
+        return m_timeSignal;
+    }
+
+    /// Set the time signal for this signal
+    void setTimeSignal(std::shared_ptr<SubscribedSignal> timeSignal)
+    {
+        m_timeSignal = timeSignal;
+    }
+
     uint64_t linearDelta() const
     {
         return m_linearDelta;
@@ -207,6 +219,7 @@ private:
     RuleType m_ruleType;
     std::string m_memberName;
 
+    std::shared_ptr<SubscribedSignal> m_timeSignal;
     uint64_t m_time;
     uint64_t m_linearDelta;
     std::string m_timeBaseEpochAsString;

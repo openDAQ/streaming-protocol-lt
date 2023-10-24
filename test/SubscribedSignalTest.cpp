@@ -25,6 +25,13 @@ namespace daq::streaming_protocol {
         }
 
         {
+            auto timeSignal = std::make_shared<SubscribedSignal>(1, logCallback);
+            SubscribedSignal dataSignal(2, logCallback);
+            dataSignal.setTimeSignal(timeSignal);
+            ASSERT_EQ(dataSignal.timeSignal(), timeSignal);
+        }
+
+        {
             // signal id as number
             nlohmann::json metaSubscribe;
             int signalIdAsNumber = -8;
