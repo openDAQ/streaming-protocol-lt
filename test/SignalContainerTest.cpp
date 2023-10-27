@@ -37,6 +37,7 @@ namespace daq::streaming_protocol {
     static std::vector < uint8_t > s_measuredRawData;
     static unsigned int s_measuredRawDataSignalNumber;
     static uint64_t s_measuredRawDataTimestamp;
+    static unsigned int s_measuredTimeSignalNumber = 999999; // Time signal's number as seen in the data callback
 
     static LogCallback logCallback = daq::streaming_protocol::Logging::logCallback();
 
@@ -66,7 +67,7 @@ namespace daq::streaming_protocol {
     {
         "method" : "subscribe",
         "params" : {
-            "signalId" : "AnotherDataSignal"
+            "signalId" : "TimeSignal"
         }
     }
     )"_json;
@@ -185,7 +186,12 @@ namespace daq::streaming_protocol {
         memcpy(s_measuredRawData.data(), pValues, size);
         s_measuredRawDataSignalNumber = subscribedSignal.signalNumber();
         s_measuredRawDataTimestamp = timeStamp;
-
+        auto foundTimeSignal = subscribedSignal.timeSignal();
+        if (foundTimeSignal)
+        {
+            s_measuredTimeSignalNumber = foundTimeSignal->signalNumber();
+        }
+            
         size_t valueCount = size/subscribedSignal.dataValueSize();
         s_measuredDataAsDouble.resize(valueCount);
         subscribedSignal.interpretValuesAsDouble(pValues, valueCount, s_measuredDataAsDouble.data());
@@ -524,6 +530,7 @@ namespace daq::streaming_protocol {
             // time stamp of first value equals start time!
             ASSERT_EQ(s_measuredRawDataTimestamp, indexedStartTime.start);
 
+            ASSERT_EQ(s_measuredTimeSignalNumber, s_timeSignalNumber);
 
             ASSERT_EQ(memcmp(s_measuredRawData.data(), measuredData.data(), measuredData.size()*sizeof(double)), 0);
             ASSERT_EQ(s_measuredRawDataSignalNumber, s_dataSignalNumber);

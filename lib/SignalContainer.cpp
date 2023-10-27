@@ -179,6 +179,7 @@ ssize_t SignalContainer::processMeasuredData(SignalNumber signalNumber, const un
                 return -1;
             } else {
                 auto timeSignal = m_subscribedSignals[timeSignalNumber];
+                signal->setTimeSignal(timeSignal);
                 return signal->processMeasuredData(data, len, timeSignal, m_dataAsRawCb, m_dataAsValueCb);
             }
         }
