@@ -151,7 +151,6 @@ install(
     ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
 )
 
-# install the public headers
 target_include_directories(${PROJECT_NAME} PUBLIC
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -160,6 +159,9 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 target_link_libraries( ${PROJECT_NAME} INTERFACE
     spdlog
 )
+
+# install the public headers
+install(DIRECTORY ../include/streaming_protocol DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 # install a targets file for the generated export set
 install(
