@@ -112,8 +112,8 @@ information or something creating a hierarchy for a more complex description con
 ### Signal Value
 The members of the signal definition define the complete signal value. It also defines what data is being transferred.
 
-### Resolution And Origin
-Describes how data is to be interpreted. Both are optional. the resolution is represented as a rational number. When there is an origin, each value plus this origin represents an absolute value.
+### Resolution And Absolute Reference
+Describes how data is to be interpreted. Both are optional. the resolution is represented as a rational number. When there is an absolute reference, each value plus this absolute reference represents an absolute value.
 
 ### Signal Data
 
@@ -412,7 +412,7 @@ Each member...
 - MUST have the property `name`
 - MUST have the property [`rule`](#rules) if the dataType is one of the base types.
 - MUST have the property [`dataType`](#data-types)
-- MAY have an `origin`.
+- MAY have an `absoluteReference`.
 - MAY have an `resolution` object.
 - MAY have a `unit` object.
 - MAY have a `dimensions` object.
@@ -425,7 +425,7 @@ Those properties are described using a signal member object:
   "rule": <type of rule as string>,
   "dataType": <data type as string>,
   ["dimensions": { <object describing the dimensions>},]
-  ["origin": <string>,]
+  ["absoluteReference": <string>,]
   ["resolution" : {
     "num": <unsigned int 64>,
     "denom": <unsigned int 64>
@@ -438,7 +438,7 @@ A signal with just one signal member has just one [base data type](#base-data-ty
 When the signal has a more complex value, [struct](#struct) is used to describe it.
 When the signal delivers a vector or matrix of the described values, [dimensions](#dimensions) is used to describe it.
 
-- `origin`: This is optional. If unit quantity is `time`, it is the absolute time all time stamps are based on. It is a [TAI (no leap seconds) time](#https://en.wikipedia.org/wiki/International_Atomic_Time)
+- `absoluteReference`: This is optional. If unit quantity is `time`, it is the absolute time all time stamps are based on. It is a [TAI (no leap seconds) time](#https://en.wikipedia.org/wiki/International_Atomic_Time)
 given in ISO8601:2004 format (YYYY-MM-DDThh:mm:ss.f, example: 1970-01-01 for the UNIX epoch)
 - `resolution`: A rational number (numerator/denominator) defining the tick size.
 
@@ -854,3 +854,8 @@ The request carries the stream id and an array of signal ids to be unsubscribed.
 - `Time` object got removed, epoch and resolution moved up one level.
 - Related signal types `domain` and `status`
 - `epoch` got renamed to `origin`
+
+
+## Version
+
+- `origin` got renamed to `absoluteReference`
