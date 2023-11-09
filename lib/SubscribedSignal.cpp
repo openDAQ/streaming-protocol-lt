@@ -361,6 +361,13 @@ int SubscribedSignal::processSignalMetaInformation(const std::string& method, co
                     }
                 }
 
+                // openDAQ streaming
+                auto absoluteReferenceIter = definitionNode.find(META_ABSOLUTE_REFERENCE);
+                if (absoluteReferenceIter != definitionNode.end()) {
+                    m_timeBaseEpochAsString = absoluteReferenceIter.value();
+                    STREAMING_PROTOCOL_LOG_I("\tabsolute reference: {}", m_timeBaseEpochAsString);
+                }
+
                 if (m_isTimeSignal) {
                     // separate check because time chapter may only be send initialy, later changes won't have this again!
                     if (m_ruleType == RULETYPE_LINEAR) {
