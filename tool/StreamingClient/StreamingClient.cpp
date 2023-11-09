@@ -118,7 +118,7 @@ static void rawDataCb(const daq::streaming_protocol::SubscribedSignal& subscribe
     std::cout << subscribedSignal.unitDisplayName() << " \n" << std::endl;
 }
 
-static void signalMetaCb(const daq::streaming_protocol::SubscribedSignal& subscribedSignal, const std::string& method, const nlohmann::json& /*params*/)
+static void signalMetaCb(const daq::streaming_protocol::SubscribedSignal& subscribedSignal, const std::string& method, const nlohmann::json& params)
 {
     if (method == daq::streaming_protocol::META_METHOD_SUBSCRIBE) {
         s_signalInfos.emplace(subscribedSignal.signalNumber(), subscribedSignal.signalId());
@@ -126,6 +126,8 @@ static void signalMetaCb(const daq::streaming_protocol::SubscribedSignal& subscr
         s_signalInfos.at(subscribedSignal.signalNumber()).print();
         s_signalInfos.erase(subscribedSignal.signalNumber());
     }
+
+    std::cout << __FUNCTION__ << " " << method << ": " << params.dump(2) << std::endl;
 }
 
 static void streamMetaInformationCb(daq::streaming_protocol::ProtocolHandler& protocolHandler, const std::string& method, const nlohmann::json& params)
