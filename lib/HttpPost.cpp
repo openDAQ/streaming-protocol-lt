@@ -1,9 +1,17 @@
 #include <boost/beast/core.hpp>
+
+#if defined(__GNUC__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 // gcc version 13.2.1 reports maybe-unitialized warning in boost/beast/http.hpp. Suppress it
+#endif
+
 #include <boost/beast/http.hpp>
+
+#if defined(__GNUC__)
 #pragma GCC diagnostic pop
+#endif
+
 #include <boost/beast/version.hpp>
 #include <cstdlib>
 #include <functional>
