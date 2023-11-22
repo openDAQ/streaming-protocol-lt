@@ -147,7 +147,15 @@ void HttpPost::on_read(beast::error_code ec, std::size_t)
     }
     
     // Write the message to standard out
-    STREAMING_PROTOCOL_LOG_D("{}", m_response.body());
+    if (static_cast<http::status>(m_response.result_int()) != http::status::ok)
+    {
+        STREAMING_PROTOCOL_LOG_E("Request failed with code {} : {}",
+                                 m_response.result_int(), m_response.body());
+    }
+    else
+    {
+        STREAMING_PROTOCOL_LOG_D("Request succeeded, response: {}", m_response.body());
+    }
     
     // Gracefully close the socket. Ignore error from that.
     beast::error_code dummyEc;

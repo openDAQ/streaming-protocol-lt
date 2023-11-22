@@ -33,7 +33,7 @@
 #include "streaming_protocol/common.hpp"
 #include "streaming_protocol/jsonrpc_defines.hpp"
 #include <spdlog/spdlog.h>
-#include "streaming_protocol/ProducerSession.hpp"
+#include "streaming_protocol/ControlServer.hpp"
 
 namespace beast = boost::beast;         // from <boost/beast.hpp>
 namespace http = beast::http;           // from <boost/beast/http.hpp>
@@ -51,11 +51,11 @@ BEGIN_NAMESPACE_STREAMING_PROTOCOL
 /// caller to pass a generic lambda for receiving the response.
 template<class Body, class Allocator, class Send>
 void handle_request(http::request<Body, http::basic_fields<Allocator>>&& req,
-    Send&& send)
+    Send&& send, ControlServer::CommandCb commandCb, LogCallback logCallback)
 {
     // Returns a bad request response
     auto const bad_request =
-    [&req](beast::string_view why)
+    [&req, &logCallback](beast::string_view why)
     {
         std::string whyAsString(why);
         http::response<http::string_body> res{http::status::bad_request, req.version()};
@@ -64,7 +64,7 @@ void handle_request(http::request<Body, http::basic_fields<Allocator>>&& req,
         res.keep_alive(req.keep_alive());
         res.body() = whyAsString;
         res.prepare_payload();
-        spdlog::error("Bad request: {}", whyAsString);
+        STREAMING_PROTOCOL_LOG_E("Bad request: {}", whyAsString);
         return res;
     };
 
@@ -93,7 +93,7 @@ void handle_request(http::request<Body, http::basic_fields<Allocator>>&& req,
     static const char delimiter = '.';
     auto pos = methodString.find(delimiter);
     if (pos==std::string::npos) {
-        std::string message("json rpc request with invalid method '%s'. Expecting <stream id>.<command>", methodString.c_str());
+        std::string message("json rpc request with invalid method '" + methodString + "'. Expecting <stream id>.<command>");
         return send(bad_request(message));
     }
     std::string streamId = methodString.substr(0, methodString.find(delimiter));
@@ -104,9 +104,9 @@ void handle_request(http::request<Body, http::basic_fields<Allocator>>&& req,
         return send(bad_request("json rpc request without parameters"));
     }
     
-    nlohmann::json s_response;
+    std::string s_response;
 
-    spdlog::info("Got request '{}' from '{}'", command, streamId);
+    STREAMING_PROTOCOL_LOG_I("Got request '{}' from '{}'", command, streamId);
     // params holds an array of signal ids
     SignalIds signalIds;
     if (!params.is_array()) {
@@ -117,12 +117,14 @@ void handle_request(http::request<Body, http::basic_fields<Allocator>>&& req,
         signalIds.push_back(iter);
     }
 
-    /// \todo
-    /// - Find the producer session using the stream id
-    /// - Depending on command, call subscribe or unsubscribe with the signal ids
-    /// - create response for response body
+    int result = commandCb(streamId, command, signalIds, s_response);
+    if (result < 0)
+    {
+        std::string message("json rpc execution failed: " + s_response);
+        return send(bad_request(message));
+    }
 
-    std::string res_body = s_response.dump();
+    std::string res_body = "Succeeded";
     http::response<http::string_body> res {
         std::piecewise_construct,
         std::make_tuple(std::move(res_body)),
@@ -134,9 +136,9 @@ void handle_request(http::request<Body, http::basic_fields<Allocator>>&& req,
     return send(std::move(res));
 }
 
-static void fail(beast::error_code ec, char const* what)
+static void fail(beast::error_code ec, char const* what, LogCallback logCallback)
 {
-    spdlog::error("{}: {}", what, ec.message());
+    STREAMING_PROTOCOL_LOG_E("{}: {}", what, ec.message());
 }
 
 /// Handles an HTTP server connection
@@ -182,11 +184,15 @@ class session : public std::enable_shared_from_this<session>
     http::request<http::string_body> m_req;
     std::shared_ptr<void> m_res;
     send_lambda m_lambda;
+    ControlServer::CommandCb m_commandCb;
+    LogCallback logCallback;
 
 public:
-    session(tcp::socket&& socket)
+    session(tcp::socket&& socket, ControlServer::CommandCb commandCb, LogCallback logCb)
         : m_stream(std::move(socket))
         , m_lambda(*this)
+        , m_commandCb(commandCb)
+        , logCallback(logCb)
     {
     }
 
@@ -223,12 +229,12 @@ public:
         }
 
         if(ec) {
-            fail(ec, "read");
+            fail(ec, "read", logCallback);
             return;
         }
 
-        // Send the response
-        handle_request(std::move(m_req), m_lambda);
+        // Handle request and send the response
+        handle_request(std::move(m_req), m_lambda, m_commandCb, logCallback);
     }
 
     void on_write( bool close, beast::error_code ec, std::size_t bytes_transferred)
@@ -236,7 +242,7 @@ public:
         boost::ignore_unused(bytes_transferred);
 
         if(ec) {
-            fail(ec, "write");
+            fail(ec, "write", logCallback);
             return;
         }
 
@@ -271,11 +277,15 @@ class listener : public std::enable_shared_from_this<listener>
 {
     net::io_context& m_ioc;
     tcp::acceptor m_acceptor;
+    ControlServer::CommandCb m_commandCb;
+    LogCallback logCallback;
 
 public:
-    listener(net::io_context& ioc, const tcp::endpoint& endpoint)
+    listener(net::io_context& ioc, const tcp::endpoint& endpoint, ControlServer::CommandCb commandCb, LogCallback logCb)
         : m_ioc(ioc)
         , m_acceptor(ioc)
+        , m_commandCb(commandCb)
+        , logCallback(logCb)
     {
         beast::error_code ec;
 
@@ -283,7 +293,7 @@ public:
         m_acceptor.open(endpoint.protocol(), ec);
         if(ec)
         {
-            fail(ec, "open");
+            fail(ec, "open", logCallback);
             return;
         }
 
@@ -291,7 +301,7 @@ public:
         m_acceptor.set_option(net::socket_base::reuse_address(true), ec);
         if(ec)
         {
-            fail(ec, "set_option");
+            fail(ec, "set_option", logCallback);
             return;
         }
 
@@ -299,7 +309,7 @@ public:
         m_acceptor.bind(endpoint, ec);
         if(ec)
         {
-            fail(ec, "bind");
+            fail(ec, "bind", logCallback);
             return;
         }
 
@@ -308,7 +318,7 @@ public:
             net::socket_base::max_listen_connections, ec);
         if(ec)
         {
-            fail(ec, "listen");
+            fail(ec, "listen", logCallback);
             return;
         }
     }
@@ -317,6 +327,19 @@ public:
     void run()
     {
         do_accept();
+    }
+
+    // Stop accepting connections
+    void stop()
+    {
+        beast::error_code ec;
+
+        // Close the acceptor
+        m_acceptor.close(ec);
+        if(ec)
+        {
+            fail(ec, "close", logCallback);
+        }
     }
 
 private:
@@ -333,10 +356,10 @@ private:
     void on_accept(beast::error_code ec, tcp::socket socket)
     {
         if(ec) {
-            fail(ec, "accept");
+            fail(ec, "accept", logCallback);
         } else {
             // Create the session and run it
-            std::make_shared<session>(std::move(socket))->run();
+            std::make_shared<session>(std::move(socket), m_commandCb, logCallback)->run();
         }
 
         // Accept another connection
@@ -346,28 +369,39 @@ private:
 
 //------------------------------------------------------------------------------
 
-//int main(int argc, char* argv[])
-//{
-//    // Check command line arguments.
-//    if (argc != 2) {
-//        std::cerr <<
-//            "Usage: http-server-async <port>\n" <<
-//            "Example:\n" <<
-//            "    http-server-async 8080\n";
-//        return EXIT_FAILURE;
-//    }
-//    // listen to any interface using ipv4 or ipv6
-//    auto const address = net::ip::make_address("::");
-//    auto const port = static_cast<unsigned short>(std::atoi(argv[1]));
+ControlServer::ControlServer(boost::asio::io_context& ioc, uint16_t port, CommandCb commandCb, LogCallback logCb)
+    : m_ioc(ioc)
+    , m_port(port)
+    , m_commandCb(commandCb)
+    , logCallback(logCb)
+{
 
-//    // The io_context is required for all I/O
-//    net::io_context ioc;
+}
 
-//    // Create and launch a listening port
-//    std::make_shared<listener>(ioc, tcp::endpoint{address, port})->run();
-//    ioc.run();
+ControlServer::~ControlServer()
+{
+    stop();
+}
 
-//    return EXIT_SUCCESS;
-//}
+void ControlServer::start()
+{
+    // listen to any interface using ipv4 or ipv6
+    auto const address = net::ip::make_address("::");
+
+    // Create and launch a listening port
+    m_listener = std::make_shared<listener>(m_ioc, tcp::endpoint{address, m_port}, m_commandCb, logCallback);
+    m_listener->run();
+}
+
+void ControlServer::stop()
+{
+    if (m_listener)
+        m_listener->stop();
+}
+
+uint16_t ControlServer::getPort()
+{
+    return m_port;
+}
 
 END_NAMESPACE_STREAMING_PROTOCOL

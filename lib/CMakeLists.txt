@@ -60,6 +60,7 @@ set(STREAMING_PROTOCOL_STREAMING_INTERFACE_HEADERS
     AsynchronousSignal.hpp
     BaseSignal.hpp
     BaseSynchronousSignal.hpp
+    ControlServer.hpp
     ProducerSession.hpp
     Server.hpp
     StreamWriter.h
