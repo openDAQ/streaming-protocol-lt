@@ -32,7 +32,7 @@ namespace daq::streaming_protocol{
     public:
         /// \param stream An initialized (i.e. connected) stream
         StreamWriter(std::shared_ptr < daq::stream::Stream > stream);
-        StreamWriter(StreamWriter && ) = default;
+        StreamWriter(StreamWriter && ) = delete;
         virtual ~StreamWriter() = default;
         StreamWriter(const StreamWriter&) = delete;
 
@@ -45,12 +45,11 @@ namespace daq::streaming_protocol{
     private:
         /// creates the transport header and the additional length field if size > 255
         /// \return depending on parameter 'size' the created header has 4 bytes or 8 bytes
-        size_t createTransportHeader(TransportType type, unsigned int signalNumber, size_t size);
+        static size_t createTransportHeader(TransportType type, unsigned int signalNumber, uint32_t (&transportHeaderBuffer)[2], size_t size);
         int writeMsgPackMetaInformation(unsigned int signalNumber, const std::vector<uint8_t>& data);
 
         std::shared_ptr<daq::stream::Stream> m_stream;
 
-        /// room for the mandatory header and the optional additional length
-        uint32_t m_transportHeaderBuffer[2];
+        std::mutex m_writeMtx;
     };
 }
