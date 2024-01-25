@@ -15,7 +15,7 @@ else()
     include(FetchContent)
     get_custom_fetch_content_params(spdlog FC_PARAMS)
 
-    set(SPDLOG_INSTALL ON)
+    set(SPDLOG_INSTALL ON CACHE BOOL "")
 
     FetchContent_Declare(spdlog
                          GIT_REPOSITORY https://github.com/gabime/spdlog.git
