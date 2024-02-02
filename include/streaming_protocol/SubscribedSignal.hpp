@@ -137,8 +137,7 @@ public:
         return m_unit.unitId;
     }
 
-    /// Set the current timestamp for the signal. I twill be used for the next appearing value.
-    /// For signals having an implicit time rule, the time stamp will be increased according to that rule for each value.
+    /// Set the current timestamp for the signal. It will be used for the next appearing value.
     void setTime(uint64_t timeStamp)
     {
         m_time = timeStamp;
@@ -222,6 +221,7 @@ private:
     std::shared_ptr<SubscribedSignal> m_timeSignal;
     uint64_t m_time;
     uint64_t m_linearDelta;
+    size_t m_linearValueIndex;
     std::string m_timeBaseEpochAsString;
     uint64_t m_timeBaseFrequency;
     Unit m_unit;

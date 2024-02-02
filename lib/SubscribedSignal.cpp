@@ -25,6 +25,7 @@ SubscribedSignal::SubscribedSignal(unsigned int signalNumber, LogCallback logCb)
     , m_ruleType(RULETYPE_EXPLICIT) // explicit rule is default
     , m_time(0)
     , m_linearDelta(0)
+    , m_linearValueIndex(0)
     , m_timeBaseFrequency(0)
     , logCallback(logCb)
 {
@@ -36,8 +37,9 @@ ssize_t SubscribedSignal::processMeasuredData(const unsigned char* pData, size_t
     case RULETYPE_LINEAR:
     {
         // short read is not allowed! We expect complete packages only!
-        cbRaw(*this, timeSignal->m_time, pData, size);
         m_linearDelta = timeSignal->m_linearDelta;
+        uint64_t timeStamp = timeSignal->time() + (m_linearValueIndex * m_linearDelta);
+        cbRaw(*this, timeStamp, pData, size);
         
         // Since we deliver the time stamp of the first value,
         // We increment timestamp after execution of the callback methods.
@@ -50,9 +52,9 @@ ssize_t SubscribedSignal::processMeasuredData(const unsigned char* pData, size_t
             bytesPerValue = sizeof(uint64_t) + m_dataValueSize;
         }
         size_t valueCount = size / bytesPerValue;
-        cbValues(*this, timeSignal->m_time, pData, valueCount);
+        cbValues(*this, timeStamp, pData, valueCount);
 
-        timeSignal->m_time += timeSignal->m_linearDelta*valueCount;
+        m_linearValueIndex += valueCount;
         break;
     }
     case RULETYPE_EXPLICIT:
@@ -72,7 +74,7 @@ ssize_t SubscribedSignal::processMeasuredData(const unsigned char* pData, size_t
         break;
     }
     case RULETYPE_CONSTANT:
-        STREAMING_PROTOCOL_LOG_E("Time signal with constant rule is not supported  ({})", m_signalId);
+        STREAMING_PROTOCOL_LOG_E("Domain signal with constant rule is not supported  ({})", m_signalId);
         return -1;
     case RULETYPE_UNKNOWN:
         STREAMING_PROTOCOL_LOG_E("No rule for signal ", m_signalId);
@@ -163,6 +165,11 @@ int SubscribedSignal::processSignalMetaInformation(const std::string& method, co
             } else {
                 return -1;
             }
+        }
+
+        auto valueIndexIter = params.find(META_VALUEINDEX);
+        if (valueIndexIter!=params.end()) {
+            m_linearValueIndex = valueIndexIter.value();
         }
 
         auto interpretationIter = params.find(META_INTERPRETATION);
