@@ -392,14 +392,19 @@ There are some example of signal descriptions in a separate document.
       <contains at least one signal member description>
     },
     "tableId": <string>,
+    ["valueIndex": <uint64>],
     ["relatedSignals": [
         { "type" : <relation type>, "signalId" : <id of the related signal> } 
       ]
-    ]
+    ],
     ["interpretation": {}]
   }
 }
 ~~~~
+
+- `tableId`: Id of the table the signal belongs to
+- `valueIndex`: Optional, and relevant only if domain signal of the table follows an implicit linear rule.
+   Tells the value index of the first value of this signal in the table. If missing, the first value comes at the very beginning (valueIndex = 0).
 
 #### Signal Definition Object
 
