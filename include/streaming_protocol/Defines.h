@@ -54,6 +54,7 @@ static const char META_SIGNALID[] = "signalId";
 static const char META_SIGNALIDS[] = "signalIds";
 
 static const char META_TABLEID[] = "tableId";
+static const char META_VALUEINDEX[] = "valueIndex";
 static const char META_RELATEDSIGNALS[] = "relatedSignals";
 
 /// Is send to acknowldege the sunscription of a signal. It carries the signal id togehter with the signal number.

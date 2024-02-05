@@ -142,7 +142,7 @@ namespace daq::streaming_protocol {
         result = timeSignal->processSignalMetaInformation(META_METHOD_SIGNAL, metaTimeSignal);
         ASSERT_EQ(result, 0);
 
-        /// timestamp of the first value to be delivered
+        /// timestamp of the next value to be delivered
         timeSignal->setTime(startTime);
 
         nlohmann::json metaDataSubscribe;
@@ -157,12 +157,14 @@ namespace daq::streaming_protocol {
         SignalNumber signalNumber = 9;
         int result;
         uint64_t startTime = 1000;
+        uint64_t signalDelayIndex = 10;
 
         std::shared_ptr < SubscribedSignal> timeSignal = std::make_shared<SubscribedSignal>(signalNumber+1, logCallback);
         SubscribedSignal dataSignal(signalNumber, logCallback);
         prepareSignals(dataSignal, timeSignal, startTime);
 
         nlohmann::json metaDataSignal;
+        metaDataSignal[META_VALUEINDEX] = signalDelayIndex; // this signal is late!
         metaDataSignal[META_DEFINITION][META_RULE] = META_RULETYPE_EXPLICIT;
         metaDataSignal[META_DEFINITION][META_DATATYPE] = DATA_TYPE_UINT16;
 
@@ -196,7 +198,8 @@ namespace daq::streaming_protocol {
         };
 
         ssize_t processResult = dataSignal.processMeasuredData(reinterpret_cast <unsigned char*> (expectedData.data()), sizeof(expectedData), timeSignal, dataAsRawCb, dataAsValueCb);
-        ASSERT_EQ(deliveredFirstTimestamp, startTime);
+        /// check for the delay!
+        ASSERT_EQ(deliveredFirstTimestamp, (startTime+signalDelayIndex*timeSignal->linearDelta()));
         ASSERT_EQ(processResult, sizeof(expectedData));
 
         {
