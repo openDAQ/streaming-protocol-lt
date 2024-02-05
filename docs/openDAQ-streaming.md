@@ -403,7 +403,7 @@ There are some example of signal descriptions in a separate document.
 ~~~~
 
 - `tableId`: Id of the table the signal belongs to
-- `valueIndex`: Optional, and relevant only if domain signal of the table follows an implicit linear rule.
+- `valueIndex`: Optional, and relevant only if domain signal of the table follows an implicit rule such as an implicit linear time signal.
    Tells the value index of the first value of this signal in the table. If missing, the first value comes at the very beginning (valueIndex = 0).
 
 #### Signal Definition Object
