@@ -1,6 +1,6 @@
 ---
 title:  openDAQ Stream Protocol Specification
-subtitle: Version 1.0.0
+subtitle: Version 1.0.1
 titlepage: true
 toc: true
 toc-own-page: true
@@ -860,6 +860,9 @@ The request carries the stream id and an array of signal ids to be unsubscribed.
 - Related signal types `domain` and `status`
 - `epoch` got renamed to `origin`
 
+## Version 1.0.1
+- `signal` meta information gest optional `valueIndex`. This can be used to add 
+  another data signal to an existing table.
 
 ## Version
 
