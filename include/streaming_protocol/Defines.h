@@ -120,10 +120,6 @@ static const char META_UNIT_ID[] = "unitId";
 static const char META_QUANTITY[] = "quantity";
 
 
-
-/**
- * @todo set the decided version!
- */
-static const char OPENDAQ_LT_STREAM_VERSION[] = "0.7.0";
+static const char OPENDAQ_LT_STREAM_VERSION[] = "1.0.1";
 
 }
