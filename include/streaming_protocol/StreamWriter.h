@@ -16,6 +16,7 @@
 
 #pragma once
 #include <cstddef>
+#include <mutex>
 #include <string>
 #include <vector>
 
