@@ -11,9 +11,6 @@ endif()
 
 if(nlohmann_json_FOUND)
     message(STATUS "Found nlohmann_json: ${nlohmann_json_REQUIREDVERSION} ${nlohmann_json_CONFIG}")
-    include_directories(PRIVATE ${nlohmann_json})
-
-    set_target_properties(nlohmann_json::nlohmann_json PROPERTIES IMPORTED_GLOBAL TRUE)
 else()
     include(FetchContent)
     get_custom_fetch_content_params(nlohmann_json FC_PARAMS)
