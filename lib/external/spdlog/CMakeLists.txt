@@ -17,6 +17,14 @@ else()
 
     set(SPDLOG_INSTALL ON CACHE BOOL "")
 
+    # spdlog is naughty and has an explicit option for building static or
+    # shared, rather than relying on BUILD_SHARED_LIBS; this can create
+    # mismatched shared-and-static combinations that lead to relocatable
+    # code errors in the build.
+    if(BUILD_SHARED_LIBS)
+        set(SPDLOG_BUILD_SHARED ON CACHE BOOL "")
+    endif()
+
     FetchContent_Declare(spdlog
                          GIT_REPOSITORY https://github.com/gabime/spdlog.git
                          GIT_TAG v${spdlog_REQUIREDVERSION}
