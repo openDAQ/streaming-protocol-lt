@@ -253,7 +253,7 @@ int main(int argc, char** argv)
     std::unique_ptr < daq::stream::Stream > stream;
     std::shared_ptr < daq::streaming_protocol::ProtocolHandler > protocolHandler =
         std::make_shared < daq::streaming_protocol::ProtocolHandler > (s_ioc, signalContainer, streamMetaInformationCb, logCallback);
-    // Launch the asynchronous operation depending on the protocol to use
+    // Prepare the asynchronous operation depending on the protocol to use
     if (!target.empty()) {
         std::cout << "Using websocket..." << std::endl;
         stream = std::make_unique < daq::stream::WebsocketClientStream > (s_ioc, host, port, target);
@@ -270,8 +270,8 @@ int main(int argc, char** argv)
     };
 
     protocolHandler->start(std::move(stream), completionCb);
-    // Run the I/O service. The call will return when
-    // the session is closed.
+    // Run the I/O service. This will process all prepared asynchronous operations and data received until the session stops.
+    // The call will return when the session is closed or an error occurs.
     s_ioc.run();
     for (const auto& iter : s_signalInfos) {
         iter.second.print();
