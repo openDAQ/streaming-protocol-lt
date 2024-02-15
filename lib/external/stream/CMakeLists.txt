@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.24)
 
 set_cmake_folder_context(TARGET_FOLDER_NAME)
 
-set(stream_REQUIREDVERSION "1.0.0")
+set(stream_REQUIREDVERSION "1.0.1")
 if (NOT STREAMING_PROTOCOL_ALWAYS_FETCH_DEPS)
     message(STATUS "Looking for preinstalled stream")
     find_package(stream ${stream_REQUIREDVERSION} GLOBAL QUIET)
