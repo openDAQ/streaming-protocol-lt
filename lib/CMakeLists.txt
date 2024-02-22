@@ -59,7 +59,11 @@ set(STREAMING_PROTOCOL_STREAMING_INTERFACE_HEADERS
     # producer
     AsynchronousSignal.hpp
     BaseSignal.hpp
+    BaseDomainSignal.hpp
+    BaseValueSignal.hpp
     BaseSynchronousSignal.hpp
+    ExplicitTimeSignal.hpp
+    LinearTimeSignal.hpp
     ControlServer.hpp
     ProducerSession.hpp
     Server.hpp
@@ -92,7 +96,11 @@ set(STREAMING_PROTOCOL_STREAMING_LIB_SOURCES
     # producer
     AsynchronousSignal.cpp
     BaseSignal.cpp
+    BaseDomainSignal.cpp
+    BaseValueSignal.cpp
     BaseSynchronousSignal.cpp
+    ExplicitTimeSignal.cpp
+    LinearTimeSignal.cpp
     ControlServer.cpp
     ProducerSession.cpp
     Server.cpp

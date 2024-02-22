@@ -34,19 +34,15 @@ namespace daq::streaming_protocol{
     class BaseSignal {
     public:
         /// \param writer The communication stream or session used to write the data to. Several signals can be added to it.
-        BaseSignal(const std::string& signalId, uint64_t timeTicksPerSecond, iWriter& writer, LogCallback logCb);
+        BaseSignal(const std::string& signalId, const std::string& tableId, iWriter& writer, LogCallback logCb);
         /// not to be copied!
         BaseSignal(const BaseSignal&) = delete;
         
         virtual ~BaseSignal() = default;
         
         std::string getId() const;
+        std::string getTableId() const;
         SignalNumber getNumber() const;
-
-        virtual SampleType getSampleType() const = 0;
-
-        /// Each signal has a time signal attached
-        virtual RuleType getTimeRule() const = 0;
 
         /// Acknowledge that signal got subscribed and send signal description according to current signal parameters.
         virtual void subscribe();
@@ -57,51 +53,20 @@ namespace daq::streaming_protocol{
         /// To be called upon change of signal description.
         virtual void writeSignalMetaInformation() const = 0;
 
-        void setEpoch(const std::string& epoch);
-        void setEpoch(const std::chrono::system_clock::time_point &epoch);
-        std::string getEpoch() const;
-        /// \param name Name of the root data member
-        void setMemberName(const std::string& name);
-        /// \return Name of the root data member
-        std::string getMemberName() const;
-
-        int32_t getUnitId() const;
-        std::string getUnitDisplayName() const;
-
-        void setTimeTicksPerSecond(uint64_t timeTicksPerSecond);
-        uint64_t getTimeTicksPerSecond() const;
-
-        //// \param unitId Unit::UNIT_ID_NONE for no unit
-        void setUnit(int32_t unitId, const std::string& displayName);
-        void setDataInterpretationObject(const nlohmann::json object);
-        nlohmann::json getDataInterpretationObject() const;
-        void setTimeInterpretationObject(const nlohmann::json object);
-        nlohmann::json getTimeInterpretationObject() const;
-
-
-        static uint64_t timeTicksFromNanoseconds(std::chrono::nanoseconds ns, uint64_t m_timeTicksPerSecond);
-        static std::chrono::nanoseconds nanosecondsFromTimeTicks(uint64_t timeTicks, uint64_t m_timeTicksPerSecond);
-        static uint64_t timeTicksFromTime(const std::chrono::time_point<std::chrono::system_clock> &time, uint64_t m_timeTicksPerSecond);
-        /// \warning Since only C++ libraries under linux allow resolution down to nanoseconds, resolution is limited to microseconds
-        static std::chrono::time_point<std::chrono::system_clock> timeFromTimeTicks(uint64_t timeTicks, uint64_t m_timeTicksPerSecond);
+        void setInterpretationObject(const nlohmann::json object);
+        nlohmann::json getInterpretationObject() const;
 
     protected:
 
         static SignalNumber nextSignalNumber();
 
-        SignalNumber m_dataSignalNumber;
-        SignalNumber m_timeSignalNumber;
+        SignalNumber m_signalNumber;
         /// on presentation layer, each signal is identified by its signal id
         std::string m_signalId;
-        std::string m_valueName;
+        std::string m_tableId;
 
-        int32_t m_unitId;
-        std::string m_unitDisplayName;
-        nlohmann::json m_dataInterpretationObject;
-        nlohmann::json m_timeInterpretationObject;
+        nlohmann::json m_interpretationObject;
 
-        uint64_t m_timeTicksPerSecond;
-        std::string m_epoch = UNIX_EPOCH;
         iWriter& m_writer;
         LogCallback logCallback;
 

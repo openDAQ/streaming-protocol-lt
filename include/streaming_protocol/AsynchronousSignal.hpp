@@ -27,7 +27,7 @@
 #include "streaming_protocol/Types.h"
 
 #include "streaming_protocol/iWriter.hpp"
-#include "streaming_protocol/BaseSignal.hpp"
+#include "streaming_protocol/BaseValueSignal.hpp"
 #include "streaming_protocol/Logging.hpp"
 #include "streaming_protocol/Unit.hpp"
 
@@ -43,7 +43,7 @@ struct AsyncValueTuple {
 /// \addtogroup producer
 /// Class for producing asynchronous signal data
 template < class DataType >
-class AsynchronousSignal : public BaseSignal {
+class AsynchronousSignal : public BaseValueSignal {
 public:
 
     using ValueTuples = std::vector < AsyncValueTuple < DataType >>;
@@ -62,49 +62,6 @@ public:
 
     virtual SampleType getSampleType() const override;
 
-    virtual RuleType getTimeRule() const override
-    {
-        return RULETYPE_EXPLICIT;
-    }
-
-    /// asynchronous values always come with a separate timestamp!
-    int addData(const ValueTuples& tuples)
-    {
-        return addDataTable(tuples.data(), tuples.size());
-    }
-
-    int addData(const DataType* data, uint64_t* timestamps, size_t sampleCount)
-    {
-        createTuples(data, timestamps, sampleCount, tupleBuffer);
-        return addDataTable(tupleBuffer.data(), sampleCount);
-    }
-
-private:
-    ValueTuples tupleBuffer;
-
-    int addDataTable(const AsyncValueTuple<DataType>* tuples, size_t sampleCount)
-    {
-        // in the tabled protocol, we need to send timestamp and value separately
-        int result;
-
-        for (size_t i = 0; i < sampleCount; i++) {
-            const AsyncValueTuple<DataType>& tuple = tuples[i];
-
-            result = m_writer.writeSignalData(m_timeSignalNumber, reinterpret_cast<const uint8_t*>(&tuple.timeStamp), sizeof(tuple.timeStamp));
-            if (result < 0) {
-                STREAMING_PROTOCOL_LOG_E("{}: Could not write signal timestamp!", m_timeSignalNumber);
-                return result;
-            }
-
-            result = m_writer.writeSignalData(m_dataSignalNumber, reinterpret_cast<const uint8_t*>(&tuple.value), sizeof(tuple.value));
-            if (result < 0) {
-                STREAMING_PROTOCOL_LOG_E("{}: Could not write signal data!", m_dataSignalNumber);
-                return result;
-            }
-        }
-        return 0;
-    }
-
     void createTuples(const DataType* data, uint64_t* timestamps, size_t sampleCount, ValueTuples& tuplesOut)
     {
         if (tuplesOut.size() < sampleCount)
@@ -117,6 +74,23 @@ private:
         }
     }
 
+    /// asynchronous values always come with a separate timestamp!
+    int addData(const ValueTuples& tuples)
+    {
+        // in the tabled protocol, we need to send timestamp and value separately
+        int result;
+        for (const auto tuple : tuples) 
+        {
+            result = m_writer.writeSignalData(m_signalNumber, reinterpret_cast<const uint8_t*>(&tuple.value), sizeof(tuple.value));
+            if (result < 0) {
+                STREAMING_PROTOCOL_LOG_E("{}: Could not write signal data!", m_signalNumber);
+                return result;
+            }
+        }
+        return 0;
+    }
+
+private:
     nlohmann::json createMember(const std::string& dataType) const
     {
         nlohmann::json memberInformation;
@@ -131,8 +105,6 @@ private:
         return memberInformation;
     }
 
-
-
     /// Signal meta information describes the signal
     void writeSignalMetaInformation() const override
     {
@@ -140,27 +112,10 @@ private:
         dataSignal[METHOD] = META_METHOD_SIGNAL;
         dataSignal[PARAMS][META_TABLEID] = m_signalId;
         dataSignal[PARAMS][META_DEFINITION] = getMemberInformation();
-        if (!m_dataInterpretationObject.is_null()) {
-            dataSignal[PARAMS][META_INTERPRETATION] = m_dataInterpretationObject;
+        if (!m_interpretationObject.is_null()) {
+            dataSignal[PARAMS][META_INTERPRETATION] = m_interpretationObject;
         }
-        m_writer.writeMetaInformation(m_dataSignalNumber, dataSignal);
-        nlohmann::json timeSignal;
-        timeSignal[METHOD] = META_METHOD_SIGNAL;
-        timeSignal[PARAMS][META_TABLEID] = m_signalId;
-        timeSignal[PARAMS][META_DEFINITION][META_NAME] = META_TIME;
-        timeSignal[PARAMS][META_DEFINITION][META_RULE] = META_RULETYPE_EXPLICIT;
-        timeSignal[PARAMS][META_DEFINITION][META_DATATYPE] = DATA_TYPE_UINT64;
-
-        timeSignal[PARAMS][META_DEFINITION][META_UNIT][META_UNIT_ID] = Unit::UNIT_ID_SECONDS;
-        timeSignal[PARAMS][META_DEFINITION][META_UNIT][META_DISPLAY_NAME] = "s";
-        timeSignal[PARAMS][META_DEFINITION][META_UNIT][META_QUANTITY] = META_TIME;
-        timeSignal[PARAMS][META_DEFINITION][META_ABSOLUTE_REFERENCE] = m_epoch;
-        timeSignal[PARAMS][META_DEFINITION][META_RESOLUTION][META_NUMERATOR] = 1;
-        timeSignal[PARAMS][META_DEFINITION][META_RESOLUTION][META_DENOMINATOR] = m_timeTicksPerSecond;
-        if (!m_timeInterpretationObject.is_null()) {
-            timeSignal[PARAMS][META_INTERPRETATION] = m_timeInterpretationObject;
-        }
-        m_writer.writeMetaInformation(m_timeSignalNumber, timeSignal);
+        m_writer.writeMetaInformation(m_signalNumber, dataSignal);
     }
 
     nlohmann::json getMemberInformation() const;

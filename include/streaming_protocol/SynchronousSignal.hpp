@@ -39,9 +39,8 @@ public:
 	/// \param name Signal name. Should be unique on this server.
 	/// \param outputRate Values are created with this rate.
 	/// \param timeFamily Describes the time ticks per second
-        SynchronousSignal(const std::string& signalId,
-        uint64_t outputRate, uint64_t timeTicksPerSecond, iWriter& writer, LogCallback logCb)
-                : BaseSynchronousSignal(signalId, outputRate, timeTicksPerSecond, writer, logCb)
+        SynchronousSignal(const std::string& signalId, const std::string& tableId, iWriter& writer, LogCallback logCb, std::uint64_t valueIndex = 0)
+                : BaseSynchronousSignal(signalId, tableId, writer, logCb, valueIndex)
 	{
 	}
 
@@ -61,7 +60,7 @@ public:
 	virtual int addData(const void* data, size_t sampleCount) override
 	{
 	    m_valueIndex += sampleCount;
-	    return m_writer.writeSignalData(m_dataSignalNumber, (uint8_t*)data, sampleCount * sizeof(DataType));
+	    return m_writer.writeSignalData(m_signalNumber, (uint8_t*)data, sampleCount * sizeof(DataType));
 	}
 
 private:
