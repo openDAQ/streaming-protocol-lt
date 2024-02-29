@@ -28,6 +28,11 @@ namespace daq::streaming_protocol{
 
         virtual int addData(const void* data, size_t sampleCount) = 0;
 
+        uint64_t getValueIndex()
+        {
+            return m_valueIndex;
+        }
+
         /// Signal meta information describes the signal. It is written once after signal got subscribed.
         void writeSignalMetaInformation() const override;
 

@@ -47,23 +47,26 @@ namespace daq::streaming_protocol::siggen{
     public:
         using Values = std::vector < DataType >;
 
-        /// \param name Signal name. Should be unique on this server.
+        /// \param signalId Signal name. Should be unique on this server.
+        /// \param tableId Signal name. Should be unique on this server.
         /// \param functionParameters Parameters describing the function
         /// \param samplePeriod Samples are taken with this rate. Not to be confused with the signal frequency!
-        /// \param startTime The abolute start time can be used to enable a signal later than others. Usefull for implementing a phase shift between signals
         GeneratedSynchronousSignal(const std::string& signalId,
+                          const std::string& tableId,
                           FunctionParameters <DataType> functionParameters,
-                          std::chrono::nanoseconds samplePeriod, std::chrono::nanoseconds delay,
-                          uint64_t timeTicksPerSecond,
-                          const std::chrono::time_point<std::chrono::system_clock> &currentTime, streaming_protocol::iWriter &writer)
+                          std::chrono::nanoseconds samplePeriod,
+                          const std::chrono::time_point<std::chrono::system_clock> &currentTime,
+                          const std::uint64_t valueIndex,
+                          streaming_protocol::iWriter &writer)
+
             : logCallback(daq::streaming_protocol::Logging::logCallback())
-            , m_signal(std::make_shared<streaming_protocol::SynchronousSignal<DataType>> (signalId, BaseSignal::timeTicksFromNanoseconds(samplePeriod, timeTicksPerSecond), timeTicksPerSecond, writer, logCallback))
+            , m_signal(std::make_shared<streaming_protocol::SynchronousSignal<DataType>> (signalId, tableId, writer ,logCallback, valueIndex))
             , m_function(functionParameters)
             , m_period(1/functionParameters.frequency)
             , m_samplePeriod(samplePeriod)
             , m_samplePeriodDouble(std::chrono::duration < double > (m_samplePeriod).count())
-            , m_lastProcessTime(addNanosecondsToTimePoint(currentTime, delay))
             , m_currentTime(currentTime)
+            , m_lastProcessTime(currentTime)
             , m_periodTimeDouble(0)
         {
         }
@@ -71,12 +74,7 @@ namespace daq::streaming_protocol::siggen{
         GeneratedSynchronousSignal(const GeneratedSynchronousSignal&) = delete;
         ~GeneratedSynchronousSignal() = default;
         
-        virtual void initAfterSubscribeAck()
-        {
-            // write the timestamp of the first value to follow
-            uint64_t timeTicks = BaseSignal::timeTicksFromTime(m_lastProcessTime, m_signal->getTimeTicksPerSecond());
-            m_signal->setTimeStart(timeTicks);
-        }
+        virtual void initAfterSubscribeAck() override {  }
 
         virtual std::shared_ptr <BaseSignal> getSignal() const
         {
@@ -128,7 +126,7 @@ namespace daq::streaming_protocol::siggen{
         
         std::chrono::nanoseconds m_samplePeriod;
         double m_samplePeriodDouble;
-        std::chrono::time_point<std::chrono::system_clock> m_lastProcessTime; /// can be in the future to allow starting later
+        std::chrono::time_point<std::chrono::system_clock> m_lastProcessTime;
         const std::chrono::time_point<std::chrono::system_clock> &m_currentTime;
         double m_periodTimeDouble;
     };

@@ -9,8 +9,8 @@
 
 namespace daq::streaming_protocol {
 
-BaseDomainSignal::BaseDomainSignal(const std::string& signalId, const std::string tableId, uint64_t timeTicksPerSecond, iWriter &writer, LogCallback logCb)
-    : BaseSignal(signalId + "_time", tableId, writer, logCb)
+BaseDomainSignal::BaseDomainSignal(const std::string& signalId, const std::string& tableId, uint64_t timeTicksPerSecond, iWriter &writer, LogCallback logCb)
+    : BaseSignal(signalId, tableId, writer, logCb)
     , m_timeTicksPerSecond(timeTicksPerSecond)
 {
 }

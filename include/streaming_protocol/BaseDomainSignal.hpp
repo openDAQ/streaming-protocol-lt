@@ -24,7 +24,7 @@ namespace daq::streaming_protocol{
     /// Abstrace base class for producing signal data
     class BaseDomainSignal : public BaseSignal {
     public:
-        BaseDomainSignal(const std::string& signalId, const std::string tableId, uint64_t timeTicksPerSecond, iWriter &writer, LogCallback logCb);
+        BaseDomainSignal(const std::string& signalId, const std::string& tableId, uint64_t timeTicksPerSecond, iWriter &writer, LogCallback logCb);
 
         void setEpoch(const std::string& epoch);
         void setEpoch(const std::chrono::system_clock::time_point &epoch);

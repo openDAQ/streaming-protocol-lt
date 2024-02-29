@@ -11,7 +11,7 @@
 
 namespace daq::streaming_protocol {
 
-ExplicitTimeSignal::ExplicitTimeSignal(const std::string& signalId, const std::string tableId, uint64_t timeTicksPerSecond, iWriter &writer, LogCallback logCb)
+ExplicitTimeSignal::ExplicitTimeSignal(const std::string& signalId, const std::string& tableId, uint64_t timeTicksPerSecond, iWriter &writer, LogCallback logCb)
     : BaseDomainSignal(signalId, tableId, timeTicksPerSecond, writer, logCb)
 {
 }

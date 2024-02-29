@@ -24,7 +24,7 @@ namespace daq::streaming_protocol{
     /// Abstrace base class for producing signal data
     class ExplicitTimeSignal : public BaseDomainSignal {
     public:
-        ExplicitTimeSignal(const std::string& signalId, const std::string tableId, uint64_t timeTicksPerSecond, iWriter &writer, LogCallback logCb);
+        ExplicitTimeSignal(const std::string& signalId, const std::string& tableId, uint64_t timeTicksPerSecond, iWriter &writer, LogCallback logCb);
 
         /// A domain Signal has a Time Rule attached
         virtual RuleType getTimeRule() const override;

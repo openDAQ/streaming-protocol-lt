@@ -22,7 +22,7 @@
 #include "stream/Stream.hpp"
 
 #include "streaming_protocol/StreamWriter.h"
-#include "generatedasynchronoussignal.h"
+#include "generatedtimesignal.h"
 #include "generatedsynchronoussignal.h"
 #include "signaldefinition.h"
 
@@ -54,9 +54,9 @@ namespace daq::streaming_protocol::siggen {
         /// \param startTime The abolute start time can be used to enable a signal later than others. Usefull for implementing a phase shift between signals
         /// \return > -1 on error, 0 on success
         template < typename T >
-        int addSynchronousSignal(const std::string &signalId,
+        int addSynchronousSignal(const std::string &signalId, const std::string &tableId,
                                     FunctionParameters<T> signalParameters,
-                                    std::chrono::nanoseconds samplePeriod, std::chrono::nanoseconds delay, uint64_t timeTicksPerSecond)
+                                    std::chrono::nanoseconds samplePeriod, uint64_t valueIndex)
         {
 
             if (m_generatedSignals.find(signalId)!=m_generatedSignals.end()) {
@@ -64,13 +64,12 @@ namespace daq::streaming_protocol::siggen {
                 return -1;
             }
 
-
-            std::unique_ptr < iGeneratedSignal > pGeneratedSignal(std::make_unique<GeneratedSynchronousSignal<T>> (signalId, signalParameters, samplePeriod, delay, timeTicksPerSecond, m_time, m_writer));
+            std::unique_ptr < iGeneratedSignal > pGeneratedSignal(std::make_unique<GeneratedSynchronousSignal<T>> (signalId, tableId, signalParameters, samplePeriod, m_time, 0, m_writer));
             // make sure signal exists before telling it is available
             m_generatedSignals.insert(std::make_pair(signalId, std::move(pGeneratedSignal)));
             return 0;
         }
-
+        /**
         template < typename T >
         int addAsynchronousSignal(const std::string &signalId,
                                     FunctionParameters<T> signalParameters,
@@ -86,6 +85,20 @@ namespace daq::streaming_protocol::siggen {
             m_generatedSignals.insert(std::make_pair(signalId, std::move(pGeneratedSignal)));
             return 0;
         }
+        */
+
+       int addLinearTimeSignal(const std::string &signalId, const std::string &tableId, std::chrono::nanoseconds samplePeriod)
+       {
+            if (m_generatedSignals.find(signalId)!=m_generatedSignals.end()) {
+                STREAMING_PROTOCOL_LOG_E("signal id is already ins use!");
+                return -1;
+            }
+
+            std::unique_ptr < iGeneratedSignal > pGeneratedSignal(std::make_unique<GeneratedTimeSignal> (signalId, tableId, samplePeriod, 1000000000, m_time, m_writer));
+            // make sure signal exists before telling it is available
+            m_generatedSignals.insert(std::make_pair(signalId, std::move(pGeneratedSignal)));
+            return 0;
+       }
 
         /// replaces complete existing configuration
         int configureFromFile(const std::string& configFileName);
@@ -184,9 +197,10 @@ namespace daq::streaming_protocol::siggen {
 
             if (explicitTime) {
                 // asynchronous signal
-                addAsynchronousSignal<T>(id, signalParameters, samplePeriod, delay, timeTicksPerSecond);
+                // addAsynchronousSignal<T>(id, signalParameters, samplePeriod, delay, timeTicksPerSecond);
             } else {
-                addSynchronousSignal<T>(id, signalParameters, samplePeriod, delay, timeTicksPerSecond);
+                std::string tableId = configSignal.value<std::string>("tableId", std::string());
+                addSynchronousSignal<T>(id, tableId, signalParameters, samplePeriod, 0);
             }
             return 0;
         }

@@ -76,7 +76,7 @@
         "typeindex": "cpp",
         "typeinfo": "cpp",
         "valarray": "cpp",
-        "variant": "cpp"
-    },
-    "cmake.sourceDirectory": "/home/roettger/projects/openDAQ/streaming-protocol-LT"
+        "variant": "cpp",
+        "*.ipp": "cpp"
+    }
 }
