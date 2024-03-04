@@ -10,9 +10,10 @@
 
 namespace daq::streaming_protocol {
 
-LinearTimeSignal::LinearTimeSignal(const std::string& signalId, const std::string& tableId, uint64_t timeTicksPerSecond, std::chrono::nanoseconds samplePeriod, iWriter &writer, LogCallback logCb)
+LinearTimeSignal::LinearTimeSignal(const std::string& signalId, const std::string& tableId, uint64_t timeTicksPerSecond, const std::chrono::nanoseconds &outputRate, iWriter &writer, LogCallback logCb)
     : BaseDomainSignal(signalId, tableId, timeTicksPerSecond, writer, logCb)
-    , m_outputRateInTicks(timeTicksPerSecond/1000000000 * samplePeriod.count())
+    , m_timeTicksPerSecond(timeTicksPerSecond)
+    , m_outputRateInTicks(timeTicksPerSecond/1000000000 * outputRate.count())
 {
 }
 
@@ -30,6 +31,11 @@ uint64_t LinearTimeSignal::getTimeDelta() const
 void daq::streaming_protocol::LinearTimeSignal::setOutputRate(uint64_t timeTicks)
 {
     m_outputRateInTicks = timeTicks;
+}
+
+void LinearTimeSignal::setOutputRate(const std::chrono::nanoseconds &nanoseconds)
+{
+    m_outputRateInTicks = m_timeTicksPerSecond/1000000000 * nanoseconds.count();
 }
 
 void daq::streaming_protocol::LinearTimeSignal::writeSignalMetaInformation() const
