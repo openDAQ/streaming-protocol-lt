@@ -33,6 +33,11 @@ namespace daq::streaming_protocol{
         /// A domain Signal has a Time Rule attached
         virtual RuleType getTimeRule() const = 0;
 
+        virtual bool isDataSignal() const final
+        {
+            return false;
+        }
+
         void setTimeTicksPerSecond(uint64_t timeTicksPerSecond);
         uint64_t getTimeTicksPerSecond() const;
 

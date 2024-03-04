@@ -43,6 +43,7 @@ namespace daq::streaming_protocol{
         std::string getId() const;
         std::string getTableId() const;
         SignalNumber getNumber() const;
+        virtual bool isDataSignal() const = 0;
 
         /// Acknowledge that signal got subscribed and send signal description according to current signal parameters.
         virtual void subscribe();
