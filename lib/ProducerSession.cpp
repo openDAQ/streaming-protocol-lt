@@ -29,9 +29,11 @@ namespace daq::streaming_protocol {
     {
         const std::string& signalId = signal->getId();
         m_availableSignals[signalId] = signal;
-        SignalIds signalIds;
-        signalIds.push_back(signalId);
-        writeAvailableMetaInformation(signalIds);
+        if (signal->isDataSignal()) {
+            SignalIds signalIds;
+            signalIds.push_back(signalId);
+            writeAvailableMetaInformation(signalIds);
+        }
     }
 
     size_t ProducerSession::subscribeSignals(const SignalIds &signalIds)
@@ -136,9 +138,14 @@ namespace daq::streaming_protocol {
         m_availableSignals.insert(signals.begin(), signals.end());
         SignalIds signalIds;
         for (auto signalsIter = signals.begin(); signalsIter!=signals.end(); ++signalsIter) {
-            signalIds.push_back(signalsIter->first);
+            if(signalsIter->second->isDataSignal()) {
+                signalIds.push_back(signalsIter->first);
+            }
         }
-        writeAvailableMetaInformation(signalIds);
+
+        if (!signalIds.empty()) {
+            writeAvailableMetaInformation(signalIds);
+        }
     }
 
     size_t ProducerSession::removeSignal(const std::string &signalId)
@@ -151,11 +158,21 @@ namespace daq::streaming_protocol {
     size_t ProducerSession::removeSignals(const SignalIds &signalIds)
     {
         size_t count = 0;
-        for (const auto& iter: signalIds)
+        SignalIds dataSignalIds;
+        for (const auto& signalIdsIter: signalIds)
         {
-            count += m_availableSignals.erase(iter);
+            auto signalIter = m_availableSignals.find(signalIdsIter);
+            if (signalIter!=m_availableSignals.end()) {
+                if (signalIter->second->isDataSignal()) {
+                    dataSignalIds.push_back(signalIdsIter);
+                }
+                count += m_availableSignals.erase(signalIdsIter);
+            }
         }
-        writeUnavailableMetaInformation(signalIds);
+
+        if (!dataSignalIds.empty()) {
+            writeUnavailableMetaInformation(dataSignalIds);
+        }
         return count;
     }
 }

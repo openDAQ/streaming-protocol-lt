@@ -62,7 +62,7 @@ namespace daq::streaming_protocol {
         void stop();
 
         /// Add a reference to signal to the session
-        /// "Available" meta information is send for this signal id.
+        /// If it is a data signal, "Available" meta information is send for this signal id.
         /// subscribeSignals() has to be called afterwards to tell that the signal 
         /// is about to deliver data
         void addSignal(std::shared_ptr <BaseSignal> signal);
@@ -73,12 +73,12 @@ namespace daq::streaming_protocol {
         void addSignals(const Signals& signals);
 
         /// Removes the reference to signal from the session. Does not destroy the signal itself!
-        /// "Unavailable" meta information is send for this signal
+        /// If it is a data signal, "Unavailable" meta information is send for this signal
         /// \return 1 if signal got removed succesfully
         size_t removeSignal(const std::string& signalId);
 
         /// Removes the reference to several signals from the session. Does not destroy the signals itself!
-        /// "Unavailable" meta information is send for all signal ids
+        /// "Unavailable" meta information is send for all signal ids of data signals
         /// \return number of signal succesfully removed
         size_t removeSignals(const SignalIds& signalIds);
 
