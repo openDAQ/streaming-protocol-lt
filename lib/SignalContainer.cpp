@@ -170,12 +170,12 @@ ssize_t SignalContainer::processMeasuredData(SignalNumber signalNumber, const un
             }
         }
     } else {
-        std::string tableId =signal->tableId();
+        std::string tableId = signal->tableId();
         auto tableIter = m_tables.find(tableId);
         if (tableIter != m_tables.end()) {
             unsigned int timeSignalNumber = tableIter->second.timeSignalNumber;
             if (timeSignalNumber == 0) {
-                STREAMING_PROTOCOL_LOG_E("No time signal available!");
+                STREAMING_PROTOCOL_LOG_E("No time signal available for signal {}!", signalNumber);
                 return -1;
             } else {
                 auto timeSignal = m_subscribedSignals[timeSignalNumber];
