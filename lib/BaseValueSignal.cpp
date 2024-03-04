@@ -3,6 +3,7 @@
 
 daq::streaming_protocol::BaseValueSignal::BaseValueSignal(const std::string &signalId, const std::string &tableId, iWriter &writer, LogCallback logCb)
     : BaseSignal(signalId, tableId, writer, logCb)
+    , m_unitId(Unit::UNIT_ID_NONE)
 {
 }
 

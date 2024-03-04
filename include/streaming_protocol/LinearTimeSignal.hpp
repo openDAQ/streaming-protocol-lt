@@ -24,7 +24,7 @@ namespace daq::streaming_protocol{
     /// Abstrace base class for producing signal data
     class LinearTimeSignal : public BaseDomainSignal {
     public:
-        LinearTimeSignal(const std::string& signalId, const std::string& tableId, uint64_t timeTicksPerSecond, std::chrono::nanoseconds samplePeriod, iWriter &writer, LogCallback logCb);
+        LinearTimeSignal(const std::string& signalId, const std::string& tableId, uint64_t timeTicksPerSecond, const std::chrono::nanoseconds& outputRate, iWriter &writer, LogCallback logCb);
 
         /// A domain Signal has a Time Rule attached
         virtual RuleType getTimeRule() const override;
@@ -34,6 +34,8 @@ namespace daq::streaming_protocol{
         /// Tell the time between two values
         /// To be called before sending the first value and on change of the output rate.
         void setOutputRate(uint64_t timeTicks);
+
+        void setOutputRate(const std::chrono::nanoseconds& nanoseconds);
 
         /// Signal meta information describes the signal. It is written once after signal got subscribed.
         void writeSignalMetaInformation() const override;
@@ -47,6 +49,7 @@ namespace daq::streaming_protocol{
             nlohmann::json value; 
             return value;
         }
+        uint64_t m_timeTicksPerSecond;
         uint64_t m_outputRateInTicks;
     };
 }
