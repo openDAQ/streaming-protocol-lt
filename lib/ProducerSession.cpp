@@ -161,12 +161,12 @@ namespace daq::streaming_protocol {
         SignalIds dataSignalIds;
         for (const auto& signalIdsIter: signalIds)
         {
-            auto signalIter = m_availableSignals.find(signalIdsIter);
-            if (signalIter!=m_availableSignals.end()) {
+            auto signalIter = m_allSignals.find(signalIdsIter);
+            if (signalIter != m_allSignals.end()) {
                 if (signalIter->second->isDataSignal()) {
                     dataSignalIds.push_back(signalIdsIter);
                 }
-                count += m_availableSignals.erase(signalIdsIter);
+                count += m_allSignals.erase(signalIdsIter);
             }
         }
 
