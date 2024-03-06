@@ -110,7 +110,7 @@ namespace daq::streaming_protocol {
 
         std::shared_ptr<daq::stream::Stream> m_stream;
         StreamWriter m_writer;
-        Signals m_availableSignals;
+        Signals m_allSignals;
         ErrorCb m_errorCb;
         LogCallback logCallback;
     };

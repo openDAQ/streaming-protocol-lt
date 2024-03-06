@@ -240,13 +240,13 @@ TEST(ProducerSessionTest, complete_session)
         auto syncSignal = std::make_shared<SynchronousSignal<double>>(signalId, tableId, writer, logCallback);
         syncSignal->setUnit(originalUnitId, originalUnitDisplayName);
 
-        producerSession->addSignal(timeSignal);
         // since this is a data signal, this causes "availble" meta information
         producerSession->addSignal(syncSignal);
+        producerSession->addSignal(timeSignal);
 
         SignalIds signalIds;
-        signalIds.push_back(timeSignalId);
         signalIds.push_back(signalId);
+        signalIds.push_back(timeSignalId);
         // this causes "subscribe" and "signal" meta information for the data and time signal
         producerSession->subscribeSignals(signalIds);
         // adds real data
