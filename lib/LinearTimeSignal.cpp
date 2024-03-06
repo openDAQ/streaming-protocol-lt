@@ -35,7 +35,7 @@ void daq::streaming_protocol::LinearTimeSignal::setOutputRate(uint64_t timeTicks
 
 void LinearTimeSignal::setOutputRate(const std::chrono::nanoseconds &nanoseconds)
 {
-    m_outputRateInTicks = m_timeTicksPerSecond/1000000000 * nanoseconds.count();
+    setOutputRate(m_timeTicksPerSecond/1000000000 * nanoseconds.count());
 }
 
 void daq::streaming_protocol::LinearTimeSignal::writeSignalMetaInformation() const
