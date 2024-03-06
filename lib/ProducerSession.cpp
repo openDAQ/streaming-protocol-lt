@@ -28,10 +28,12 @@ namespace daq::streaming_protocol {
     void ProducerSession::addSignal(std::shared_ptr<BaseSignal> signal)
     {
         const std::string& signalId = signal->getId();
-        m_availableSignals[signalId] = signal;
-        SignalIds signalIds;
-        signalIds.push_back(signalId);
-        writeAvailableMetaInformation(signalIds);
+        m_allSignals[signalId] = signal;
+        if (signal->isDataSignal()) {
+            SignalIds signalIds;
+            signalIds.push_back(signalId);
+            writeAvailableMetaInformation(signalIds);
+        }
     }
 
     size_t ProducerSession::subscribeSignals(const SignalIds &signalIds)
@@ -39,8 +41,8 @@ namespace daq::streaming_protocol {
         size_t count = 0;
         for (auto &signalIditer : signalIds) {
             const std::string& signalId = signalIditer;
-            auto signalIter = m_availableSignals.find(signalId);
-            if (signalIter != m_availableSignals.end()) {
+            auto signalIter = m_allSignals.find(signalId);
+            if (signalIter != m_allSignals.end()) {
                 signalIter->second->subscribe();
                 ++count;
             }
@@ -53,8 +55,8 @@ namespace daq::streaming_protocol {
         size_t count = 0;
         for (auto &signalIditer : signalIds) {
             const std::string& signalId = signalIditer;
-            auto signalIter = m_availableSignals.find(signalId);
-            if (signalIter != m_availableSignals.end()) {
+            auto signalIter = m_allSignals.find(signalId);
+            if (signalIter != m_allSignals.end()) {
                 signalIter->second->unsubscribe();
                 ++count;
             }
@@ -133,12 +135,17 @@ namespace daq::streaming_protocol {
 
     void ProducerSession::addSignals(const Signals& signals)
     {
-        m_availableSignals.insert(signals.begin(), signals.end());
+        m_allSignals.insert(signals.begin(), signals.end());
         SignalIds signalIds;
         for (auto signalsIter = signals.begin(); signalsIter!=signals.end(); ++signalsIter) {
-            signalIds.push_back(signalsIter->first);
+            if(signalsIter->second->isDataSignal()) {
+                signalIds.push_back(signalsIter->first);
+            }
         }
-        writeAvailableMetaInformation(signalIds);
+
+        if (!signalIds.empty()) {
+            writeAvailableMetaInformation(signalIds);
+        }
     }
 
     size_t ProducerSession::removeSignal(const std::string &signalId)
@@ -151,11 +158,21 @@ namespace daq::streaming_protocol {
     size_t ProducerSession::removeSignals(const SignalIds &signalIds)
     {
         size_t count = 0;
-        for (const auto& iter: signalIds)
+        SignalIds dataSignalIds;
+        for (const auto& signalIdsIter: signalIds)
         {
-            count += m_availableSignals.erase(iter);
+            auto signalIter = m_allSignals.find(signalIdsIter);
+            if (signalIter != m_allSignals.end()) {
+                if (signalIter->second->isDataSignal()) {
+                    dataSignalIds.push_back(signalIdsIter);
+                }
+                count += m_allSignals.erase(signalIdsIter);
+            }
         }
-        writeUnavailableMetaInformation(signalIds);
+
+        if (!dataSignalIds.empty()) {
+            writeUnavailableMetaInformation(dataSignalIds);
+        }
         return count;
     }
 }

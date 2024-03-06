@@ -80,8 +80,8 @@ target_link_libraries(
          ${GCOV_LIB}
          nlohmann_json::nlohmann_json
          daq::stream
-         spdlog
-         fmt
+         spdlog::spdlog
+         fmt::fmt
 )
 
 target_include_directories(${STREAMING_PROTOCOL_TEST_LIB} PUBLIC ../include)

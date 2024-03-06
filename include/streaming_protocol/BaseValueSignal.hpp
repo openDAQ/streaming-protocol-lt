@@ -40,7 +40,12 @@ namespace daq::streaming_protocol{
         BaseValueSignal(const BaseValueSignal&) = delete;
         
         virtual ~BaseValueSignal() = default;
-        
+
+        virtual bool isDataSignal() const final
+        {
+            return true;
+        }
+
         virtual SampleType getSampleType() const = 0;
 
         /// \param name Name of the root data member

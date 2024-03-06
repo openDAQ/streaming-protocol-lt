@@ -116,8 +116,8 @@ set_property(TARGET ${PROJECT_NAME} PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC nlohmann_json::nlohmann_json
                                              daq::stream
-                                             spdlog
-                                             fmt
+                                             spdlog::spdlog
+                                             fmt::fmt
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC
@@ -166,7 +166,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 )
 
 target_link_libraries( ${PROJECT_NAME} INTERFACE
-    spdlog
+    spdlog::spdlog
 )
 
 # install the public headers

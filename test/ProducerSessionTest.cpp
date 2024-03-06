@@ -29,7 +29,9 @@
 #include "stream/FileStream.hpp"
 #endif
 
+#include "streaming_protocol/BaseDomainSignal.hpp"
 #include "streaming_protocol/Defines.h"
+#include "streaming_protocol/LinearTimeSignal.hpp"
 #include "streaming_protocol/ProducerSession.hpp"
 #include "streaming_protocol/ProtocolHandler.hpp"
 #include "streaming_protocol/StreamWriter.h"
@@ -120,7 +122,7 @@ public:
 
 TEST(ProducerSessionTest, start_without_stop)
 {
-    std::string fileName = "theFile";
+    static const std::string fileName = "theFile";
 
     boost::asio::io_context ioc;
     // file is created for writing, read will fail which causes error callback to be called.
@@ -144,7 +146,7 @@ TEST(ProducerSessionTest, start_without_stop)
 /// This equals disconnect of a network stream and should cause the session to stop.
 TEST(ProducerSessionTest, start_read_eof)
 {
-    std::string fileName = "theFile";
+    static const std::string fileName = "theFile";
 
     {
         std::ofstream file;
@@ -170,7 +172,7 @@ TEST(ProducerSessionTest, start_read_eof)
 
 TEST(ProducerSessionTest, start_stop)
 {
-    std::string fileName = "theFile";
+    static const std::string fileName = "theFile";
 
     boost::asio::io_context ioc;
     // file is created for writing, read will fail which causes error callback to be called.
@@ -202,13 +204,15 @@ TEST(ProducerSessionTest, complete_session)
         std::vector<uint8_t> data;
     };
 
-    std::string fileName = "theFile";
-    std::string signalId = "the 1st Id";
+    static const std::string fileName = "theFile";
+    static const std::string signalId = "the 1st Id";
+    static const std::string timeSignalId = "the time signal Id";
+    static const std::string tableId = "the table Id";
     uint64_t timeTicksPerSecond = 1000000000;
     std::chrono::nanoseconds originalOutputRate = std::chrono::milliseconds(1); // 1kHz
-    uint64_t originalOutputRateInTicks = BaseSignal::timeTicksFromNanoseconds(originalOutputRate, timeTicksPerSecond);
+    uint64_t originalOutputRateInTicks = BaseDomainSignal::timeTicksFromNanoseconds(originalOutputRate, timeTicksPerSecond);
     std::chrono::nanoseconds newOutputRate = std::chrono::seconds(1); // 1Hz
-    uint64_t newOutputRateInTicks = BaseSignal::timeTicksFromNanoseconds(newOutputRate, timeTicksPerSecond);
+    uint64_t newOutputRateInTicks = BaseDomainSignal::timeTicksFromNanoseconds(newOutputRate, timeTicksPerSecond);
     std::vector <double> testData1Small = { 1.0, 67.4365};
     // big data package adds addtional length information to protocol
     std::vector <double> testData2Big;
@@ -232,24 +236,30 @@ TEST(ProducerSessionTest, complete_session)
         StreamWriter writer(fileStream);
 
         // prepare the signal with initial configuration
-        auto syncSignal = std::make_shared<SynchronousSignal<double>>(signalId, originalOutputRateInTicks, timeTicksPerSecond, writer, logCallback);
+        auto timeSignal = std::make_shared<LinearTimeSignal>(timeSignalId, tableId, timeTicksPerSecond, originalOutputRate, writer, logCallback);
+        auto syncSignal = std::make_shared<SynchronousSignal<double>>(signalId, tableId, writer, logCallback);
         syncSignal->setUnit(originalUnitId, originalUnitDisplayName);
 
-        // this causes "availble" meta information
+        // since this is a data signal, this causes "availble" meta information
         producerSession->addSignal(syncSignal);
+        producerSession->addSignal(timeSignal);
 
         SignalIds signalIds;
         signalIds.push_back(signalId);
+        signalIds.push_back(timeSignalId);
         // this causes "subscribe" and "signal" meta information for the data and time signal
         producerSession->subscribeSignals(signalIds);
         // adds real data
         syncSignal->addData(testData1Small.data(), testData1Small.size());
         syncSignal->addData(testData2Big.data(), testData2Big.size());
 
-        // change unit and outpur rate of data signal
+        // change unit of data signal
         syncSignal->setUnit(newUnitId, newUnitDisplayName);
-        syncSignal->setOutputRate(newOutputRateInTicks);
         syncSignal->writeSignalMetaInformation();
+
+        // change output rate of time signal
+        timeSignal->setOutputRate(newOutputRate);
+        timeSignal->writeSignalMetaInformation();
 
         // tear down of signal
         producerSession->unsubscribeSignals(signalIds);
@@ -308,13 +318,13 @@ TEST(ProducerSessionTest, complete_session)
         // - "init"
         // - "available"
         // - "subscribe" (data)
-        // - "subscribe" (time)
         // - "signal" (data) initial signal description
+        // - "subscribe" (time)
         // - "signal" (time) initial signal description
         // - measured data (small)
         // - measured data (big)
         // - "signal" (data) because of updated unit
-        // - "signal" (time) because of updated unit
+        // - "signal" (time) because of updated output rate
         // - "unsubscribe" (data)
         // - "unsubscribe" (time)
         // - "unavailable"
@@ -323,22 +333,24 @@ TEST(ProducerSessionTest, complete_session)
         ASSERT_EQ(receivedMetaInformation[2].method, META_METHOD_AVAILABLE); // data + time
 
         PackageInformation& package = receivedMetaInformation[3];
-        ASSERT_EQ(package.method, META_METHOD_SUBSCRIBE); // data
+        ASSERT_EQ(package.method, META_METHOD_SUBSCRIBE); // data signal
         std::string signalIdData = package.params[META_SIGNALID];
         ASSERT_FALSE(signalIdData.empty());
-        package = receivedMetaInformation[4];
-        ASSERT_EQ(package.method, META_METHOD_SUBSCRIBE); // time
-        std::string signalIdTime = package.params[META_SIGNALID];
-        ASSERT_FALSE(signalIdData.empty());
-        ASSERT_NE(signalIdData, signalIdTime);
 
-        package = receivedMetaInformation[5];
-        ASSERT_EQ(package.method, META_METHOD_SIGNAL); // data
+        package = receivedMetaInformation[4];
+        ASSERT_EQ(package.method, META_METHOD_SIGNAL);
         std::string tableId1 = package.params[META_TABLEID];
         uint32_t unitId = package.params[META_DEFINITION][META_UNIT][META_UNIT_ID];
         std::string unitDisplayName = package.params[META_DEFINITION][META_UNIT][META_DISPLAY_NAME];
         ASSERT_EQ(unitId, originalUnitId);
         ASSERT_EQ(unitDisplayName, originalUnitDisplayName);
+
+        package = receivedMetaInformation[5];
+        ASSERT_EQ(package.method, META_METHOD_SUBSCRIBE); // time signal
+        std::string signalIdTime = package.params[META_SIGNALID];
+        ASSERT_FALSE(signalIdData.empty());
+        ASSERT_NE(signalIdData, signalIdTime);
+
         package = receivedMetaInformation[6];
         ASSERT_EQ(package.method, META_METHOD_SIGNAL); // time
         std::string tableId2 = package.params[META_TABLEID];
@@ -377,15 +389,13 @@ TEST(ProducerSessionTest, complete_session)
 
 TEST(ProducerSessionTest, session_signals)
 {
-    std::string fileName = "theFile";
-    std::string signalId1 = "the 1st Id";
-    std::chrono::nanoseconds outputRate1 = std::chrono::milliseconds(1); // 1kHz
-
-    std::string signalId2 = "the 2nd Id";
-    std::chrono::nanoseconds outputRate2 = std::chrono::milliseconds(1); // 1kHz
-
-    std::string signalId3 = "the 3rd Id";
-    std::chrono::nanoseconds outputRate3 = std::chrono::milliseconds(1); // 1kHz
+    static const std::string fileName = "theFile";
+    static const std::string tableId = "the table Id";
+    static const std::string timeSignalId = "the time";
+    static const std::string signalId1 = "the 1st Id";
+    static const std::string signalId2 = "the 2nd Id";
+    static const std::string signalId3 = "the 3rd Id";
+    std::chrono::nanoseconds outputRate = std::chrono::milliseconds(1); // 1kHz
 
     uint64_t timeTicksPerSecond = 1000000000;
 
@@ -393,9 +403,11 @@ TEST(ProducerSessionTest, session_signals)
     auto fileStream = std::make_shared<stream::FileStream>(ioc, fileName, true);
     auto producerSession = std::make_shared<ProducerSession>(fileStream, nlohmann::json(), logCallback);
     StreamWriter writer(fileStream);
-    auto syncSignal1 = std::make_shared<SynchronousSignal<double>>(signalId1, BaseSignal::timeTicksFromNanoseconds(outputRate1, timeTicksPerSecond), timeTicksPerSecond, writer, logCallback);
-    auto syncSignal2 = std::make_shared<SynchronousSignal<double>>(signalId2, BaseSignal::timeTicksFromNanoseconds(outputRate2, timeTicksPerSecond), timeTicksPerSecond, writer, logCallback);
-    auto syncSignal3 = std::make_shared<SynchronousSignal<double>>(signalId3, BaseSignal::timeTicksFromNanoseconds(outputRate3, timeTicksPerSecond), timeTicksPerSecond, writer, logCallback);
+
+    auto timeSignal = std::make_shared<LinearTimeSignal>(timeSignalId, tableId, timeTicksPerSecond, outputRate, writer, logCallback);
+    auto syncSignal1 = std::make_shared<SynchronousSignal<double>>(signalId1, tableId, writer, logCallback);
+    auto syncSignal2 = std::make_shared<SynchronousSignal<double>>(signalId2, tableId, writer, logCallback);
+    auto syncSignal3 = std::make_shared<SynchronousSignal<double>>(signalId3, tableId, writer, logCallback);
 
     ASSERT_NE(syncSignal1->getNumber(), syncSignal2->getNumber());
 

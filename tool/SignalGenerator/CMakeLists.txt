@@ -29,7 +29,7 @@ else()
     target_compile_definitions(siggenCommon PUBLIC _SIGNAL_GENERATOR_MICROSECOND_RESOLUTION)
 endif()
 
-target_link_libraries(siggenCommon PUBLIC daq::streaming_protocol daq::stream nlohmann_json::nlohmann_json spdlog fmt)
+target_link_libraries(siggenCommon PUBLIC daq::streaming_protocol daq::stream nlohmann_json::nlohmann_json spdlog::spdlog fmt::fmt)
 
 
 
