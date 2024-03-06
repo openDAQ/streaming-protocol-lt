@@ -7,7 +7,6 @@
 #include <iostream>
 
 #include "streaming_protocol/Types.h"
-#include "streaming_protocol/Unit.hpp"
 
 namespace daq::streaming_protocol {
 
