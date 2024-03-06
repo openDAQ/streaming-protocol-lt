@@ -255,10 +255,11 @@ TEST(ProducerSessionTest, complete_session)
 
         // change unit of data signal
         syncSignal->setUnit(newUnitId, newUnitDisplayName);
+        syncSignal->writeSignalMetaInformation();
 
         // change output rate of time signal
         timeSignal->setOutputRate(newOutputRate);
-        syncSignal->writeSignalMetaInformation();
+        timeSignal->writeSignalMetaInformation();
 
         // tear down of signal
         producerSession->unsubscribeSignals(signalIds);
@@ -317,13 +318,13 @@ TEST(ProducerSessionTest, complete_session)
         // - "init"
         // - "available"
         // - "subscribe" (data)
-        // - "subscribe" (time)
         // - "signal" (data) initial signal description
+        // - "subscribe" (time)
         // - "signal" (time) initial signal description
         // - measured data (small)
         // - measured data (big)
         // - "signal" (data) because of updated unit
-        // - "signal" (time) because of updated unit
+        // - "signal" (time) because of updated output rate
         // - "unsubscribe" (data)
         // - "unsubscribe" (time)
         // - "unavailable"
@@ -332,22 +333,24 @@ TEST(ProducerSessionTest, complete_session)
         ASSERT_EQ(receivedMetaInformation[2].method, META_METHOD_AVAILABLE); // data + time
 
         PackageInformation& package = receivedMetaInformation[3];
-        ASSERT_EQ(package.method, META_METHOD_SUBSCRIBE); // data
+        ASSERT_EQ(package.method, META_METHOD_SUBSCRIBE); // data signal
         std::string signalIdData = package.params[META_SIGNALID];
         ASSERT_FALSE(signalIdData.empty());
-        package = receivedMetaInformation[4];
-        ASSERT_EQ(package.method, META_METHOD_SUBSCRIBE); // time
-        std::string signalIdTime = package.params[META_SIGNALID];
-        ASSERT_FALSE(signalIdData.empty());
-        ASSERT_NE(signalIdData, signalIdTime);
 
-        package = receivedMetaInformation[5];
-        ASSERT_EQ(package.method, META_METHOD_SIGNAL); // data
+        package = receivedMetaInformation[4];
+        ASSERT_EQ(package.method, META_METHOD_SIGNAL);
         std::string tableId1 = package.params[META_TABLEID];
         uint32_t unitId = package.params[META_DEFINITION][META_UNIT][META_UNIT_ID];
         std::string unitDisplayName = package.params[META_DEFINITION][META_UNIT][META_DISPLAY_NAME];
         ASSERT_EQ(unitId, originalUnitId);
         ASSERT_EQ(unitDisplayName, originalUnitDisplayName);
+
+        package = receivedMetaInformation[5];
+        ASSERT_EQ(package.method, META_METHOD_SUBSCRIBE); // time signal
+        std::string signalIdTime = package.params[META_SIGNALID];
+        ASSERT_FALSE(signalIdData.empty());
+        ASSERT_NE(signalIdData, signalIdTime);
+
         package = receivedMetaInformation[6];
         ASSERT_EQ(package.method, META_METHOD_SIGNAL); // time
         std::string tableId2 = package.params[META_TABLEID];
