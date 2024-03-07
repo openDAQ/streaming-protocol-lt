@@ -53,6 +53,7 @@ set(TEST_LIB_SOURCES
     ../lib/BaseValueSignal.cpp
     ../lib/BaseSynchronousSignal.cpp
     ../lib/ControlServer.cpp
+    ../lib/ExplicitTimeSignal.cpp
     ../lib/LinearTimeSignal.cpp
     ../lib/ProducerSession.cpp
     ../lib/Server.cpp

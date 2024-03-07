@@ -27,7 +27,7 @@ namespace daq::streaming_protocol{
         LinearTimeSignal(const std::string& signalId, const std::string& tableId, uint64_t timeTicksPerSecond, const std::chrono::nanoseconds& outputRate, iWriter &writer, LogCallback logCb);
 
         /// A domain Signal has a Time Rule attached
-        virtual RuleType getTimeRule() const override;
+        virtual RuleType getRuleType() const override;
 
         uint64_t getTimeDelta() const;
 
@@ -44,11 +44,7 @@ namespace daq::streaming_protocol{
 
         nlohmann::json createMember(const std::string& dataType) const;
 
-        virtual nlohmann::json getMemberInformation() const override
-        {  
-            nlohmann::json value; 
-            return value;
-        }
+        virtual nlohmann::json getMemberInformation() const override;
         uint64_t m_timeTicksPerSecond;
         uint64_t m_outputRateInTicks;
     };

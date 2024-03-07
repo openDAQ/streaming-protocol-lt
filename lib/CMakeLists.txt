@@ -99,7 +99,7 @@ set(STREAMING_PROTOCOL_STREAMING_LIB_SOURCES
     BaseDomainSignal.cpp
     BaseValueSignal.cpp
     BaseSynchronousSignal.cpp
-    #ExplicitTimeSignal.cpp
+    ExplicitTimeSignal.cpp
     LinearTimeSignal.cpp
     ControlServer.cpp
     ProducerSession.cpp

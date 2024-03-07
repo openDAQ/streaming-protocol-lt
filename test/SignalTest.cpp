@@ -21,6 +21,7 @@
 
 #include "streaming_protocol/AsynchronousSignal.hpp"
 #include "streaming_protocol/BaseDomainSignal.hpp"
+#include "streaming_protocol/ExplicitTimeSignal.hpp"
 #include "streaming_protocol/LinearTimeSignal.hpp"
 #include "streaming_protocol/StreamWriter.h"
 #include "streaming_protocol/SynchronousSignal.hpp"
@@ -132,6 +133,7 @@ TEST(SignalTest, async_signalid_test)
 {
     static const std::string signalId = "the Id";
     static const std::string tableId = "the table Id";
+    static const std::string timeSignalId = "the time Id";
     static const std::string valueName = "value name";
 
     static const int32_t unitId = Unit::UNIT_ID_SECONDS;
@@ -143,46 +145,51 @@ TEST(SignalTest, async_signalid_test)
   }
     )"_json;
 
-//    static const nlohmann::json timeInterpretationObject = R"(
-//  {
-//    "date": "2023-03-01"
-//  }
-//    )"_json;
+    static const nlohmann::json timeInterpretationObject = R"(
+  {
+    "date": "2023-03-01"
+  }
+    )"_json;
 
     TestSubscribeWriter writer;
+    ExplicitTimeSignal timeSignal(timeSignalId, tableId, s_timeTicksPerSecond, writer, logCallback);
     AsynchronousSignal<double> asyncSignal(signalId, tableId, writer, logCallback);
     ASSERT_EQ(asyncSignal.getUnitId(), Unit::UNIT_ID_NONE);
     asyncSignal.setUnit(unitId, unitDisplayName);
     asyncSignal.setMemberName(valueName);
     ASSERT_EQ(asyncSignal.getInterpretationObject(), nlohmann::json());
-    //ASSERT_EQ(asyncSignal.getTimeInterpretationObject(), nlohmann::json());
     asyncSignal.setInterpretationObject(dataInterpretationObject);
-    //asyncSignal.setTimeInterpretationObject(timeInterpretationObject);
     ASSERT_EQ(asyncSignal.getInterpretationObject(), dataInterpretationObject);
-    //ASSERT_EQ(asyncSignal.getTimeInterpretationObject(), timeInterpretationObject);
 
-    //ASSERT_EQ(asyncSignal.getTimeRule(), RULETYPE_EXPLICIT);
+    ASSERT_EQ(timeSignal.getInterpretationObject(), nlohmann::json());
+    timeSignal.setInterpretationObject(timeInterpretationObject);
+    ASSERT_EQ(timeSignal.getInterpretationObject(), timeInterpretationObject);
+
     ASSERT_EQ(asyncSignal.getSampleType(), SAMPLETYPE_REAL64);
     ASSERT_EQ(asyncSignal.getId(), signalId);
     ASSERT_EQ(asyncSignal.getUnitId(), unitId);
     ASSERT_EQ(asyncSignal.getUnitDisplayName(), unitDisplayName);
     ASSERT_EQ(asyncSignal.getMemberName(), valueName);
-    //ASSERT_EQ(asyncSignal.getTimeTicksPerSecond(), s_timeTicksPerSecond);
 
     asyncSignal.subscribe(); // causes subscribe ack and all signal meta information to be written
-    SignalNumber signalNumber = asyncSignal.getNumber();
+    timeSignal.subscribe();
+    SignalNumber dataSignalNumber = asyncSignal.getNumber();
+    SignalNumber timeSignalNumber = timeSignal.getNumber();
 
-    SignalMetaInformation signalMetaInformation = writer.allSignalMetaInformation[signalNumber];
-    ASSERT_EQ(signalMetaInformation.signalId, signalId);
-    ASSERT_EQ(signalMetaInformation.tableId, tableId);
-    ASSERT_EQ(signalMetaInformation.signalId, signalId);
-    ASSERT_EQ(signalMetaInformation.dataType, DATA_TYPE_REAL64);
-    ASSERT_EQ(signalMetaInformation.unitId, unitId);
-    ASSERT_EQ(signalMetaInformation.unitDisplayName, unitDisplayName);
-    ASSERT_EQ(signalMetaInformation.ruleType, RULETYPE_EXPLICIT);
-    //ASSERT_EQ(signalMetaInformation.timeTicksPerSecond, s_timeTicksPerSecond);
-    ASSERT_EQ(signalMetaInformation.interpretationObject, dataInterpretationObject);
-//    ASSERT_EQ(signalMetaInformation.timeInterpretationObject, timeInterpretationObject);
+    SignalMetaInformation dataSignalMetaInformation = writer.allSignalMetaInformation[dataSignalNumber];
+    ASSERT_EQ(dataSignalMetaInformation.signalId, signalId);
+    ASSERT_EQ(dataSignalMetaInformation.tableId, tableId);
+    ASSERT_EQ(dataSignalMetaInformation.signalId, signalId);
+    ASSERT_EQ(dataSignalMetaInformation.dataType, DATA_TYPE_REAL64);
+    ASSERT_EQ(dataSignalMetaInformation.unitId, unitId);
+    ASSERT_EQ(dataSignalMetaInformation.unitDisplayName, unitDisplayName);
+    ASSERT_EQ(dataSignalMetaInformation.ruleType, RULETYPE_EXPLICIT);
+    ASSERT_EQ(dataSignalMetaInformation.interpretationObject, dataInterpretationObject);
+
+    SignalMetaInformation timeSignalMetaInformation = writer.allSignalMetaInformation[timeSignalNumber];
+    ASSERT_EQ(timeSignalMetaInformation.ruleType, RULETYPE_EXPLICIT);
+    ASSERT_EQ(timeSignalMetaInformation.interpretationObject, timeInterpretationObject);
+    ASSERT_EQ(timeSignal.getTimeTicksPerSecond(), s_timeTicksPerSecond);
 }
 
 TEST(SignalTest, async_sampletype_test)
@@ -348,8 +355,8 @@ TEST(SignalTest, sync_sampletype_test)
 
 TEST(SignalTest, sync_signalid_test)
 {
-    static std::string signalId = "the Id";
-    static std::string timeSignalId = "the time Id";
+    static const std::string signalId = "the Id";
+    static const std::string timeSignalId = "the time Id";
     static const std::string tableId = "the table Id";
 
     std::chrono::nanoseconds outputRate = std::chrono::milliseconds(1); // 1kHz
@@ -374,7 +381,7 @@ TEST(SignalTest, sync_signalid_test)
     uint64_t outputRateInTicks = BaseDomainSignal::timeTicksFromNanoseconds(outputRate, s_timeTicksPerSecond);
     LinearTimeSignal timeSignal(timeSignalId, tableId, s_timeTicksPerSecond, outputRate, writer, logCallback);
     SynchronousSignal<double> syncSignal(signalId, tableId, writer, logCallback);
-    ASSERT_EQ(timeSignal.getTimeRule(), RULETYPE_LINEAR);
+    ASSERT_EQ(timeSignal.getRuleType(), RULETYPE_LINEAR);
 
     ASSERT_EQ(syncSignal.getUnitId(), Unit::UNIT_ID_NONE);
     ASSERT_EQ(syncSignal.getId(), signalId);
