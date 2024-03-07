@@ -52,6 +52,8 @@ struct SignalMetaInformation
     std::string epoch;
     uint64_t timeTicksPerSecond;
     nlohmann::json interpretationObject;
+    std::string signalId;
+    std::string tableId;
 };
 
 
@@ -68,7 +70,12 @@ public:
     {
         SignalMetaInformation & signalMeta = allSignalMetaInformation[signalNumber];
         std::string method = data[METHOD];
-        if (method==META_METHOD_SIGNAL) {
+        if (method == META_METHOD_SUBSCRIBE) {
+            signalMeta.signalId = data[PARAMS][META_SIGNALID];
+        } else if (method == META_METHOD_SIGNAL) {
+            if (data[PARAMS].contains(META_TABLEID)) {
+                signalMeta.tableId = data[PARAMS][META_TABLEID];
+            }
 
             if (data[PARAMS][META_DEFINITION].contains(META_UNIT)) {
                 signalMeta.unitId = data[PARAMS][META_DEFINITION][META_UNIT][META_UNIT_ID];
@@ -166,6 +173,9 @@ TEST(SignalTest, async_signalid_test)
     SignalNumber signalNumber = asyncSignal.getNumber();
 
     SignalMetaInformation signalMetaInformation = writer.allSignalMetaInformation[signalNumber];
+    ASSERT_EQ(signalMetaInformation.signalId, signalId);
+    ASSERT_EQ(signalMetaInformation.tableId, tableId);
+    ASSERT_EQ(signalMetaInformation.signalId, signalId);
     ASSERT_EQ(signalMetaInformation.dataType, DATA_TYPE_REAL64);
     ASSERT_EQ(signalMetaInformation.unitId, unitId);
     ASSERT_EQ(signalMetaInformation.unitDisplayName, unitDisplayName);
@@ -387,11 +397,16 @@ TEST(SignalTest, sync_signalid_test)
     syncSignal.subscribe(); // causes subscribe ack and all signal meta information of data signal to be written to fileName
     SignalMetaInformation dataSignalMetaInformation = writer.allSignalMetaInformation[syncSignal.getNumber()];
     SignalMetaInformation timeSignalMetaInformation = writer.allSignalMetaInformation[timeSignal.getNumber()];
+    ASSERT_EQ(dataSignalMetaInformation.signalId, signalId);
+    ASSERT_EQ(dataSignalMetaInformation.tableId, tableId);
+    ASSERT_EQ(dataSignalMetaInformation.ruleType, RULETYPE_EXPLICIT);
     ASSERT_EQ(dataSignalMetaInformation.unitId, unitId);
     ASSERT_EQ(dataSignalMetaInformation.unitDisplayName, unitDisplayName);
     ASSERT_EQ(dataSignalMetaInformation.interpretationObject, dataInterpretationObject);
 
 
+    ASSERT_EQ(timeSignalMetaInformation.signalId, timeSignalId);
+    ASSERT_EQ(timeSignalMetaInformation.tableId, tableId);
     ASSERT_EQ(timeSignalMetaInformation.ruleType, RULETYPE_LINEAR);
     ASSERT_EQ(timeSignalMetaInformation.LinearRuleDelta, outputRateInTicks);
     ASSERT_EQ(timeSignalMetaInformation.timeTicksPerSecond, s_timeTicksPerSecond);
