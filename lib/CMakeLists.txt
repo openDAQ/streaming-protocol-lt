@@ -94,12 +94,12 @@ set(STREAMING_PROTOCOL_STREAMING_LIB_SOURCES
     SubscribedSignal.cpp
 
     # producer
-    #AsynchronousSignal.cpp
+    AsynchronousSignal.cpp
     BaseSignal.cpp
     BaseDomainSignal.cpp
     BaseValueSignal.cpp
     BaseSynchronousSignal.cpp
-    #ExplicitTimeSignal.cpp
+    ExplicitTimeSignal.cpp
     LinearTimeSignal.cpp
     ControlServer.cpp
     ProducerSession.cpp

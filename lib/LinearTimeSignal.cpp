@@ -18,7 +18,7 @@ LinearTimeSignal::LinearTimeSignal(const std::string& signalId, const std::strin
 }
 
 
-daq::streaming_protocol::RuleType LinearTimeSignal::getTimeRule() const
+daq::streaming_protocol::RuleType LinearTimeSignal::getRuleType() const
 {
     return RULETYPE_LINEAR;
 }
@@ -43,23 +43,28 @@ void daq::streaming_protocol::LinearTimeSignal::writeSignalMetaInformation() con
     nlohmann::json timeSignal;
     timeSignal[METHOD] = META_METHOD_SIGNAL;
     timeSignal[PARAMS][META_TABLEID] = m_tableId;
-    timeSignal[PARAMS][META_DEFINITION][META_NAME] = META_TIME;
-    timeSignal[PARAMS][META_DEFINITION][META_RULE] = META_RULETYPE_LINEAR;
+    timeSignal[PARAMS][META_DEFINITION] = getMemberInformation();
 
-    timeSignal[PARAMS][META_DEFINITION][META_RULETYPE_LINEAR][META_DELTA] = m_outputRateInTicks;
-    timeSignal[PARAMS][META_DEFINITION][META_DATATYPE] = DATA_TYPE_UINT64;
-
-    timeSignal[PARAMS][META_DEFINITION][META_UNIT][META_UNIT_ID] = Unit::UNIT_ID_SECONDS;
-    timeSignal[PARAMS][META_DEFINITION][META_UNIT][META_DISPLAY_NAME] = "s";
-    timeSignal[PARAMS][META_DEFINITION][META_UNIT][META_QUANTITY] = META_TIME;
     if (!m_interpretationObject.is_null()) {
         timeSignal[PARAMS][META_INTERPRETATION] = m_interpretationObject;
     }
-
-    timeSignal[PARAMS][META_DEFINITION][META_ABSOLUTE_REFERENCE] = m_epoch;
-    timeSignal[PARAMS][META_DEFINITION][META_RESOLUTION][META_NUMERATOR] = 1;
-    timeSignal[PARAMS][META_DEFINITION][META_RESOLUTION][META_DENOMINATOR] = m_timeTicksPerSecond;
     m_writer.writeMetaInformation(m_signalNumber, timeSignal);
 }
 
+nlohmann::json LinearTimeSignal::getMemberInformation() const
+{
+    nlohmann::json memberInformation;
+    memberInformation[META_NAME] = META_TIME;
+    memberInformation[META_RULE] = META_RULETYPE_LINEAR;
+    memberInformation[META_RULETYPE_LINEAR][META_DELTA] = m_outputRateInTicks;
+    memberInformation[META_DATATYPE] = DATA_TYPE_UINT64;
+    memberInformation[META_UNIT][META_UNIT_ID] = Unit::UNIT_ID_SECONDS;
+    memberInformation[META_UNIT][META_DISPLAY_NAME] = "s";
+    memberInformation[META_UNIT][META_QUANTITY] = META_TIME;
+    memberInformation[META_ABSOLUTE_REFERENCE] = m_epoch;
+    memberInformation[META_RESOLUTION][META_NUMERATOR] = 1;
+    memberInformation[META_RESOLUTION][META_DENOMINATOR] = m_timeTicksPerSecond;
+
+    return memberInformation;
+}
 }

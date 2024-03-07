@@ -21,6 +21,7 @@
 
 #include "streaming_protocol/AsynchronousSignal.hpp"
 #include "streaming_protocol/BaseDomainSignal.hpp"
+#include "streaming_protocol/ExplicitTimeSignal.hpp"
 #include "streaming_protocol/LinearTimeSignal.hpp"
 #include "streaming_protocol/StreamWriter.h"
 #include "streaming_protocol/SynchronousSignal.hpp"
@@ -37,8 +38,8 @@ struct SignalMetaInformation
 {
     SignalMetaInformation()
         : unitId(Unit::UNIT_ID_NONE)
-        , timeRule(RULETYPE_UNKNOWN)
-        , timeDelta(0)
+        , ruleType(RULETYPE_EXPLICIT)
+        , LinearRuleDelta(0)
         , timeTicksPerSecond(0)
     {
     }
@@ -47,11 +48,13 @@ struct SignalMetaInformation
     std::string unitDisplayName;
     std::string unitQuantity;
 
-    RuleType timeRule;
-    uint64_t timeDelta;
+    RuleType ruleType;
+    uint64_t LinearRuleDelta;
     std::string epoch;
     uint64_t timeTicksPerSecond;
     nlohmann::json interpretationObject;
+    std::string signalId;
+    std::string tableId;
 };
 
 
@@ -68,7 +71,12 @@ public:
     {
         SignalMetaInformation & signalMeta = allSignalMetaInformation[signalNumber];
         std::string method = data[METHOD];
-        if (method==META_METHOD_SIGNAL) {
+        if (method == META_METHOD_SUBSCRIBE) {
+            signalMeta.signalId = data[PARAMS][META_SIGNALID];
+        } else if (method == META_METHOD_SIGNAL) {
+            if (data[PARAMS].contains(META_TABLEID)) {
+                signalMeta.tableId = data[PARAMS][META_TABLEID];
+            }
 
             if (data[PARAMS][META_DEFINITION].contains(META_UNIT)) {
                 signalMeta.unitId = data[PARAMS][META_DEFINITION][META_UNIT][META_UNIT_ID];
@@ -83,28 +91,24 @@ public:
                 signalMeta.unitQuantity.clear();
             }
 
+            std::string ruleAsString = data[PARAMS][META_DEFINITION][META_RULE];
+            if (ruleAsString==META_RULETYPE_EXPLICIT) {
+                signalMeta.ruleType = RULETYPE_EXPLICIT;
+            } else if (ruleAsString==META_RULETYPE_LINEAR) {
+                signalMeta.ruleType = RULETYPE_LINEAR;
+                signalMeta.LinearRuleDelta = data[PARAMS][META_DEFINITION][META_RULETYPE_LINEAR][META_DELTA];
+            } else if (ruleAsString==META_RULETYPE_CONSTANT) {
+                signalMeta.ruleType = RULETYPE_CONSTANT;
+            }
+            auto const interpretationObjectIter = data[PARAMS].find(META_INTERPRETATION);
+            if (interpretationObjectIter!=data[PARAMS].end()) {
+                signalMeta.interpretationObject = *interpretationObjectIter;
+            }
+            signalMeta.dataType = data[PARAMS][META_DEFINITION][META_DATATYPE];
+
             if(signalMeta.unitQuantity == META_TIME ) {
-                std::string ruleAsString = data[PARAMS][META_DEFINITION][META_RULE];
-                if (ruleAsString==META_RULETYPE_EXPLICIT) {
-                    signalMeta.timeRule = RULETYPE_EXPLICIT;
-                } else if (ruleAsString==META_RULETYPE_LINEAR) {
-                    signalMeta.timeRule = RULETYPE_LINEAR;
-                    signalMeta.timeDelta = data[PARAMS][META_DEFINITION][META_RULETYPE_LINEAR][META_DELTA];
-                } else if (ruleAsString==META_RULETYPE_CONSTANT) {
-                    signalMeta.timeRule = RULETYPE_CONSTANT;
-                }
-                auto const interpretationObjectIter = data[PARAMS].find(META_INTERPRETATION);
-                if (interpretationObjectIter!=data[PARAMS].end()) {
-                    signalMeta.interpretationObject = *interpretationObjectIter;
-                }
                 signalMeta.epoch = data[PARAMS][META_DEFINITION][META_ABSOLUTE_REFERENCE];
                 signalMeta.timeTicksPerSecond = data[PARAMS][META_DEFINITION][META_RESOLUTION][META_DENOMINATOR];
-            } else {
-                signalMeta.dataType = data[PARAMS][META_DEFINITION][META_DATATYPE];
-                auto const interpretationObjectIter = data[PARAMS].find(META_INTERPRETATION);
-                if (interpretationObjectIter!=data[PARAMS].end()) {
-                    signalMeta.interpretationObject = *interpretationObjectIter;
-                }
             }
         }
         return 0;
@@ -125,134 +129,148 @@ public:
 
 
 
-//TEST(SignalTest, async_signalid_test)
-//{
-//    static const std::string signalId = "the Id";
-//    static const std::string valueName = "value name";
+TEST(SignalTest, async_signalid_test)
+{
+    static const std::string signalId = "the Id";
+    static const std::string tableId = "the table Id";
+    static const std::string timeSignalId = "the time Id";
+    static const std::string valueName = "value name";
 
-//    static const int32_t unitId = Unit::UNIT_ID_SECONDS;
-//    static const std::string unitDisplayName = "s";
-//    static const nlohmann::json dataInterpretationObject = R"(
-//  {
-//    "pi": 3.141,
-//    "happy": true
-//  }
-//    )"_json;
+    static const int32_t unitId = Unit::UNIT_ID_SECONDS;
+    static const std::string unitDisplayName = "s";
+    static const nlohmann::json dataInterpretationObject = R"(
+  {
+    "pi": 3.141,
+    "happy": true
+  }
+    )"_json;
 
-//    static const nlohmann::json timeInterpretationObject = R"(
-//  {
-//    "date": "2023-03-01"
-//  }
-//    )"_json;
+    static const nlohmann::json timeInterpretationObject = R"(
+  {
+    "date": "2023-03-01"
+  }
+    )"_json;
 
-//    TestSubscribeWriter writer;
-//    AsynchronousSignal<double> asyncSignal(signalId, s_timeTicksPerSecond, writer, logCallback);
-//    ASSERT_EQ(asyncSignal.getUnitId(), Unit::UNIT_ID_NONE);
-//    asyncSignal.setUnit(unitId, unitDisplayName);
-//    asyncSignal.setMemberName(valueName);
-//    ASSERT_EQ(asyncSignal.getDataInterpretationObject(), nlohmann::json());
-//    ASSERT_EQ(asyncSignal.getTimeInterpretationObject(), nlohmann::json());
-//    asyncSignal.setDataInterpretationObject(dataInterpretationObject);
-//    asyncSignal.setTimeInterpretationObject(timeInterpretationObject);
-//    ASSERT_EQ(asyncSignal.getDataInterpretationObject(), dataInterpretationObject);
-//    ASSERT_EQ(asyncSignal.getTimeInterpretationObject(), timeInterpretationObject);
+    TestSubscribeWriter writer;
+    ExplicitTimeSignal timeSignal(timeSignalId, tableId, s_timeTicksPerSecond, writer, logCallback);
+    AsynchronousSignal<double> asyncSignal(signalId, tableId, writer, logCallback);
+    ASSERT_EQ(asyncSignal.getUnitId(), Unit::UNIT_ID_NONE);
+    asyncSignal.setUnit(unitId, unitDisplayName);
+    asyncSignal.setMemberName(valueName);
+    ASSERT_EQ(asyncSignal.getInterpretationObject(), nlohmann::json());
+    asyncSignal.setInterpretationObject(dataInterpretationObject);
+    ASSERT_EQ(asyncSignal.getInterpretationObject(), dataInterpretationObject);
 
-//    ASSERT_EQ(asyncSignal.getTimeRule(), RULETYPE_EXPLICIT);
-//    ASSERT_EQ(asyncSignal.getSampleType(), SAMPLETYPE_REAL64);
-//    ASSERT_EQ(asyncSignal.getId(), signalId);
-//    ASSERT_EQ(asyncSignal.getUnitId(), unitId);
-//    ASSERT_EQ(asyncSignal.getUnitDisplayName(), unitDisplayName);
-//    ASSERT_EQ(asyncSignal.getMemberName(), valueName);
-//    ASSERT_EQ(asyncSignal.getTimeTicksPerSecond(), s_timeTicksPerSecond);
+    ASSERT_EQ(timeSignal.getInterpretationObject(), nlohmann::json());
+    timeSignal.setInterpretationObject(timeInterpretationObject);
+    ASSERT_EQ(timeSignal.getInterpretationObject(), timeInterpretationObject);
 
-//    asyncSignal.subscribe(); // causes subscribe ack and all signal meta information to be written
-//    ASSERT_EQ(writer.dataType, DATA_TYPE_REAL64);
-//    ASSERT_EQ(writer.unitId, unitId);
-//    ASSERT_EQ(writer.unitDisplayName, unitDisplayName);
-//    ASSERT_EQ(writer.timeRule, RULETYPE_EXPLICIT);
-//    ASSERT_EQ(writer.timeTicksPerSecond, s_timeTicksPerSecond);
-//    ASSERT_EQ(writer.dataInterpretationObject, dataInterpretationObject);
-//    ASSERT_EQ(writer.timeInterpretationObject, timeInterpretationObject);
-//}
+    ASSERT_EQ(asyncSignal.getSampleType(), SAMPLETYPE_REAL64);
+    ASSERT_EQ(asyncSignal.getId(), signalId);
+    ASSERT_EQ(asyncSignal.getUnitId(), unitId);
+    ASSERT_EQ(asyncSignal.getUnitDisplayName(), unitDisplayName);
+    ASSERT_EQ(asyncSignal.getMemberName(), valueName);
 
-//TEST(SignalTest, async_sampletype_test)
-//{
-//    static const std::string signalId = "the Id";
+    asyncSignal.subscribe(); // causes subscribe ack and all signal meta information to be written
+    timeSignal.subscribe();
+    SignalNumber dataSignalNumber = asyncSignal.getNumber();
+    SignalNumber timeSignalNumber = timeSignal.getNumber();
 
-//    TestSubscribeWriter writer;
-//    {
-//        AsynchronousSignal<int8_t> asyncSignal(signalId, s_timeTicksPerSecond, writer, logCallback);
-//        ASSERT_EQ(asyncSignal.getSampleType(), SAMPLETYPE_S8);
-//        asyncSignal.subscribe();
-//        ASSERT_EQ(writer.dataType, DATA_TYPE_INT8);
-//    }
-//    {
-//        AsynchronousSignal<int16_t> asyncSignal(signalId, s_timeTicksPerSecond, writer, logCallback);
-//        ASSERT_EQ(asyncSignal.getSampleType(), SAMPLETYPE_S16);
-//        asyncSignal.subscribe();
-//        ASSERT_EQ(writer.dataType, DATA_TYPE_INT16);
-//    }
-//    {
-//        AsynchronousSignal<int32_t> asyncSignal(signalId, s_timeTicksPerSecond, writer, logCallback);
-//        ASSERT_EQ(asyncSignal.getSampleType(), SAMPLETYPE_S32);
-//        asyncSignal.subscribe();
-//        ASSERT_EQ(writer.dataType, DATA_TYPE_INT32);
-//    }
-//    {
-//        AsynchronousSignal<int64_t> asyncSignal(signalId, s_timeTicksPerSecond, writer, logCallback);
-//        ASSERT_EQ(asyncSignal.getSampleType(), SAMPLETYPE_S64);
-//        asyncSignal.subscribe();
-//        ASSERT_EQ(writer.dataType, DATA_TYPE_INT64);
-//    }
-//    {
-//        AsynchronousSignal<uint8_t> asyncSignal(signalId, s_timeTicksPerSecond, writer, logCallback);
-//        ASSERT_EQ(asyncSignal.getSampleType(), SAMPLETYPE_U8);
-//        asyncSignal.subscribe();
-//        ASSERT_EQ(writer.dataType, DATA_TYPE_UINT8);
-//    }
-//    {
-//        AsynchronousSignal<uint16_t> asyncSignal(signalId, s_timeTicksPerSecond, writer, logCallback);
-//        ASSERT_EQ(asyncSignal.getSampleType(), SAMPLETYPE_U16);
-//        asyncSignal.subscribe();
-//        ASSERT_EQ(writer.dataType, DATA_TYPE_UINT16);
-//    }
-//    {
-//        AsynchronousSignal<uint32_t> asyncSignal(signalId, s_timeTicksPerSecond, writer, logCallback);
-//        ASSERT_EQ(asyncSignal.getSampleType(), SAMPLETYPE_U32);
-//        asyncSignal.subscribe();
-//        ASSERT_EQ(writer.dataType, DATA_TYPE_UINT32);
-//    }
-//    {
-//        AsynchronousSignal<uint64_t> asyncSignal(signalId, s_timeTicksPerSecond, writer, logCallback);
-//        ASSERT_EQ(asyncSignal.getSampleType(), SAMPLETYPE_U64);
-//        asyncSignal.subscribe();
-//        ASSERT_EQ(writer.dataType, DATA_TYPE_UINT64);
-//    }
-//    {
-//        AsynchronousSignal<float> asyncSignal(signalId, s_timeTicksPerSecond, writer, logCallback);
-//        ASSERT_EQ(asyncSignal.getSampleType(), SAMPLETYPE_REAL32);
-//        asyncSignal.subscribe();
-//        ASSERT_EQ(writer.dataType, DATA_TYPE_REAL32);
-//    }
-//    {
-//        AsynchronousSignal<double> asyncSignal(signalId, s_timeTicksPerSecond, writer, logCallback);
-//        ASSERT_EQ(asyncSignal.getSampleType(), SAMPLETYPE_REAL64);
-//        asyncSignal.subscribe();
-//        ASSERT_EQ(writer.dataType, DATA_TYPE_REAL64);
-//    }
-//    {
-//        AsynchronousSignal<Complex32Type> asyncSignal(signalId, s_timeTicksPerSecond, writer, logCallback);
-//        ASSERT_EQ(asyncSignal.getSampleType(), SAMPLETYPE_COMPLEX32);
-//        asyncSignal.subscribe();
-//        ASSERT_EQ(writer.dataType, DATA_TYPE_COMPLEX32);
-//    }
-//    {
-//        AsynchronousSignal<Complex64Type> asyncSignal(signalId, s_timeTicksPerSecond, writer, logCallback);
-//        ASSERT_EQ(asyncSignal.getSampleType(), SAMPLETYPE_COMPLEX64);
-//        asyncSignal.subscribe();
-//        ASSERT_EQ(writer.dataType, DATA_TYPE_COMPLEX64);
-//    }
-//}
+    SignalMetaInformation dataSignalMetaInformation = writer.allSignalMetaInformation[dataSignalNumber];
+    ASSERT_EQ(dataSignalMetaInformation.signalId, signalId);
+    ASSERT_EQ(dataSignalMetaInformation.tableId, tableId);
+    ASSERT_EQ(dataSignalMetaInformation.signalId, signalId);
+    ASSERT_EQ(dataSignalMetaInformation.dataType, DATA_TYPE_REAL64);
+    ASSERT_EQ(dataSignalMetaInformation.unitId, unitId);
+    ASSERT_EQ(dataSignalMetaInformation.unitDisplayName, unitDisplayName);
+    ASSERT_EQ(dataSignalMetaInformation.ruleType, RULETYPE_EXPLICIT);
+    ASSERT_EQ(dataSignalMetaInformation.interpretationObject, dataInterpretationObject);
+
+    SignalMetaInformation timeSignalMetaInformation = writer.allSignalMetaInformation[timeSignalNumber];
+    ASSERT_EQ(timeSignalMetaInformation.ruleType, RULETYPE_EXPLICIT);
+    ASSERT_EQ(timeSignalMetaInformation.interpretationObject, timeInterpretationObject);
+    ASSERT_EQ(timeSignal.getTimeTicksPerSecond(), s_timeTicksPerSecond);
+}
+
+TEST(SignalTest, async_sampletype_test)
+{
+    static const std::string signalId = "the Id";
+    static const std::string tableId = "the table Id";
+
+    TestSubscribeWriter writer;
+    {
+        AsynchronousSignal<int8_t> asyncSignal(signalId, tableId, writer, logCallback);
+        ASSERT_EQ(asyncSignal.getSampleType(), SAMPLETYPE_S8);
+        asyncSignal.subscribe();
+        ASSERT_EQ(writer.allSignalMetaInformation[asyncSignal.getNumber()].dataType, DATA_TYPE_INT8);
+    }
+    {
+        AsynchronousSignal<int16_t> asyncSignal(signalId, tableId, writer, logCallback);
+        ASSERT_EQ(asyncSignal.getSampleType(), SAMPLETYPE_S16);
+        asyncSignal.subscribe();
+        ASSERT_EQ(writer.allSignalMetaInformation[asyncSignal.getNumber()].dataType, DATA_TYPE_INT16);
+    }
+    {
+        AsynchronousSignal<int32_t> asyncSignal(signalId, tableId, writer, logCallback);
+        ASSERT_EQ(asyncSignal.getSampleType(), SAMPLETYPE_S32);
+        asyncSignal.subscribe();
+        ASSERT_EQ(writer.allSignalMetaInformation[asyncSignal.getNumber()].dataType, DATA_TYPE_INT32);
+    }
+    {
+        AsynchronousSignal<int64_t> asyncSignal(signalId, tableId, writer, logCallback);
+        ASSERT_EQ(asyncSignal.getSampleType(), SAMPLETYPE_S64);
+        asyncSignal.subscribe();
+        ASSERT_EQ(writer.allSignalMetaInformation[asyncSignal.getNumber()].dataType, DATA_TYPE_INT64);
+    }
+    {
+        AsynchronousSignal<uint8_t> asyncSignal(signalId, tableId, writer, logCallback);
+        ASSERT_EQ(asyncSignal.getSampleType(), SAMPLETYPE_U8);
+        asyncSignal.subscribe();
+        ASSERT_EQ(writer.allSignalMetaInformation[asyncSignal.getNumber()].dataType, DATA_TYPE_UINT8);
+    }
+    {
+        AsynchronousSignal<uint16_t> asyncSignal(signalId, tableId, writer, logCallback);
+        ASSERT_EQ(asyncSignal.getSampleType(), SAMPLETYPE_U16);
+        asyncSignal.subscribe();
+        ASSERT_EQ(writer.allSignalMetaInformation[asyncSignal.getNumber()].dataType, DATA_TYPE_UINT16);
+    }
+    {
+        AsynchronousSignal<uint32_t> asyncSignal(signalId, tableId, writer, logCallback);
+        ASSERT_EQ(asyncSignal.getSampleType(), SAMPLETYPE_U32);
+        asyncSignal.subscribe();
+        ASSERT_EQ(writer.allSignalMetaInformation[asyncSignal.getNumber()].dataType, DATA_TYPE_UINT32);
+    }
+    {
+        AsynchronousSignal<uint64_t> asyncSignal(signalId, tableId, writer, logCallback);
+        ASSERT_EQ(asyncSignal.getSampleType(), SAMPLETYPE_U64);
+        asyncSignal.subscribe();
+        ASSERT_EQ(writer.allSignalMetaInformation[asyncSignal.getNumber()].dataType, DATA_TYPE_UINT64);
+    }
+    {
+        AsynchronousSignal<float> asyncSignal(signalId, tableId, writer, logCallback);
+        ASSERT_EQ(asyncSignal.getSampleType(), SAMPLETYPE_REAL32);
+        asyncSignal.subscribe();
+        ASSERT_EQ(writer.allSignalMetaInformation[asyncSignal.getNumber()].dataType, DATA_TYPE_REAL32);
+    }
+    {
+        AsynchronousSignal<double> asyncSignal(signalId, tableId, writer, logCallback);
+        ASSERT_EQ(asyncSignal.getSampleType(), SAMPLETYPE_REAL64);
+        asyncSignal.subscribe();
+        ASSERT_EQ(writer.allSignalMetaInformation[asyncSignal.getNumber()].dataType, DATA_TYPE_REAL64);
+    }
+    {
+        AsynchronousSignal<Complex32Type> asyncSignal(signalId, tableId, writer, logCallback);
+        ASSERT_EQ(asyncSignal.getSampleType(), SAMPLETYPE_COMPLEX32);
+        asyncSignal.subscribe();
+        ASSERT_EQ(writer.allSignalMetaInformation[asyncSignal.getNumber()].dataType, DATA_TYPE_COMPLEX32);
+    }
+    {
+        AsynchronousSignal<Complex64Type> asyncSignal(signalId, tableId, writer, logCallback);
+        ASSERT_EQ(asyncSignal.getSampleType(), SAMPLETYPE_COMPLEX64);
+        asyncSignal.subscribe();
+        ASSERT_EQ(writer.allSignalMetaInformation[asyncSignal.getNumber()].dataType, DATA_TYPE_COMPLEX64);
+    }
+}
 
 TEST(SignalTest, sync_sampletype_test)
 {
@@ -337,8 +355,8 @@ TEST(SignalTest, sync_sampletype_test)
 
 TEST(SignalTest, sync_signalid_test)
 {
-    static std::string signalId = "the Id";
-    static std::string timeSignalId = "the time Id";
+    static const std::string signalId = "the Id";
+    static const std::string timeSignalId = "the time Id";
     static const std::string tableId = "the table Id";
 
     std::chrono::nanoseconds outputRate = std::chrono::milliseconds(1); // 1kHz
@@ -363,7 +381,7 @@ TEST(SignalTest, sync_signalid_test)
     uint64_t outputRateInTicks = BaseDomainSignal::timeTicksFromNanoseconds(outputRate, s_timeTicksPerSecond);
     LinearTimeSignal timeSignal(timeSignalId, tableId, s_timeTicksPerSecond, outputRate, writer, logCallback);
     SynchronousSignal<double> syncSignal(signalId, tableId, writer, logCallback);
-    ASSERT_EQ(timeSignal.getTimeRule(), RULETYPE_LINEAR);
+    ASSERT_EQ(timeSignal.getRuleType(), RULETYPE_LINEAR);
 
     ASSERT_EQ(syncSignal.getUnitId(), Unit::UNIT_ID_NONE);
     ASSERT_EQ(syncSignal.getId(), signalId);
@@ -386,13 +404,18 @@ TEST(SignalTest, sync_signalid_test)
     syncSignal.subscribe(); // causes subscribe ack and all signal meta information of data signal to be written to fileName
     SignalMetaInformation dataSignalMetaInformation = writer.allSignalMetaInformation[syncSignal.getNumber()];
     SignalMetaInformation timeSignalMetaInformation = writer.allSignalMetaInformation[timeSignal.getNumber()];
+    ASSERT_EQ(dataSignalMetaInformation.signalId, signalId);
+    ASSERT_EQ(dataSignalMetaInformation.tableId, tableId);
+    ASSERT_EQ(dataSignalMetaInformation.ruleType, RULETYPE_EXPLICIT);
     ASSERT_EQ(dataSignalMetaInformation.unitId, unitId);
     ASSERT_EQ(dataSignalMetaInformation.unitDisplayName, unitDisplayName);
     ASSERT_EQ(dataSignalMetaInformation.interpretationObject, dataInterpretationObject);
 
 
-    ASSERT_EQ(timeSignalMetaInformation.timeRule, RULETYPE_LINEAR);
-    ASSERT_EQ(timeSignalMetaInformation.timeDelta, outputRateInTicks);
+    ASSERT_EQ(timeSignalMetaInformation.signalId, timeSignalId);
+    ASSERT_EQ(timeSignalMetaInformation.tableId, tableId);
+    ASSERT_EQ(timeSignalMetaInformation.ruleType, RULETYPE_LINEAR);
+    ASSERT_EQ(timeSignalMetaInformation.LinearRuleDelta, outputRateInTicks);
     ASSERT_EQ(timeSignalMetaInformation.timeTicksPerSecond, s_timeTicksPerSecond);
     ASSERT_EQ(timeSignalMetaInformation.interpretationObject, timeInterpretationObject);
 

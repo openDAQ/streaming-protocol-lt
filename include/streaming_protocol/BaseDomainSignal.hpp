@@ -30,8 +30,8 @@ namespace daq::streaming_protocol{
         void setEpoch(const std::chrono::system_clock::time_point &epoch);
         std::string getEpoch() const;
 
-        /// A domain Signal has a Time Rule attached
-        virtual RuleType getTimeRule() const = 0;
+        /// A domain Signal has a rule type attached
+        virtual RuleType getRuleType() const = 0;
 
         virtual bool isDataSignal() const final
         {

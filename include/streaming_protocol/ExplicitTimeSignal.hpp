@@ -27,15 +27,15 @@ namespace daq::streaming_protocol{
         ExplicitTimeSignal(const std::string& signalId, const std::string& tableId, uint64_t timeTicksPerSecond, iWriter &writer, LogCallback logCb);
 
         /// A domain Signal has a Time Rule attached
-        virtual RuleType getTimeRule() const override;
+        virtual RuleType getRuleType() const override;
 
         /// Signal meta information describes the signal. It is written once after signal got subscribed.
         void writeSignalMetaInformation() const override;
 
     protected:
 
-        nlohmann::json createMember(const std::string& dataType) const;
+        //nlohmann::json createMember(const std::string& dataType) const;
 
-        virtual nlohmann::json getMemberInformation() const = 0;
+        virtual nlohmann::json getMemberInformation() const override;
     };
 }

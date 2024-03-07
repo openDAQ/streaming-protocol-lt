@@ -23,6 +23,7 @@
 
 #include "streaming_protocol/StreamWriter.h"
 #include "generatedtimesignal.h"
+#include "generatedasynchronoussignal.h"
 #include "generatedsynchronoussignal.h"
 #include "signaldefinition.h"
 
@@ -64,28 +65,26 @@ namespace daq::streaming_protocol::siggen {
                 return -1;
             }
 
-            std::unique_ptr < iGeneratedSignal > pGeneratedSignal(std::make_unique<GeneratedSynchronousSignal<T>> (signalId, tableId, signalParameters, samplePeriod, m_time, 0, m_writer));
+            std::unique_ptr < iGeneratedSignal > pGeneratedSignal(std::make_unique<GeneratedSynchronousSignal<T>> (signalId, tableId, signalParameters, samplePeriod, m_time, valueIndex, m_writer));
             // make sure signal exists before telling it is available
             m_generatedSignals.insert(std::make_pair(signalId, std::move(pGeneratedSignal)));
             return 0;
         }
-        /**
         template < typename T >
-        int addAsynchronousSignal(const std::string &signalId,
+        int addAsynchronousSignal(const std::string &signalId, const std::string &tableId,
                                     FunctionParameters<T> signalParameters,
-                                    std::chrono::nanoseconds samplePeriod, std::chrono::nanoseconds delay, uint64_t timeTicksPerSecond)
+                                    std::chrono::nanoseconds samplePeriod, uint64_t valueIndex)
         {
             if (m_generatedSignals.find(signalId)!=m_generatedSignals.end()) {
                 STREAMING_PROTOCOL_LOG_E("signal id is already ins use!");
                 return -1;
             }
 
-            std::unique_ptr < iGeneratedSignal > pGeneratedSignal(std::make_unique<GeneratedAsynchronousSignal<T>> (signalId, signalParameters, samplePeriod, delay, timeTicksPerSecond, m_time, m_writer));
+            std::unique_ptr < iGeneratedSignal > pGeneratedSignal(std::make_unique<GeneratedAsynchronousSignal<T>> (signalId, tableId, signalParameters, samplePeriod, m_time, valueIndex, m_writer));
             // make sure signal exists before telling it is available
             m_generatedSignals.insert(std::make_pair(signalId, std::move(pGeneratedSignal)));
             return 0;
         }
-        */
 
        int addLinearTimeSignal(const std::string &signalId, const std::string &tableId, std::chrono::nanoseconds samplePeriod)
        {
