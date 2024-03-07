@@ -94,7 +94,7 @@ set(STREAMING_PROTOCOL_STREAMING_LIB_SOURCES
     SubscribedSignal.cpp
 
     # producer
-    #AsynchronousSignal.cpp
+    AsynchronousSignal.cpp
     BaseSignal.cpp
     BaseDomainSignal.cpp
     BaseValueSignal.cpp

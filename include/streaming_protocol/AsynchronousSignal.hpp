@@ -50,9 +50,9 @@ public:
 
     /// \param signalId Signal identifier. Should be unique on this streaming producer.
     /// \param timeFamily Describes the time ticks per second
-    AsynchronousSignal(const std::string& signalId,
-                       uint64_t timeTicksPerSecond, iWriter& writer, LogCallback logCb)
-        : BaseSignal(signalId, timeTicksPerSecond, writer, logCb)
+    AsynchronousSignal(const std::string& signalId, const std::string& tableId,
+                       iWriter& writer, LogCallback logCb)
+        : BaseValueSignal(signalId, tableId, writer, logCb)
     {
     }
 

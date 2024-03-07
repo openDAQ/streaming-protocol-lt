@@ -37,8 +37,8 @@ struct SignalMetaInformation
 {
     SignalMetaInformation()
         : unitId(Unit::UNIT_ID_NONE)
-        , timeRule(RULETYPE_UNKNOWN)
-        , timeDelta(0)
+        , ruleType(RULETYPE_EXPLICIT)
+        , LinearRuleDelta(0)
         , timeTicksPerSecond(0)
     {
     }
@@ -47,8 +47,8 @@ struct SignalMetaInformation
     std::string unitDisplayName;
     std::string unitQuantity;
 
-    RuleType timeRule;
-    uint64_t timeDelta;
+    RuleType ruleType;
+    uint64_t LinearRuleDelta;
     std::string epoch;
     uint64_t timeTicksPerSecond;
     nlohmann::json interpretationObject;
@@ -83,28 +83,24 @@ public:
                 signalMeta.unitQuantity.clear();
             }
 
+            std::string ruleAsString = data[PARAMS][META_DEFINITION][META_RULE];
+            if (ruleAsString==META_RULETYPE_EXPLICIT) {
+                signalMeta.ruleType = RULETYPE_EXPLICIT;
+            } else if (ruleAsString==META_RULETYPE_LINEAR) {
+                signalMeta.ruleType = RULETYPE_LINEAR;
+                signalMeta.LinearRuleDelta = data[PARAMS][META_DEFINITION][META_RULETYPE_LINEAR][META_DELTA];
+            } else if (ruleAsString==META_RULETYPE_CONSTANT) {
+                signalMeta.ruleType = RULETYPE_CONSTANT;
+            }
+            auto const interpretationObjectIter = data[PARAMS].find(META_INTERPRETATION);
+            if (interpretationObjectIter!=data[PARAMS].end()) {
+                signalMeta.interpretationObject = *interpretationObjectIter;
+            }
+            signalMeta.dataType = data[PARAMS][META_DEFINITION][META_DATATYPE];
+
             if(signalMeta.unitQuantity == META_TIME ) {
-                std::string ruleAsString = data[PARAMS][META_DEFINITION][META_RULE];
-                if (ruleAsString==META_RULETYPE_EXPLICIT) {
-                    signalMeta.timeRule = RULETYPE_EXPLICIT;
-                } else if (ruleAsString==META_RULETYPE_LINEAR) {
-                    signalMeta.timeRule = RULETYPE_LINEAR;
-                    signalMeta.timeDelta = data[PARAMS][META_DEFINITION][META_RULETYPE_LINEAR][META_DELTA];
-                } else if (ruleAsString==META_RULETYPE_CONSTANT) {
-                    signalMeta.timeRule = RULETYPE_CONSTANT;
-                }
-                auto const interpretationObjectIter = data[PARAMS].find(META_INTERPRETATION);
-                if (interpretationObjectIter!=data[PARAMS].end()) {
-                    signalMeta.interpretationObject = *interpretationObjectIter;
-                }
                 signalMeta.epoch = data[PARAMS][META_DEFINITION][META_ABSOLUTE_REFERENCE];
                 signalMeta.timeTicksPerSecond = data[PARAMS][META_DEFINITION][META_RESOLUTION][META_DENOMINATOR];
-            } else {
-                signalMeta.dataType = data[PARAMS][META_DEFINITION][META_DATATYPE];
-                auto const interpretationObjectIter = data[PARAMS].find(META_INTERPRETATION);
-                if (interpretationObjectIter!=data[PARAMS].end()) {
-                    signalMeta.interpretationObject = *interpretationObjectIter;
-                }
             }
         }
         return 0;
@@ -125,19 +121,20 @@ public:
 
 
 
-//TEST(SignalTest, async_signalid_test)
-//{
-//    static const std::string signalId = "the Id";
-//    static const std::string valueName = "value name";
+TEST(SignalTest, async_signalid_test)
+{
+    static const std::string signalId = "the Id";
+    static const std::string tableId = "the table Id";
+    static const std::string valueName = "value name";
 
-//    static const int32_t unitId = Unit::UNIT_ID_SECONDS;
-//    static const std::string unitDisplayName = "s";
-//    static const nlohmann::json dataInterpretationObject = R"(
-//  {
-//    "pi": 3.141,
-//    "happy": true
-//  }
-//    )"_json;
+    static const int32_t unitId = Unit::UNIT_ID_SECONDS;
+    static const std::string unitDisplayName = "s";
+    static const nlohmann::json dataInterpretationObject = R"(
+  {
+    "pi": 3.141,
+    "happy": true
+  }
+    )"_json;
 
 //    static const nlohmann::json timeInterpretationObject = R"(
 //  {
@@ -145,35 +142,38 @@ public:
 //  }
 //    )"_json;
 
-//    TestSubscribeWriter writer;
-//    AsynchronousSignal<double> asyncSignal(signalId, s_timeTicksPerSecond, writer, logCallback);
-//    ASSERT_EQ(asyncSignal.getUnitId(), Unit::UNIT_ID_NONE);
-//    asyncSignal.setUnit(unitId, unitDisplayName);
-//    asyncSignal.setMemberName(valueName);
-//    ASSERT_EQ(asyncSignal.getDataInterpretationObject(), nlohmann::json());
-//    ASSERT_EQ(asyncSignal.getTimeInterpretationObject(), nlohmann::json());
-//    asyncSignal.setDataInterpretationObject(dataInterpretationObject);
-//    asyncSignal.setTimeInterpretationObject(timeInterpretationObject);
-//    ASSERT_EQ(asyncSignal.getDataInterpretationObject(), dataInterpretationObject);
-//    ASSERT_EQ(asyncSignal.getTimeInterpretationObject(), timeInterpretationObject);
+    TestSubscribeWriter writer;
+    AsynchronousSignal<double> asyncSignal(signalId, tableId, writer, logCallback);
+    ASSERT_EQ(asyncSignal.getUnitId(), Unit::UNIT_ID_NONE);
+    asyncSignal.setUnit(unitId, unitDisplayName);
+    asyncSignal.setMemberName(valueName);
+    ASSERT_EQ(asyncSignal.getInterpretationObject(), nlohmann::json());
+    //ASSERT_EQ(asyncSignal.getTimeInterpretationObject(), nlohmann::json());
+    asyncSignal.setInterpretationObject(dataInterpretationObject);
+    //asyncSignal.setTimeInterpretationObject(timeInterpretationObject);
+    ASSERT_EQ(asyncSignal.getInterpretationObject(), dataInterpretationObject);
+    //ASSERT_EQ(asyncSignal.getTimeInterpretationObject(), timeInterpretationObject);
 
-//    ASSERT_EQ(asyncSignal.getTimeRule(), RULETYPE_EXPLICIT);
-//    ASSERT_EQ(asyncSignal.getSampleType(), SAMPLETYPE_REAL64);
-//    ASSERT_EQ(asyncSignal.getId(), signalId);
-//    ASSERT_EQ(asyncSignal.getUnitId(), unitId);
-//    ASSERT_EQ(asyncSignal.getUnitDisplayName(), unitDisplayName);
-//    ASSERT_EQ(asyncSignal.getMemberName(), valueName);
-//    ASSERT_EQ(asyncSignal.getTimeTicksPerSecond(), s_timeTicksPerSecond);
+    //ASSERT_EQ(asyncSignal.getTimeRule(), RULETYPE_EXPLICIT);
+    ASSERT_EQ(asyncSignal.getSampleType(), SAMPLETYPE_REAL64);
+    ASSERT_EQ(asyncSignal.getId(), signalId);
+    ASSERT_EQ(asyncSignal.getUnitId(), unitId);
+    ASSERT_EQ(asyncSignal.getUnitDisplayName(), unitDisplayName);
+    ASSERT_EQ(asyncSignal.getMemberName(), valueName);
+    //ASSERT_EQ(asyncSignal.getTimeTicksPerSecond(), s_timeTicksPerSecond);
 
-//    asyncSignal.subscribe(); // causes subscribe ack and all signal meta information to be written
-//    ASSERT_EQ(writer.dataType, DATA_TYPE_REAL64);
-//    ASSERT_EQ(writer.unitId, unitId);
-//    ASSERT_EQ(writer.unitDisplayName, unitDisplayName);
-//    ASSERT_EQ(writer.timeRule, RULETYPE_EXPLICIT);
-//    ASSERT_EQ(writer.timeTicksPerSecond, s_timeTicksPerSecond);
-//    ASSERT_EQ(writer.dataInterpretationObject, dataInterpretationObject);
-//    ASSERT_EQ(writer.timeInterpretationObject, timeInterpretationObject);
-//}
+    asyncSignal.subscribe(); // causes subscribe ack and all signal meta information to be written
+    SignalNumber signalNumber = asyncSignal.getNumber();
+
+    SignalMetaInformation signalMetaInformation = writer.allSignalMetaInformation[signalNumber];
+    ASSERT_EQ(signalMetaInformation.dataType, DATA_TYPE_REAL64);
+    ASSERT_EQ(signalMetaInformation.unitId, unitId);
+    ASSERT_EQ(signalMetaInformation.unitDisplayName, unitDisplayName);
+    ASSERT_EQ(signalMetaInformation.ruleType, RULETYPE_EXPLICIT);
+    //ASSERT_EQ(signalMetaInformation.timeTicksPerSecond, s_timeTicksPerSecond);
+    ASSERT_EQ(signalMetaInformation.interpretationObject, dataInterpretationObject);
+//    ASSERT_EQ(signalMetaInformation.timeInterpretationObject, timeInterpretationObject);
+}
 
 //TEST(SignalTest, async_sampletype_test)
 //{
@@ -391,8 +391,8 @@ TEST(SignalTest, sync_signalid_test)
     ASSERT_EQ(dataSignalMetaInformation.interpretationObject, dataInterpretationObject);
 
 
-    ASSERT_EQ(timeSignalMetaInformation.timeRule, RULETYPE_LINEAR);
-    ASSERT_EQ(timeSignalMetaInformation.timeDelta, outputRateInTicks);
+    ASSERT_EQ(timeSignalMetaInformation.ruleType, RULETYPE_LINEAR);
+    ASSERT_EQ(timeSignalMetaInformation.LinearRuleDelta, outputRateInTicks);
     ASSERT_EQ(timeSignalMetaInformation.timeTicksPerSecond, s_timeTicksPerSecond);
     ASSERT_EQ(timeSignalMetaInformation.interpretationObject, timeInterpretationObject);
 
