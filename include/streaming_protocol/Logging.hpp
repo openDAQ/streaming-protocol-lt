@@ -24,7 +24,7 @@
 
 #define STREAMING_PROTOCOL_LOG(logCallback, logLevel, message, ...)                             \
                 logCallback(spdlog::source_loc{__FILE__, __LINE__, SPDLOG_FUNCTION},            \
-                logLevel, format(FMT_STRING(message), ##__VA_ARGS__).data());
+                logLevel, ::fmt::format(FMT_STRING(message), ##__VA_ARGS__).data());
 
 #define STREAMING_PROTOCOL_LOG_E(message, ...)                                                  \
                 STREAMING_PROTOCOL_LOG(logCallback, spdlog::level::err, message, ##__VA_ARGS__)
