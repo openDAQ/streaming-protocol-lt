@@ -45,20 +45,21 @@ void daq::streaming_protocol::siggen::addSignals(daq::streaming_protocol::siggen
     std::chrono::nanoseconds samplePeriod;
     FunctionParameters <double> dblSignalParameters;
 
-    //samplePeriod = std::chrono::milliseconds(50);
-    //dblSignalParameters.amplitude = 2.5;
-    //dblSignalParameters.offset = 1.5;
-    //dblSignalParameters.frequency = 1.0;
-    //dblSignalParameters.dutyCycle = 0.5;
-    //dblSignalParameters.functionType = daq::streaming_protocol::siggen::FUNCTION_TYPE_RECTANGLE;
-    //signalGenerator.addAsynchronousSignal<double>("async_square", dblSignalParameters, samplePeriod, timeTicksPerSecond);
+    samplePeriod = std::chrono::milliseconds(50);
+    dblSignalParameters.amplitude = 2.5;
+    dblSignalParameters.offset = 1.5;
+    dblSignalParameters.frequency = 1.0;
+    dblSignalParameters.dutyCycle = 0.5;
+    dblSignalParameters.functionType = daq::streaming_protocol::siggen::FUNCTION_TYPE_RECTANGLE;
+    signalGenerator.addLinearTimeSignal("async_time", "table_50ms", samplePeriod);
+    signalGenerator.addAsynchronousSignal<double>("async_square", "table_50ms", dblSignalParameters, samplePeriod, 0);
 
     samplePeriod = std::chrono::milliseconds(10);
     dblSignalParameters.amplitude = 10;
     dblSignalParameters.offset = 0;
     dblSignalParameters.frequency = 0.1;
     dblSignalParameters.functionType = daq::streaming_protocol::siggen::FUNCTION_TYPE_SINE;
-    signalGenerator.addLinearTimeSignal("sine_time", "table_10ms",samplePeriod);
+    signalGenerator.addLinearTimeSignal("sine_time", "table_10ms", samplePeriod);
     signalGenerator.addSynchronousSignal<double>("sine", "table_10ms", dblSignalParameters, samplePeriod, 0);
 
     samplePeriod = std::chrono::milliseconds(100);
@@ -71,7 +72,6 @@ void daq::streaming_protocol::siggen::addSignals(daq::streaming_protocol::siggen
     // ToDo: This should work for test purposes - but the handling of the value index is not in sync to the correct time.
     signalGenerator.addSynchronousSignal<double>("saw_tooth_2", "table_100ms", dblSignalParameters, samplePeriod, 100);
 
-    samplePeriod = std::chrono::milliseconds(100);
     dblSignalParameters.amplitude = 2.5;
     dblSignalParameters.offset = 0;
     dblSignalParameters.frequency = 0.5;
