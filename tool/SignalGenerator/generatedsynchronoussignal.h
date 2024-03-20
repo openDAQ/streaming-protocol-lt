@@ -65,8 +65,8 @@ namespace daq::streaming_protocol::siggen{
             , m_period(1/functionParameters.frequency)
             , m_samplePeriod(samplePeriod)
             , m_samplePeriodDouble(std::chrono::duration < double > (m_samplePeriod).count())
-            , m_currentTime(currentTime)
             , m_lastProcessTime(currentTime)
+            , m_currentTime(currentTime)
             , m_periodTimeDouble(0)
         {
         }

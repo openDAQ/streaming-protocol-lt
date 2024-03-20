@@ -14,6 +14,7 @@ set(SIGGEN_COMMON_SOURCES
   function.h
   #generatedasynchronoussignal.h
   generatedsynchronoussignal.h
+  generatedtimesignal.h
   signaldefinition.cpp
   signaldefinition.h
   signalgenerator.cpp

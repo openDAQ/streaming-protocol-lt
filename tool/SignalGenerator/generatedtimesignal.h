@@ -55,8 +55,8 @@ namespace daq::streaming_protocol::siggen{
                             const std::chrono::time_point<std::chrono::system_clock> &currentTime,
                             streaming_protocol::iWriter &writer)
             : logCallback(daq::streaming_protocol::Logging::logCallback())
-            , m_signal(std::make_shared<streaming_protocol::LinearTimeSignal> (signalId, tableId, timeTicksPerSecond, samplePeriod, writer, logCallback))
             , m_currentTime(currentTime)
+            , m_signal(std::make_shared<streaming_protocol::LinearTimeSignal> (signalId, tableId, timeTicksPerSecond, samplePeriod, writer, logCallback))
         {
         }
         /// not to be copied!
