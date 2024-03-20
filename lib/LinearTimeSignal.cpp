@@ -13,7 +13,7 @@ namespace daq::streaming_protocol {
 LinearTimeSignal::LinearTimeSignal(const std::string& signalId, const std::string& tableId, uint64_t timeTicksPerSecond, const std::chrono::nanoseconds &outputRate, iWriter &writer, LogCallback logCb)
     : BaseDomainSignal(signalId, tableId, timeTicksPerSecond, writer, logCb)
     , m_timeTicksPerSecond(timeTicksPerSecond)
-    , m_outputRateInTicks(timeTicksPerSecond/1000000000 * outputRate.count())
+    , m_outputRateInTicks(timeTicksPerSecond * outputRate.count() / 1000000000)
 {
 }
 
