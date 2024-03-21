@@ -33,6 +33,11 @@ namespace daq::streaming_protocol{
             return m_valueIndex;
         }
 
+        void setValueIndex(uint64_t valueIndex)
+        {
+            m_valueIndex = valueIndex;
+        }
+
         /// Signal meta information describes the signal. It is written once after signal got subscribed.
         void writeSignalMetaInformation() const override;
 
