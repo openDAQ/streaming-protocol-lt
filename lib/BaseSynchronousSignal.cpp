@@ -13,6 +13,7 @@ void daq::streaming_protocol::BaseSynchronousSignal::writeSignalMetaInformation(
     dataSignal[METHOD] = META_METHOD_SIGNAL;
     dataSignal[PARAMS][META_TABLEID] = m_tableId;
     dataSignal[PARAMS][META_DEFINITION] = getMemberInformation();
+    dataSignal[PARAMS][META_VALUEINDEX] = m_valueIndex;
     if (!m_interpretationObject.is_null()) {
         dataSignal[PARAMS][META_INTERPRETATION] = m_interpretationObject;
     }
@@ -25,7 +26,6 @@ nlohmann::json daq::streaming_protocol::BaseSynchronousSignal::createMember(cons
     memberInformation[META_NAME] = m_valueName;
     memberInformation[META_DATATYPE] = dataType;
     memberInformation[META_RULE] = META_RULETYPE_EXPLICIT;
-    memberInformation[META_VALUEINDEX] = m_valueIndex;
     if (m_unitId != Unit::UNIT_ID_NONE) {
         memberInformation[META_UNIT][META_UNIT_ID] = m_unitId;
         memberInformation[META_UNIT][META_DISPLAY_NAME] = m_unitDisplayName;
