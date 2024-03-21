@@ -107,8 +107,8 @@ void BaseDomainSignal::setTimeStart(uint64_t timeTicks)
         uint64_t timeStart;
     };
     BinaryUint64StartValue startValue;
-    startValue.valueIndex = m_valueIndex; // initial start time!
-    startValue.timeStart = timeTicks;
+    startValue.valueIndex = 0; // kept for backward compatibility
+    startValue.timeStart = timeTicks; // initial start time!
     int result = m_writer.writeSignalData(m_signalNumber, reinterpret_cast<uint8_t*>(&startValue), sizeof(startValue));
     if (result < 0) {
         STREAMING_PROTOCOL_LOG_E("{}: Could not write signal time!", m_signalNumber);

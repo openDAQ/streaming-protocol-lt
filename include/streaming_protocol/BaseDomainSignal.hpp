@@ -53,8 +53,6 @@ namespace daq::streaming_protocol{
         /// \warning Since only C++ libraries under linux allow resolution down to nanoseconds, resolution is limited to microseconds
         static std::chrono::time_point<std::chrono::system_clock> timeFromTimeTicks(uint64_t timeTicks, uint64_t m_timeTicksPerSecond);
 
-        uint64_t getValueIndex() const;
-
     protected:
 
         nlohmann::json createMember(const std::string& dataType) const;
@@ -62,7 +60,6 @@ namespace daq::streaming_protocol{
         virtual nlohmann::json getMemberInformation() const = 0;
 
         uint64_t m_startInTicks;
-        uint64_t m_valueIndex;
 
         uint64_t m_timeTicksPerSecond;
         std::string m_epoch = UNIX_EPOCH;
