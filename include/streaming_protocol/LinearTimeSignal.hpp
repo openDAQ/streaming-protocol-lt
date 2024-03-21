@@ -45,7 +45,6 @@ namespace daq::streaming_protocol{
         nlohmann::json createMember(const std::string& dataType) const;
 
         virtual nlohmann::json getMemberInformation() const override;
-        uint64_t m_timeTicksPerSecond;
         uint64_t m_outputRateInTicks;
     };
 }
