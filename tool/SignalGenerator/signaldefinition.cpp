@@ -51,8 +51,8 @@ void daq::streaming_protocol::siggen::addSignals(daq::streaming_protocol::siggen
     dblSignalParameters.frequency = 1.0;
     dblSignalParameters.dutyCycle = 0.5;
     dblSignalParameters.functionType = daq::streaming_protocol::siggen::FUNCTION_TYPE_RECTANGLE;
-    signalGenerator.addLinearTimeSignal("async_time", "table_50ms", samplePeriod);
-    signalGenerator.addAsynchronousSignal<double>("async_square", "table_50ms", dblSignalParameters, samplePeriod, 0);
+    signalGenerator.addExplicitTimeSignal("async_time", "table_50ms", samplePeriod);
+    signalGenerator.addAsynchronousSignal<double>("async_square", "table_50ms", dblSignalParameters, samplePeriod);
 
     samplePeriod = std::chrono::milliseconds(10);
     dblSignalParameters.amplitude = 10;

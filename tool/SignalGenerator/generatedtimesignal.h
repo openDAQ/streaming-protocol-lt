@@ -25,6 +25,7 @@
 #include "streaming_protocol/BaseSignal.hpp"
 #include "streaming_protocol/iWriter.hpp"
 #include "streaming_protocol/LinearTimeSignal.hpp"
+#include "streaming_protocol/ExplicitTimeSignal.hpp"
 
 #include "defines.h"
 #include "function.h"
@@ -32,16 +33,8 @@
 
 
 namespace daq::streaming_protocol::siggen{
-    /// A synthetic signal delivers meta information describing the properties of the signal a synthetic measured data.
-    /// The properties:
-    /// * frequency
-    /// * enumeration for the pattern type (constant, sine, square, saw tooth...)
-    /// * parameters specific for the pattern type (amplitude, offset, frequency, duty cycle)
-    /// We set all properties on creation of the signal.
-    /// DataType can of the following types:
-    /// * float
-    /// * double
-    /// * int32_t
+    /// TODO add documentation comment
+    template < class SignalType >
     class GeneratedTimeSignal: public iGeneratedSignal {
     public:
 
@@ -53,12 +46,8 @@ namespace daq::streaming_protocol::siggen{
                             std::chrono::nanoseconds samplePeriod,
                             uint64_t timeTicksPerSecond,
                             const std::chrono::time_point<std::chrono::system_clock> &currentTime,
-                            streaming_protocol::iWriter &writer)
-            : logCallback(daq::streaming_protocol::Logging::logCallback())
-            , m_currentTime(currentTime)
-            , m_signal(std::make_shared<streaming_protocol::LinearTimeSignal> (signalId, tableId, timeTicksPerSecond, samplePeriod, writer, logCallback))
-        {
-        }
+                            streaming_protocol::iWriter &writer);
+
         /// not to be copied!
         GeneratedTimeSignal(const GeneratedTimeSignal&) = delete;
         ~GeneratedTimeSignal() = default;
@@ -84,6 +73,34 @@ namespace daq::streaming_protocol::siggen{
     private:
         daq::streaming_protocol::LogCallback logCallback;
         const std::chrono::time_point<std::chrono::system_clock> &m_currentTime;
-        std::shared_ptr<streaming_protocol::LinearTimeSignal> m_signal;
+        std::shared_ptr<streaming_protocol::BaseDomainSignal> m_signal;
     };
+
+    template <>
+    inline GeneratedTimeSignal<streaming_protocol::ExplicitTimeSignal>::GeneratedTimeSignal(
+        const std::string& signalId,
+        const std::string& tableId,
+        std::chrono::nanoseconds samplePeriod,
+        uint64_t timeTicksPerSecond,
+        const std::chrono::time_point<std::chrono::system_clock> &currentTime,
+        streaming_protocol::iWriter &writer)
+        : logCallback(daq::streaming_protocol::Logging::logCallback())
+        , m_currentTime(currentTime)
+        , m_signal(std::make_shared<streaming_protocol::ExplicitTimeSignal> (signalId, tableId, timeTicksPerSecond, writer, logCallback))
+    {
+    }
+
+    template <>
+    inline GeneratedTimeSignal<streaming_protocol::LinearTimeSignal>::GeneratedTimeSignal(
+        const std::string& signalId,
+        const std::string& tableId,
+        std::chrono::nanoseconds samplePeriod,
+        uint64_t timeTicksPerSecond,
+        const std::chrono::time_point<std::chrono::system_clock> &currentTime,
+        streaming_protocol::iWriter &writer)
+        : logCallback(daq::streaming_protocol::Logging::logCallback())
+        , m_currentTime(currentTime)
+        , m_signal(std::make_shared<streaming_protocol::LinearTimeSignal> (signalId, tableId, timeTicksPerSecond, samplePeriod, writer, logCallback))
+    {
+    }
 }

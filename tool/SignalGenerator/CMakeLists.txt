@@ -12,7 +12,7 @@ option(FEATURE_SIGNAL_GENERATOR_NANOSECOND_RESOLUTION "Time resolution in nanose
 set(SIGGEN_COMMON_SOURCES
   defines.h
   function.h
-  #generatedasynchronoussignal.h
+  generatedasynchronoussignal.h
   generatedsynchronoussignal.h
   generatedtimesignal.h
   signaldefinition.cpp
