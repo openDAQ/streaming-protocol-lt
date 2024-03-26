@@ -122,6 +122,8 @@ static void signalMetaCb(const daq::streaming_protocol::SubscribedSignal& subscr
 {
     if (method == daq::streaming_protocol::META_METHOD_SUBSCRIBE) {
         s_signalInfos.emplace(subscribedSignal.signalNumber(), subscribedSignal.signalId());
+        std::cout << __FUNCTION__ << " signal\n\t" << subscribedSignal.signalId() << " (signal number " << subscribedSignal.signalNumber() << ") got subscribed" << std::endl;
+        return;
     } else if (method == daq::streaming_protocol::META_METHOD_UNSUBSCRIBE) {
         s_signalInfos.at(subscribedSignal.signalNumber()).print();
         s_signalInfos.erase(subscribedSignal.signalNumber());

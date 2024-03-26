@@ -5,7 +5,7 @@ if (NOT CMAKE_MESSAGE_CONTEXT)
     set(CMAKE_MESSAGE_CONTEXT_SHOW ON CACHE BOOL "Show CMake message context")
 endif()
 
-project(streaming_protocol_complete VERSION 0.10.15 LANGUAGES CXX)
+project(streaming_protocol_complete VERSION 0.10.16 LANGUAGES CXX)
 
 if (POLICY CMP0074)
     cmake_policy(SET CMP0074 NEW)
@@ -23,7 +23,7 @@ endif()
 
 option(STREAMING_PROTOCOL_SPECIFICATION "Enable building the specification" OFF)
 option(STREAMING_PROTOCOL_LIB "Enable building the library implementing the protocol" ON)
-option(STREAMING_PROTOCOL_TOOLS "Enable building some tools that use the streaming_protocol library" OFF)
+option(STREAMING_PROTOCOL_TOOLS "Enable building some tools that use the streaming_protocol library" ON)
 option(STREAMING_PROTOCOL_POST_BUILD_UNITTEST "Automatically run unit-tests as a post build step" OFF)
 
 set(OPENDAQ_REPO_PREFIX "https://github.com/openDAQ" CACHE STRING "Set this if using a repository mirror")

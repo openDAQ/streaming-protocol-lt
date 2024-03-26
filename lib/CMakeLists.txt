@@ -59,7 +59,11 @@ set(STREAMING_PROTOCOL_STREAMING_INTERFACE_HEADERS
     # producer
     AsynchronousSignal.hpp
     BaseSignal.hpp
+    BaseDomainSignal.hpp
+    BaseValueSignal.hpp
     BaseSynchronousSignal.hpp
+    ExplicitTimeSignal.hpp
+    LinearTimeSignal.hpp
     ControlServer.hpp
     ProducerSession.hpp
     Server.hpp
@@ -92,7 +96,11 @@ set(STREAMING_PROTOCOL_STREAMING_LIB_SOURCES
     # producer
     AsynchronousSignal.cpp
     BaseSignal.cpp
+    BaseDomainSignal.cpp
+    BaseValueSignal.cpp
     BaseSynchronousSignal.cpp
+    ExplicitTimeSignal.cpp
+    LinearTimeSignal.cpp
     ControlServer.cpp
     ProducerSession.cpp
     Server.cpp
@@ -108,8 +116,8 @@ set_property(TARGET ${PROJECT_NAME} PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC nlohmann_json::nlohmann_json
                                              daq::stream
-                                             spdlog
-                                             fmt
+                                             spdlog::spdlog
+                                             fmt::fmt
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC
@@ -158,7 +166,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 )
 
 target_link_libraries( ${PROJECT_NAME} INTERFACE
-    spdlog
+    spdlog::spdlog
 )
 
 # install the public headers

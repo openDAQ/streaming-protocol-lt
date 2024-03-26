@@ -114,8 +114,9 @@ int SignalContainer::processMetaInformation(SignalNumber signalNumber, const Met
     if (method == META_METHOD_SIGNAL) {
         // Perhaps we need to add this to the table members. If it already exists, nothing is changed.
         auto signalNumberIter = m_subscribedSignals.find(signalNumber);
-        std::string tableId = signalNumberIter->second->tableId();
-        if (signalNumberIter->second->isTimeSignal()) {
+        const auto& subscribedSignal = signalNumberIter->second;
+        std::string tableId = subscribedSignal->tableId();
+        if (subscribedSignal->isTimeSignal()) {
             m_tables[tableId].timeSignalNumber = signalNumber;
         } else {
             m_tables[tableId].dataSignalNumbers.insert(signalNumber);
@@ -157,25 +158,25 @@ ssize_t SignalContainer::processMeasuredData(SignalNumber signalNumber, const un
             // get the related data signal and set its time
             const auto tableIter = m_tables.find(tableId);
             if (tableIter != m_tables.end()) {
-                uint64_t valueIndex;
-                memcpy(&valueIndex, data, sizeof(valueIndex));
+                const Table& table = tableIter->second;
                 memcpy(&timeStamp, data+sizeof(uint64_t), sizeof(timeStamp));
 
-                const auto dataSignalNumbers = tableIter->second.dataSignalNumbers;
+                const auto dataSignalNumbers = table.dataSignalNumbers;
                 for(const auto signalNumberIter : dataSignalNumbers) {
-                    auto dataSignal = m_subscribedSignals[signalNumberIter];
+                    auto& dataSignal = m_subscribedSignals[signalNumberIter];
                     signal->setTime(timeStamp);
-                    STREAMING_PROTOCOL_LOG_D("{}:\n\tTime for value index {} is: {}", dataSignal->signalId(), valueIndex, timeStamp);
+                    STREAMING_PROTOCOL_LOG_D("{}:\n\tStart time is: {}", dataSignal->signalId(), timeStamp);
                 }
             }
         }
     } else {
-        std::string tableId =signal->tableId();
-        auto tableIter = m_tables.find(tableId);
+        std::string tableId = signal->tableId();
+        const auto& tableIter = m_tables.find(tableId);
         if (tableIter != m_tables.end()) {
-            unsigned int timeSignalNumber = tableIter->second.timeSignalNumber;
+            const Table& table = tableIter->second;
+            unsigned int timeSignalNumber = table.timeSignalNumber;
             if (timeSignalNumber == 0) {
-                STREAMING_PROTOCOL_LOG_E("No time signal available!");
+                STREAMING_PROTOCOL_LOG_E("No time signal available for signal {}!", signalNumber);
                 return -1;
             } else {
                 auto timeSignal = m_subscribedSignals[timeSignalNumber];

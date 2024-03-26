@@ -16,27 +16,26 @@
 
 #pragma once
 
-#include "streaming_protocol/BaseValueSignal.hpp"
+#include "streaming_protocol/BaseDomainSignal.hpp"
 #include "streaming_protocol/iWriter.hpp"
 
 namespace daq::streaming_protocol{
     /// \addtogroup producer
     /// Abstrace base class for producing signal data
-    class BaseSynchronousSignal : public BaseValueSignal {
+    class LinearTimeSignal : public BaseDomainSignal {
     public:
-        BaseSynchronousSignal(const std::string& signalId, const std::string& tableId, iWriter &writer, LogCallback logCb, std::uint64_t valueIndex);
+        LinearTimeSignal(const std::string& signalId, const std::string& tableId, uint64_t timeTicksPerSecond, const std::chrono::nanoseconds& outputRate, iWriter &writer, LogCallback logCb);
 
-        virtual int addData(const void* data, size_t sampleCount) = 0;
+        /// A domain Signal has a Time Rule attached
+        virtual RuleType getRuleType() const override;
 
-        uint64_t getValueIndex()
-        {
-            return m_valueIndex;
-        }
+        uint64_t getTimeDelta() const;
 
-        void setValueIndex(uint64_t valueIndex)
-        {
-            m_valueIndex = valueIndex;
-        }
+        /// Tell the time between two values
+        /// To be called before sending the first value and on change of the output rate.
+        void setOutputRate(uint64_t timeTicks);
+
+        void setOutputRate(const std::chrono::nanoseconds& nanoseconds);
 
         /// Signal meta information describes the signal. It is written once after signal got subscribed.
         void writeSignalMetaInformation() const override;
@@ -45,8 +44,7 @@ namespace daq::streaming_protocol{
 
         nlohmann::json createMember(const std::string& dataType) const;
 
-        virtual nlohmann::json getMemberInformation() const = 0;
-        
-        uint64_t m_valueIndex;
+        virtual nlohmann::json getMemberInformation() const override;
+        uint64_t m_outputRateInTicks;
     };
 }

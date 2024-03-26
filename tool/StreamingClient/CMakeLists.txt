@@ -35,9 +35,8 @@ target_link_libraries(streaming_client PRIVATE Threads::Threads
                                                daq::streaming_protocol
                                                nlohmann_json::nlohmann_json
                                                Boost::program_options
-                                               spdlog
-                                               fmt
-)
+                                               spdlog::spdlog
+                                               fmt::fmt)
 
 
 if (MSVC)

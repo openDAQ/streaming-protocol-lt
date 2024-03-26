@@ -48,9 +48,13 @@ set(TEST_LIB_SOURCES
 
     # producer
     ../lib/AsynchronousSignal.cpp
+    ../lib/BaseDomainSignal.cpp
     ../lib/BaseSignal.cpp
+    ../lib/BaseValueSignal.cpp
     ../lib/BaseSynchronousSignal.cpp
     ../lib/ControlServer.cpp
+    ../lib/ExplicitTimeSignal.cpp
+    ../lib/LinearTimeSignal.cpp
     ../lib/ProducerSession.cpp
     ../lib/Server.cpp
     ../lib/StreamWriter.cpp
@@ -77,8 +81,8 @@ target_link_libraries(
          ${GCOV_LIB}
          nlohmann_json::nlohmann_json
          daq::stream
-         spdlog
-         fmt
+         spdlog::spdlog
+         fmt::fmt
 )
 
 target_include_directories(${STREAMING_PROTOCOL_TEST_LIB} PUBLIC ../include)
