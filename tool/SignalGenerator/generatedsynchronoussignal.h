@@ -101,7 +101,7 @@ namespace daq::streaming_protocol::siggen{
                         if (m_periodTimeDouble>=m_period-m_samplePeriodDouble) {
                             m_periodTimeDouble = 0.0;
                         }
-#ifdef __linux
+#if defined(__linux) && ! defined(_LIBCPP_VERSION)
 						m_lastProcessTime += m_samplePeriod;
 #else
 						m_lastProcessTime += std::chrono::duration_cast <std::chrono::microseconds> (m_samplePeriod);
