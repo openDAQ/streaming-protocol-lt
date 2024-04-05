@@ -36,25 +36,34 @@ ssize_t SubscribedSignal::processMeasuredData(const unsigned char* pData, size_t
     switch (timeSignal->m_ruleType) {
     case RULETYPE_LINEAR:
     {
-        // short read is not allowed! We expect complete packages only!
-        m_linearDelta = timeSignal->m_linearDelta;
-        uint64_t timeStamp = timeSignal->time() + (m_linearValueIndex * m_linearDelta);
-        cbRaw(*this, timeStamp, pData, size);
-        
-        // Since we deliver the time stamp of the first value,
-        // We increment timestamp after execution of the callback methods.
         // Signals with a non-explicit rule will have a value index for each value
         size_t bytesPerValue;
+        m_linearDelta = timeSignal->m_linearDelta;
+
         if (m_ruleType == RULETYPE_EXPLICIT) {
+            // Since we deliver the time stamp of the first value,
+            // We increment timestamp after execution of the callback methods.
+            // short read is not allowed! We expect complete packages only!
+
+            uint64_t timeStamp = timeSignal->time() + (m_linearValueIndex * m_linearDelta);
+            cbRaw(*this, timeStamp, pData, size);
+
             bytesPerValue = m_dataValueSize;
-        } else {
+            size_t valueCount = size / bytesPerValue;
+            cbValues(*this, timeStamp, pData, valueCount);
+            m_linearValueIndex += valueCount;
+        }
+        else if (m_ruleType == RULETYPE_CONSTANT) {
             // for implicit signals, we get also the value index
             bytesPerValue = sizeof(uint64_t) + m_dataValueSize;
-        }
-        size_t valueCount = size / bytesPerValue;
-        cbValues(*this, timeStamp, pData, valueCount);
 
-        m_linearValueIndex += valueCount;
+            cbRaw(*this, timeSignal->time(), pData, size);
+            size_t valueCount = size / bytesPerValue;
+            cbValues(*this, timeSignal->time(), pData, valueCount);
+        }
+        else {
+            STREAMING_PROTOCOL_LOG_E("Linear data signal is not supported");
+        }
         break;
     }
     case RULETYPE_EXPLICIT:
@@ -269,6 +278,7 @@ int SubscribedSignal::processSignalMetaInformation(const std::string& method, co
                         ///}
                         ///
                         m_datatypeDetails = definitionNode[DATA_TYPE_BITFIELD];
+                        m_bitsInterpretationObject = m_datatypeDetails["bits"];
                         std::string bitfieldDataType = m_datatypeDetails[META_DATATYPE];
                         if (bitfieldDataType == DATA_TYPE_UINT32) {
                             m_dataValueType = SAMPLETYPE_BITFIELD32;
@@ -386,18 +396,18 @@ int SubscribedSignal::processSignalMetaInformation(const std::string& method, co
                     } else if (m_ruleType == RULETYPE_EXPLICIT) {
                         STREAMING_PROTOCOL_LOG_I("\tAsynchronous signal (Explicit time)");
                     }
+                }
 
-                    definitionIter = params.find(META_RELATEDSIGNALS);
-                    if (definitionIter != params.end()) {
-                        STREAMING_PROTOCOL_LOG_I("{}:", m_signalId);
-                        STREAMING_PROTOCOL_LOG_I("\tRelated signals", m_signalId);
-                        nlohmann::json relatedSignals = *definitionIter;
-                        if (relatedSignals.is_array()) {
-                            for (const auto& arrayItem: relatedSignals) {
-                                std::string type = arrayItem["type"];
-                                std::string signalId = arrayItem["signalId"];
-                                STREAMING_PROTOCOL_LOG_I("\t\tsignal id: {}, type: ", signalId, type);
-                            }
+                definitionIter = params.find(META_RELATEDSIGNALS);
+                if (definitionIter != params.end()) {
+                    STREAMING_PROTOCOL_LOG_I("{}:", m_signalId);
+                    STREAMING_PROTOCOL_LOG_I("\tRelated signals", m_signalId);
+                    nlohmann::json relatedSignals = *definitionIter;
+                    if (relatedSignals.is_array()) {
+                        for (const auto& arrayItem: relatedSignals) {
+                            std::string type = arrayItem["type"];
+                            std::string signalId = arrayItem["signalId"];
+                            STREAMING_PROTOCOL_LOG_I("\t\tsignal id: {}, type: ", signalId, type);
                         }
                     }
                 }

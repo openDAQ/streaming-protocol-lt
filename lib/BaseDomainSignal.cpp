@@ -107,7 +107,7 @@ void BaseDomainSignal::setTimeStart(uint64_t timeTicks)
         uint64_t timeStart;
     };
     BinaryUint64StartValue startValue;
-    startValue.valueIndex = 0; // kept for backward compatibility
+    startValue.valueIndex = 0; // start new indexing
     startValue.timeStart = timeTicks; // initial start time!
     int result = m_writer.writeSignalData(m_signalNumber, reinterpret_cast<uint8_t*>(&startValue), sizeof(startValue));
     if (result < 0) {

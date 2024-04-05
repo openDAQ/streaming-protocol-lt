@@ -175,6 +175,11 @@ public:
         return m_interpretationObject;
     }
 
+    nlohmann::json bitsInterpretationObject()  const
+    {
+        return m_bitsInterpretationObject;
+    }
+
     /// @param count Number of values to process, not the number of bytes!
     size_t interpretValuesAsDouble(const unsigned char* pData, size_t count, double *doubleValueBuffer) const;
 
@@ -212,6 +217,7 @@ private:
 
     /// contains details if data type is bitField, array or struct
     nlohmann::json m_datatypeDetails;
+    nlohmann::json m_bitsInterpretationObject;
     SampleType m_dataValueType;
     size_t m_dataValueSize;
 

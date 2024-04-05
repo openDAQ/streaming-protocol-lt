@@ -41,9 +41,6 @@ namespace daq::streaming_protocol{
         void writeSignalMetaInformation() const override;
 
     protected:
-
-        nlohmann::json createMember(const std::string& dataType) const;
-
         virtual nlohmann::json getMemberInformation() const override;
         uint64_t m_outputRateInTicks;
     };
