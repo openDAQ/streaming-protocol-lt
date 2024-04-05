@@ -54,9 +54,6 @@ namespace daq::streaming_protocol{
         static std::chrono::time_point<std::chrono::system_clock> timeFromTimeTicks(uint64_t timeTicks, uint64_t m_timeTicksPerSecond);
 
     protected:
-
-        nlohmann::json createMember(const std::string& dataType) const;
-
         virtual nlohmann::json getMemberInformation() const = 0;
 
         uint64_t m_startInTicks;

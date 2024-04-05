@@ -176,7 +176,10 @@ ssize_t SignalContainer::processMeasuredData(SignalNumber signalNumber, const un
             const Table& table = tableIter->second;
             unsigned int timeSignalNumber = table.timeSignalNumber;
             if (timeSignalNumber == 0) {
-                STREAMING_PROTOCOL_LOG_E("No time signal available for signal {}!", signalNumber);
+                STREAMING_PROTOCOL_LOG_E("No time signal available for signal id {} number {} table {}!",
+                                         signalIter->second->signalId(),
+                                         signalNumber,
+                                         tableId);
                 return -1;
             } else {
                 auto timeSignal = m_subscribedSignals[timeSignalNumber];

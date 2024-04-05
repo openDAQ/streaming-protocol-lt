@@ -69,6 +69,8 @@ set(STREAMING_PROTOCOL_STREAMING_INTERFACE_HEADERS
     Server.hpp
     StreamWriter.h
     SynchronousSignal.hpp
+    BaseConstantSignal.hpp
+    ConstantSignal.hpp
 )
 
 
@@ -106,6 +108,8 @@ set(STREAMING_PROTOCOL_STREAMING_LIB_SOURCES
     Server.cpp
     StreamWriter.cpp
     SynchronousSignal.cpp
+    BaseConstantSignal.cpp
+    ConstantSignal.cpp
 )
 
 add_library(${PROJECT_NAME} ${STREAMING_PROTOCOL_STREAMING_LIB_SOURCES})
