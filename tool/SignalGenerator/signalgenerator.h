@@ -215,11 +215,11 @@ namespace daq::streaming_protocol::siggen {
 
             if (explicitTime) {
                 // asynchronous signal
-                addExplicitTimeSignal(id + "_time", tableId, samplePeriod);
+                addExplicitTimeSignal("A_" + id + "_time", tableId, samplePeriod);
                 addAsynchronousSignal<T>(id, tableId, signalParameters, samplePeriod);
             } else {
                 // synchronous signal
-                addLinearTimeSignal(id + "_time", tableId, samplePeriod);
+                addLinearTimeSignal("A_" + id + "_time", tableId, samplePeriod);
                 addSynchronousSignal<T>(id, tableId, signalParameters, samplePeriod, 0);
             }
             return 0;
