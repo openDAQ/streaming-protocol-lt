@@ -9,6 +9,7 @@ namespace daq::streaming_protocol
         const std::string name = "openDaqStreaming";
         static auto logger =
             std::make_shared<spdlog::logger>(name, std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
+        logger->set_level(spdlog::level::trace);
 
         return [](spdlog::source_loc location, spdlog::level::level_enum level, const char* msg) {
             logger->log(location, level, msg);

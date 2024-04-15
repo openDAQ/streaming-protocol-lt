@@ -32,15 +32,16 @@ endif()
 
 target_link_libraries(siggenCommon PUBLIC daq::streaming_protocol daq::stream nlohmann_json::nlohmann_json spdlog::spdlog fmt::fmt)
 
+if (NOT WIN32)
+    # FileStream is not supported on win32
+    set(SIGGEN2FILE_SOURCES
+      siggen2file.cpp
+    )
 
-
-set(SIGGEN2FILE_SOURCES
-  siggen2file.cpp
-)
-
-add_executable(siggen2file
-  ${SIGGEN2FILE_SOURCES}
-)
+    add_executable(siggen2file
+      ${SIGGEN2FILE_SOURCES}
+    )
+endif()
 
 set(SIGGEN2SOCKET_SOURCES
   siggen2socket.cpp
@@ -62,8 +63,18 @@ add_executable(siggen2websocket
   ${SIGGEN2WEBSOCKET_SOURCES}
 )
 
+if (NOT WIN32)
+    set(SIGGEN_TARGETS siggen2file
+                       siggen2socket
+                       siggen2websocket
+    )
+else()
+    set(SIGGEN_TARGETS siggen2socket
+                       siggen2websocket
+    )
+endif()
 
-foreach(tgt siggen2file siggen2socket siggen2websocket)
+foreach(tgt ${SIGGEN_TARGETS})
 #    target_include_directories(${tgt} PRIVATE "../../include")
     target_compile_features(${tgt} PRIVATE cxx_std_17)
     target_link_libraries(${tgt} PRIVATE

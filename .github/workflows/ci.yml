@@ -9,21 +9,19 @@ jobs:
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}-${{ matrix.name }}
       cancel-in-progress: true
-    timeout-minutes: 10
+    timeout-minutes: 30
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         include:
           - name: Ubuntu
             runner: ubuntu-latest
             cmake_generator: "Unix Makefiles"
             cmake_build_type: Debug
-            cmake_defines: -DSTREAMING_PROTOCOL_POST_BUILD_UNITTEST=ON
           - name: Windows
             runner: windows-latest
             cmake_generator: "Visual Studio 17 2022"
             cmake_build_type: Debug
-            cmake_defines: -DSTREAMING_PROTOCOL_POST_BUILD_UNITTEST=ON
 
     steps:
       - name: Checkout repository
@@ -33,7 +31,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake -G "${{ matrix.cmake_generator }}" ${{ matrix.cmake_defines }} -DCMAKE_BUILD_TYPE=${{ matrix.cmake_build_type }} ..
+          cmake -G "${{ matrix.cmake_generator }}" -DSTREAMING_PROTOCOL_POST_BUILD_UNITTEST=ON -DCMAKE_BUILD_TYPE=${{ matrix.cmake_build_type }} ..
 
       - name: Build
         working-directory: build
