@@ -540,6 +540,8 @@ There are different rule types. More rule types can be added in the future.
 For equidistant signal members use the linear rule.
 
 It is described by an absolute start value and a relative delta between two neighboring values.
+A time signal is an example for a signal with implicit linear rule. On time resynchronization, a new time start value is send together with a value index.
+This is send before any explicit data with this value index.
 
 ![Equidistant 2 dimensional points](images/equidistant_points.png)
 
@@ -593,6 +595,8 @@ A log axis is described as follows:
 
 ### Constant Rule
 The rule is simple: There is a start value. The value equals the start value until a new start value is posted.
+A status signal is an example for a signal with implicit constant rule. A new constant value together with a value index is send on change of the status.
+This is send before any explicit data with this value index.
 
 ~~~~ {.javascript}
 {
