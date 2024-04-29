@@ -1,7 +1,16 @@
 ---
-Title:  openDAQ Signal Definition Examples
-Author: Matthias Loy, Helge Rasmussen
-Version: 0.1
+title:  openDAQ Signal Definition Examples
+author: Matthias Loy, Helge Rasmussen
+version: 0.1
+subtitle: Version 1.0.1
+titlepage: true
+toc: true
+toc-own-page: true
+papersize: a4
+fontsize: 9pt
+numbersections: true
+linkcolor: blue
+document-type: Public
 ---
 
 In this document you find examples how signals are described in the hbk streaming protocol.
@@ -52,7 +61,7 @@ SignalId : "voltageTimeSignal"
 Unit for the time is seconds resolution is 1/1000 of a second. Time stamp would be in milliseconds since the epoch.
 
 
-Transferred data: 
+Transferred data:
 
 A uint64 containining index of the time (0) and a uint64 with the time at that index,
 after that no more time information is sent unless there is a break in the linear time such as a pause.
@@ -120,7 +129,7 @@ SignalId : "canTimeSignal"
 }
 ~~~~
 
-Transferred data for one signal value: 
+Transferred data for one signal value:
 
 ~~~~
 time (uint64)
@@ -183,7 +192,7 @@ This is for counting events that happens at any time (explicit rule).
 }
 ~~~~
 
-Transferred data for one signal value: 
+Transferred data for one signal value:
 
 ~~~~
 time (uint64)
@@ -248,7 +257,7 @@ initial counter position (uint32)
 }
 ~~~~
 
-Transferred data for one signal value: 
+Transferred data for one signal value:
 
 A uint64 containining the time.
 
@@ -313,7 +322,7 @@ angle (real64)
 }
 ~~~~
 
-Transferred data for one signal value: 
+Transferred data for one signal value:
 
 ~~~~
 time (uint64)
@@ -339,7 +348,7 @@ time (uint64)
 ~~~~
 
 
-This is similar to the simple counter. 
+This is similar to the simple counter.
 `angle` changes by a known amount of 1. Only time stamps are being transferred.
 
 Transferred signal data (Sent at start)
@@ -431,7 +440,7 @@ Transferred signal data for one signal value:
    value (real64)
 ~~~~
 
-- Data signal: Id: "data2" 
+- Data signal: Id: "data2"
 ~~~~ {.javascript}
 {
   "method": "signal",
@@ -443,17 +452,17 @@ Transferred signal data for one signal value:
       "dataType": "real64"
     }
   }
-} 
+}
 ~~~~
 
 Transferred signal data for one signal value:
 ~~~~
    value (real64)
 ~~~~
- 
+
 \pagebreak
 
-## Two signals measured at certain rpms. 
+## Two signals measured at certain rpms.
 
 Time for the measurement is also included to show that this also is possible
 
@@ -468,9 +477,9 @@ Time for the measurement is also included to show that this also is possible
       "name": "rpm",
       "rule: "explicit",
       "dataType": "real64"
-    } 
+    }
   }
-} 
+}
 ~~~~
 
 Transferred signal data for one signal value:
@@ -519,7 +528,7 @@ Transferred signal data for one signal value:
       "dataType": "real64"
     }
   }
-} 
+}
 ~~~~
 
 Transferred signal data for one signal value:
@@ -540,14 +549,14 @@ Transferred signal data for one signal value:
       "dataType": "real64"
     }
   }
-} 
+}
 ~~~~
 
 Transferred signal data for one signal value:
 ~~~~
    value (real64)
 ~~~~
- 
+
 
 \pagebreak
 
@@ -588,7 +597,7 @@ There is one base data type having one dimension.
 }
 ~~~~
 
-Transferred data: 
+Transferred data:
 
 ~~~~
    time (uint64)
@@ -602,17 +611,17 @@ Transferred data:
   "params" : {
     "tableId": "spectrum_table",
     "definition" : {
-      "name": "amplitude",      
+      "name": "amplitude",
       "dataType" : "real64",
       "rule" : "explicit",
-      "dimensions" : [      
+      "dimensions" : [
         {
           "name" : "frequency",
           "rule" : "linear",
-          "linear" : { 
+          "linear" : {
             "start" : 0.0,
             "delta" : 10.0,
-            "size" : 1024   	                    
+            "size" : 1024
           }
         }
       ]
@@ -668,7 +677,7 @@ Meta information describing the signal:
 }
 ~~~~
 
-Transferred data: 
+Transferred data:
 
 ~~~~
    time (uint64)
@@ -688,14 +697,14 @@ Transferred data:
           "name": "amplitude",
           "dataType" : "real64",
           "rule" : "explicit",
-          "dimensions" : [      
+          "dimensions" : [
             {
               "name" : "frequency",
               "rule" : "linear",
               "linear" : {
                 "start" : 0.0,
                 "delta" : 10.0,
-                "size" : 1024   	                    
+                "size" : 1024
               }
             }
           ]
@@ -726,9 +735,9 @@ Transferred data:
               }
 		    }
 		  ]
-	    }     
+	    }
       ]
-    }   
+    }
   }
 }
 ~~~~
@@ -772,8 +781,8 @@ The signal consists of a matrix of the following form:
 
 1		measval
 
-2				measval		
-			
+2				measval
+
 3						measval
 
 
@@ -807,7 +816,7 @@ This is a relative time without an epoch and start value 0. resolution is one pe
 }
 ~~~~
 
-Transferred data: 
+Transferred data:
 
 A uint64 containining index of the time (0) and a uint64 with the time at that index (0),
 after that no more time information is sent unless there is a break in the linear time such as a pause.
@@ -827,15 +836,15 @@ time (uint64)
   "params" : {
     "tableId": "matrix_table",
     "definition" : {
-      "name": "measval",      
+      "name": "measval",
       "dataType" : "real64",
       "rule" : "explicit",
-      "dimensions" : [      
+      "dimensions" : [
         {
           "name" : "Xdim",
           "dataType" : "string",
           "rule" : "list",
-          "list" : { 
+          "list" : {
             "values" : ["A", "B", "C", "D"]
           }
         },
@@ -912,7 +921,7 @@ It is made up of a struct containing an histogram with 10 classes (bins) and thr
 }
 ~~~~
 
-Transferred data: 
+Transferred data:
 
 ~~~~
    time (uint64)
@@ -931,25 +940,25 @@ Transferred data:
       "dataType": "struct",
       "struct": [
         {
-          "name": "count",      
+          "name": "count",
           "dataType" : "uint64",
           "rule" : "explicit",
-          "dimensions" : [      
+          "dimensions" : [
             {
               "name" : "class",
               "dataType": "uint32",
               "unit": {
                 "displayName" : "db",
               },
-              "rule" : "linear", 
+              "rule" : "linear",
               "linear" : {
                 "start" : {
                   "low" : 0,
                   "high": 4
                 },
                 "delta" : 5
-                "size" : 10   	                    
-              } 
+                "size" : 10
+              }
             }
           ]
         },
@@ -1029,7 +1038,7 @@ We'll get the following signal specific meta information:
 }
 ~~~~
 
-Transferred data: 
+Transferred data:
 
 ~~~~
 time (uint64)
@@ -1053,17 +1062,17 @@ time (uint64)
           "rule" : "explicit"
         },
         {
-          "name": "amplitude",      
+          "name": "amplitude",
           "dataType" : "real64",
           "rule" : "explicit"
-          "dimensions" : [      
+          "dimensions" : [
             {
               "name" : "frequency",
-              "rule" : "linear", 
+              "rule" : "linear",
               "linear" : {
                 "start" : 0.0,
                 "delta" : 10.0,
-                "size" : 100   	                    
+                "size" : 100
               }
             }
           ]
@@ -1079,7 +1088,7 @@ time (uint64)
 			"size": 15
           }
 		}
-	  ]      
+	  ]
     }
   }
 }
@@ -1096,13 +1105,13 @@ Transferred signal data for one signal value:
    amplitude 2 belonging to frequency 1 (real64)
    ...
    amplitude 100 belonging to frequency 1 (real64)
-   
+
    frequency 2 (real64)
    amplitude 1 belonging to frequency 2 (real64)
    amplitude 2 belonging to frequency 2 (real64)
    ...
    amplitude 100 belonging to frequency 2 (real64)
-   
+
    ...
 
    frequency 15 (real64)
@@ -1116,7 +1125,7 @@ Transferred signal data for one signal value:
 
 ## Point in Cartesian Space
 
-Depending on the the number of dimensions n, 
+Depending on the the number of dimensions n,
 The value is a struct of n real64 values. In this example we choose 3 dimensions x, y, and z.
 
 We'll get the following signal specific meta information:
@@ -1143,7 +1152,7 @@ We'll get the following signal specific meta information:
 }
 ~~~~
 
-Transferred data: 
+Transferred data:
 
 ~~~~
    time (uint64)
@@ -1176,7 +1185,7 @@ Transferred data:
           "rule: "explicit"
         }
       ]
-    }    
+    }
   }
 }
 ~~~~
@@ -1233,5 +1242,3 @@ Here are some time resolution examples:
 - 1200 Hz = [1/1200]
 - 44100 Hz = [1/44100]
 - 0.5 Hz = [ 2/1 ]
-
-
