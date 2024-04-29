@@ -8,6 +8,7 @@ papersize: a4
 fontsize: 9pt
 numbersections: true
 linkcolor: blue
+document-type: Public
 ---
 
 
