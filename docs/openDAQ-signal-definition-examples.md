@@ -13,7 +13,7 @@ linkcolor: blue
 document-type: Public
 ---
 
-In this document you find examples how signals are described in the hbk streaming protocol.
+In this document you find examples how signals are described in the openDAQ streaming protocol.
 
 When describing what signal data is sent, the examples always assume we are sending one value. More values can of course be sent in one packet if necessary.
 
