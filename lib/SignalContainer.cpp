@@ -96,6 +96,10 @@ int SignalContainer::processMetaInformation(SignalNumber signalNumber, const Met
         std::unique_ptr < SubscribedSignal > subscribedSignal = std::make_unique < SubscribedSignal > (signalNumber, logCallback);
         //STREAMING_PROTOCOL_LOG_I(":\n\tGot subscribed! (signal number: {})", signalNumber);
         std::pair < Signals::iterator, bool > result = m_subscribedSignals.emplace(signalNumber, std::move(subscribedSignal));
+        if (result.second==false) {
+            STREAMING_PROTOCOL_LOG_E("Got duplicate subscribe ack for signal number {} with signal id {}!", signalNumber, signalIdIter->dump());
+            return -1;
+        }
         signalIter = result.first;
     } else {
         signalIter = m_subscribedSignals.find(signalNumber);
@@ -176,7 +180,7 @@ ssize_t SignalContainer::processMeasuredData(SignalNumber signalNumber, const un
             const Table& table = tableIter->second;
             unsigned int timeSignalNumber = table.timeSignalNumber;
             if (timeSignalNumber == 0) {
-                STREAMING_PROTOCOL_LOG_E("No time signal available for signal id {} number {} table {}!",
+                STREAMING_PROTOCOL_LOG_E("No time signal available for signal id '{}', number {}, table '{}'!",
                                          signalIter->second->signalId(),
                                          signalNumber,
                                          tableId);
