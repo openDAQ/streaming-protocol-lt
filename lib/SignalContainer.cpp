@@ -69,7 +69,7 @@ int SignalContainer::processMetaInformation(SignalNumber signalNumber, const Met
     if (method == META_METHOD_UNSUBSCRIBE) {
         signalIter = m_subscribedSignals.find(signalNumber);
         if (signalIter == m_subscribedSignals.end()) {
-            STREAMING_PROTOCOL_LOG_E("Got meta information for unknown signal '{}'", signalNumber);
+            STREAMING_PROTOCOL_LOG_E("Got unsubscribe meta information for signal '{}' that was not subscribed before", signalNumber);
             return -1;
         }
         std::string tableId = signalIter->second->tableId();
@@ -100,7 +100,7 @@ int SignalContainer::processMetaInformation(SignalNumber signalNumber, const Met
     } else {
         signalIter = m_subscribedSignals.find(signalNumber);
         if (signalIter == m_subscribedSignals.end()) {
-            STREAMING_PROTOCOL_LOG_E("Got meta information '{}' of unknown signal {}. Aborting!", method, signalNumber);
+            STREAMING_PROTOCOL_LOG_E("Got meta information '{}' of signal {}, that was not subscribed before. Aborting!", method, signalNumber);
             return -1;
         }
     }
@@ -131,7 +131,7 @@ ssize_t SignalContainer::processMeasuredData(SignalNumber signalNumber, const un
 {
     Signals::iterator signalIter = m_subscribedSignals.find(signalNumber);
     if (signalIter == m_subscribedSignals.end()) {
-        STREAMING_PROTOCOL_LOG_E("Got data for unknown signal '{}'", signalNumber);
+        STREAMING_PROTOCOL_LOG_E("Got data for signal '{}', that was not subscribed before", signalNumber);
         return -1;
     }
 
