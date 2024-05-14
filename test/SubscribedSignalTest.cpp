@@ -96,8 +96,9 @@ namespace daq::streaming_protocol {
         SubscribedSignal timeSignal(signalNumber, logCallback);
 
         static const std::string unitDisplayName = "s";
-        uint64_t numerator = 1;
-        uint64_t denominator = 1000000000;
+        static const std::string unixEpoch = "1970-01-01";
+        static const uint64_t numerator = 1;
+        static const uint64_t denominator = 1000000000;
 
         /// linear time rule with delta = 0 is not valid!
         nlohmann::json metaTimeSignal;
@@ -108,6 +109,7 @@ namespace daq::streaming_protocol {
         metaTimeSignal[META_DEFINITION][META_UNIT][META_UNIT_ID] = Unit::UNIT_ID_SECONDS;
         metaTimeSignal[META_DEFINITION][META_UNIT][META_DISPLAY_NAME] = unitDisplayName;
         metaTimeSignal[META_DEFINITION][META_UNIT][META_QUANTITY] = META_TIME;
+        metaTimeSignal[META_DEFINITION][META_ABSOLUTE_REFERENCE] = unixEpoch;
         metaTimeSignal[META_DEFINITION][META_RESOLUTION][META_DENOMINATOR] = denominator;
         metaTimeSignal[META_DEFINITION][META_RESOLUTION][META_NUMERATOR] = numerator;
 
@@ -127,6 +129,7 @@ namespace daq::streaming_protocol {
         ASSERT_EQ(timeSignal.tableId(), tableId);
         ASSERT_EQ(timeSignal.interpretationObject(), interpretationObject);
         ASSERT_EQ(timeSignal.timeBaseFrequency(), denominator/numerator);
+        ASSERT_EQ(timeSignal.timeBaseEpochAsString(), unixEpoch);
     }
 
     /// prepare time signal and attach it to synchronous data signal
