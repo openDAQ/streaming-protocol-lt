@@ -129,7 +129,7 @@ static void signalMetaCb(const daq::streaming_protocol::SubscribedSignal& subscr
         s_signalInfos.erase(subscribedSignal.signalNumber());
     }
 
-    std::cout << __FUNCTION__ << " " << method << ": " << params.dump(2) << std::endl;
+    std::cout << __FUNCTION__ << " signal: '" << subscribedSignal.signalId() << "', method: '" << method << "':\n" << params.dump(2) << std::endl;
 }
 
 static void streamMetaInformationCb(daq::streaming_protocol::ProtocolHandler& protocolHandler, const std::string& method, const nlohmann::json& params)

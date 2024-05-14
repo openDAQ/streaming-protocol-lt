@@ -69,7 +69,7 @@ int SignalContainer::processMetaInformation(SignalNumber signalNumber, const Met
     if (method == META_METHOD_UNSUBSCRIBE) {
         signalIter = m_subscribedSignals.find(signalNumber);
         if (signalIter == m_subscribedSignals.end()) {
-            STREAMING_PROTOCOL_LOG_E("Got meta information for unknown signal '{}'", signalNumber);
+            STREAMING_PROTOCOL_LOG_E("Got unsubscribe meta information for signal '{}' that was not subscribed before", signalNumber);
             return -1;
         }
         std::string tableId = signalIter->second->tableId();
@@ -96,11 +96,15 @@ int SignalContainer::processMetaInformation(SignalNumber signalNumber, const Met
         std::unique_ptr < SubscribedSignal > subscribedSignal = std::make_unique < SubscribedSignal > (signalNumber, logCallback);
         //STREAMING_PROTOCOL_LOG_I(":\n\tGot subscribed! (signal number: {})", signalNumber);
         std::pair < Signals::iterator, bool > result = m_subscribedSignals.emplace(signalNumber, std::move(subscribedSignal));
+        if (result.second==false) {
+            STREAMING_PROTOCOL_LOG_E("Got duplicate subscribe ack for signal number {} with signal id {}!", signalNumber, signalIdIter->dump());
+            return -1;
+        }
         signalIter = result.first;
     } else {
         signalIter = m_subscribedSignals.find(signalNumber);
         if (signalIter == m_subscribedSignals.end()) {
-            STREAMING_PROTOCOL_LOG_E("Got meta information '{}' of unknown signal {}. Aborting!", method, signalNumber);
+            STREAMING_PROTOCOL_LOG_E("Got meta information '{}' of signal {}, that was not subscribed before. Aborting!", method, signalNumber);
             return -1;
         }
     }
@@ -131,7 +135,7 @@ ssize_t SignalContainer::processMeasuredData(SignalNumber signalNumber, const un
 {
     Signals::iterator signalIter = m_subscribedSignals.find(signalNumber);
     if (signalIter == m_subscribedSignals.end()) {
-        STREAMING_PROTOCOL_LOG_E("Got data for unknown signal '{}'", signalNumber);
+        STREAMING_PROTOCOL_LOG_E("Got data for signal '{}', that was not subscribed before", signalNumber);
         return -1;
     }
 
@@ -176,7 +180,7 @@ ssize_t SignalContainer::processMeasuredData(SignalNumber signalNumber, const un
             const Table& table = tableIter->second;
             unsigned int timeSignalNumber = table.timeSignalNumber;
             if (timeSignalNumber == 0) {
-                STREAMING_PROTOCOL_LOG_E("No time signal available for signal id {} number {} table {}!",
+                STREAMING_PROTOCOL_LOG_E("No time signal available for signal id '{}', number {}, table '{}'!",
                                          signalIter->second->signalId(),
                                          signalNumber,
                                          tableId);
