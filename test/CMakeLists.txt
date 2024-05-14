@@ -113,24 +113,29 @@ add_executable( SubscribedSignal.test
     SubscribedSignalTest.cpp
 )
 
-add_executable( Signal.test
-    SignalTest.cpp
-)
-
 if (NOT WIN32)
     # FileStream is used here which is not supported under windows
+
+    add_executable( Signal.test
+        SignalTest.cpp
+    )
+
     add_executable( ProducerSession.test
         ProducerSessionTest.cpp
     )
+
+    add_executable( ProtocolHandlerTest.test
+        ProtocolHandlerTest.cpp
+    )
+
+    add_executable( StreamWriter.test
+        StreamWriterTest.cpp
+    )
+
+    add_executable( CompleteWebsocketSession.test
+        CompleteWebsocketSessionTest.cpp
+    )
 endif()
-
-add_executable( ProtocolHandlerTest.test
-    ProtocolHandlerTest.cpp
-)
-
-add_executable( StreamWriter.test
-    StreamWriterTest.cpp
-)
 
 add_executable( Control.Test
     ControlTest.cpp
@@ -138,9 +143,6 @@ add_executable( Control.Test
 
 add_executable( Server.test
     ServerTest.cpp
-)
-add_executable( CompleteWebsocketSession.test
-	CompleteWebsocketSessionTest.cpp
 )
 
 get_property(targets DIRECTORY "${CMAKE_CURRENT_LIST_DIR}" PROPERTY BUILDSYSTEM_TARGETS)

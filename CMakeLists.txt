@@ -31,6 +31,10 @@ message(STATUS "openDAQ repository prefix: ${OPENDAQ_REPO_PREFIX}")
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+if (MSVC)
+    add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/std:c++17>)
+endif(MSVC)
+
 if(STREAMING_PROTOCOL_SPECIFICATION)
     add_subdirectory(docs)
 endif(STREAMING_PROTOCOL_SPECIFICATION)
@@ -38,7 +42,6 @@ endif(STREAMING_PROTOCOL_SPECIFICATION)
 if(STREAMING_PROTOCOL_LIB)
     add_subdirectory(lib)
 endif(STREAMING_PROTOCOL_LIB)
-
 
 if(STREAMING_PROTOCOL_TOOLS)
     add_subdirectory(tool)
