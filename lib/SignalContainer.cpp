@@ -128,6 +128,10 @@ int SignalContainer::processMetaInformation(SignalNumber signalNumber, const Met
     }
 
     m_signalMetaCb(signal, method, params);
+
+    if (method == META_METHOD_UNSUBSCRIBE) {
+        m_subscribedSignals.erase(signalIter);
+    }
     return 0;
 }
 
