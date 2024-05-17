@@ -231,6 +231,9 @@ private:
     std::string m_timeBaseEpochAsString;
     uint64_t m_timeBaseFrequency;
     Unit m_unit;
+    Range m_range;
+    PostScaling m_postScaling;
+
     nlohmann::json m_interpretationObject;
     LogCallback logCallback;
 };

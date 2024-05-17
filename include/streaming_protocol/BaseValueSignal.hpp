@@ -59,12 +59,33 @@ namespace daq::streaming_protocol{
         //// \param unitId Unit::UNIT_ID_NONE for no unit
         void setUnit(int32_t unitId, const std::string& displayName);
 
+        void setPostScaling(const PostScaling postScaling)
+        {
+            m_postScaling = postScaling;
+        }
+
+        void clearPostScaling()
+        {
+            m_postScaling.clear();
+        }
+
+        void setRange(const Range& range)
+        {
+            m_range =range;
+        }
+
+        void clearRange()
+        {
+            m_range.clear();
+        }
 
     protected:
 
         std::string m_valueName;
         int32_t m_unitId;
         std::string m_unitDisplayName;
+        PostScaling m_postScaling;
+        Range m_range;
 
     };
 }

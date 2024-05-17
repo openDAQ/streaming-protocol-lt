@@ -119,6 +119,13 @@ static const char META_DISPLAY_NAME[] = "displayName";
 static const char META_UNIT_ID[] = "unitId";
 static const char META_QUANTITY[] = "quantity";
 
+static const char META_POSTSCALING[] = "postScaling";
+static const char META_SCALE[] = "scale";
+static const char META_POFFSET[] = "offset";
+
+static const char META_RANGE[] = "range";
+static const char META_LOW[] = "low";
+static const char META_HIGH[] = "high";
 
 static const char OPENDAQ_LT_STREAM_VERSION[] = "1.0.1";
 
