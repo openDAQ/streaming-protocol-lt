@@ -17,7 +17,6 @@
 
 #pragma once
 
-#include <limits>
 #include <vector>
 #include <string>
 
@@ -83,118 +82,41 @@ enum RuleType {
 struct PostScaling
 {
     /// default to being "one to one"
-    PostScaling()
-    {
-        clear();
-    }
+    PostScaling();
 
-    bool operator==(const PostScaling& other) const
-    {
-        return (
-                (std::abs(offset - other.offset) < epsilon) &&
-                (std::abs(scale - other.scale) < epsilon)
-               );
-    }
+    bool operator==(const PostScaling& other) const;
 
     /// set to "one to one"
-    void clear()
-    {
-        offset = 0.0;
-        scale = 1.0;
-    }
+    void clear();
 
-    bool isOneToOne() const
-    {
-        return ((offset==0.0)&&(scale==1.0));
-    }
+    bool isOneToOne() const;
 
-    void compose(nlohmann::json& composition) const
-    {
-        if (isOneToOne()) {
-            return;
-        }
-        composition[META_POSTSCALING][META_POFFSET] = offset;
-        composition[META_POSTSCALING][META_SCALE] = scale;
-    }
+    void compose(nlohmann::json& composition) const;
 
     /// missing parameters are kept as is
-    void parse(const nlohmann::json& composition)
-    {
-        auto postScaling = composition.find(META_POSTSCALING);
-        if (postScaling!=composition.end()) {
-            auto offsetIter = postScaling->find(META_POFFSET);
-            if (offsetIter!=postScaling->end()) {
-                offset = *offsetIter;
-            }
-            auto scaleIter = postScaling->find(META_SCALE);
-            if (scaleIter!=postScaling->end()) {
-                scale = *scaleIter;
-            }
-        }
-    }
+    void parse(const nlohmann::json& composition);
 
     double offset;
     double scale;
-
 };
 
 struct Range
 {
     /// On construction limits are unlimited
-    Range()
-    {
-        clear();
-    }
+    Range();
 
-    bool operator==(const Range& other) const
-    {
-        return (
-                (std::abs(low - other.low) < epsilon) &&
-                (std::abs(high - other.high) < epsilon)
-               );
-    }
+    bool operator==(const Range& other) const;
 
     /// remove limits
-    void clear()
-    {
-        low = -std::numeric_limits<double>::max();
-        high = std::numeric_limits<double>::max();
-    }
+    void clear();
 
-    bool isUnlimited() const
-    {
-        return (
-                (low == -std::numeric_limits<double>::max())&&
-                (high == std::numeric_limits<double>::max())
-               );
-    }
+    bool isUnlimited() const;
 
     /// unlimited limits are not composed
-    void compose(nlohmann::json& composition) const
-    {
-        if (low!=-std::numeric_limits<double>::max()) {
-            composition[META_RANGE][META_LOW] = low;
-        }
-        if (high!=std::numeric_limits<double>::max()) {
-            composition[META_RANGE][META_HIGH] = high;
-        }
-    }
+    void compose(nlohmann::json& composition) const;
 
     /// missing limits are kept as is
-    void parse(const nlohmann::json& composition)
-    {
-        auto rangeIter = composition.find(META_RANGE);
-        if (rangeIter!=composition.end()) {
-            auto lowIter = rangeIter->find(META_LOW);
-            if (lowIter!=rangeIter->end()) {
-                low = *lowIter;
-            }
-            auto highIter = rangeIter->find(META_HIGH);
-            if (highIter!=rangeIter->end()) {
-                high = *highIter;
-            }
-        }
-    }
+    void parse(const nlohmann::json& composition);
 
     double low;
     double high;

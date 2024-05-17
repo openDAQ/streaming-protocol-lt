@@ -34,6 +34,7 @@ enable_testing()
 # The "device under test"
 set(TEST_LIB_SOURCES
     # common
+    ../lib/Types.cpp
     ../lib/Unit.cpp
     ../lib/Logging.cpp
 

@@ -81,6 +81,7 @@ set(STREAMING_PROTOCOL_STREAMING_LIB_SOURCES
     # common
     Logging.cpp
     TimeResolution.cpp
+    Types.cpp
     Unit.cpp
     utils/strings.hpp
 
