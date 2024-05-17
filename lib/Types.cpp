@@ -16,6 +16,7 @@
 
 #include <limits>
 
+#include "streaming_protocol/Defines.h"
 #include "streaming_protocol/Types.h"
 
 namespace daq::streaming_protocol {
@@ -30,7 +31,7 @@ bool Range::operator==(const Range &other) const
     return (
             (std::abs(low - other.low) < epsilon) &&
             (std::abs(high - other.high) < epsilon)
-            );
+           );
 }
 
 void Range::clear()
@@ -44,7 +45,7 @@ bool Range::isUnlimited() const
     return (
             (low == -std::numeric_limits<double>::max())&&
             (high == std::numeric_limits<double>::max())
-            );
+           );
 }
 
 void Range::compose(nlohmann::json &composition) const
@@ -82,7 +83,7 @@ bool PostScaling::operator==(const PostScaling &other) const
     return (
             (std::abs(offset - other.offset) < epsilon) &&
             (std::abs(scale - other.scale) < epsilon)
-            );
+           );
 }
 
 void PostScaling::clear()

@@ -22,8 +22,6 @@
 
 #include "nlohmann/json.hpp"
 
-#include "Defines.h"
-
 namespace daq::streaming_protocol {
 /// Each signal has a id as string. It is unique for each producer.
 using SignalIds = std::vector < std::string >;
