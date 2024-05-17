@@ -426,6 +426,8 @@ Each member...
 - MAY have an `absoluteReference`.
 - MAY have an `resolution` object.
 - MAY have a `unit` object.
+- MAY have a `range` object.
+- MAY have a `postScaling` object.
 - MAY have a `dimensions` object.
 
 Those properties are described using a signal member object:
@@ -442,6 +444,8 @@ Those properties are described using a signal member object:
     "denom": <unsigned int 64>
   },]
   ["unit": { <object describing the unit>},]
+  ["range": { <object describing the range of the member value>},]
+  ["postScaling": { <object describing how the member value is to be scaled on the client side>},]
 }
 ~~~~
 
@@ -471,6 +475,35 @@ The `unit` object gives information about the unit of the signal member.
 - "displayName": Textual description of the unit
 - "unitId": Unit id as [defined by OPC-UA](http://www.opcfoundation.org/UA/EngineeringUnits/UNECE/UNECE_to_OPCUA.csv)
 - "quantity": Tells what quantity it is ( `acceleration`, `electric current`, `length`, `mass`, `soundpressure`, `strain`, `time`, `voltage`). This is according to the 
+
+##### Range Object
+
+Gives information about the highest and/or lowest possible value. Both values are optional.
+
+~~~~ {.javascript}
+{
+  "range": {
+    "high" : <number, default is unlimited>,
+    "low" : <number, default is -unlimited>
+  }
+}
+~~~~
+
+##### Post Scaling Object
+
+Tells how the value need to be scaled with an offset and a scale factor. All parameters are optional.
+
+~~~~ {.javascript}
+{
+  "postScaling": {
+    "offset" : <number, default is 0>,
+    "scale" : <number, default is 1>
+  }
+}
+~~~~
+
+
+
 
 #### Table Id
 
@@ -873,7 +906,8 @@ The request carries the stream id and an array of signal ids to be unsubscribed.
 ## Version 1.0.1
 - `signal` meta information gest optional `valueIndex`. This can be used to add 
   another data signal to an existing table.
+- `origin` got renamed to `absoluteReference`
 
 ## Version
 
-- `origin` got renamed to `absoluteReference`
+- Introduced `range` and `postScaling` in signal members
