@@ -88,6 +88,14 @@ struct PostScaling
         clear();
     }
 
+    bool operator==(const PostScaling& other) const
+    {
+        return (
+                (std::abs(offset - other.offset) < epsilon) &&
+                (std::abs(scale - other.scale) < epsilon)
+               );
+    }
+
     /// set to "one to one"
     void clear()
     {
@@ -109,9 +117,9 @@ struct PostScaling
         composition[META_POSTSCALING][META_SCALE] = scale;
     }
 
+    /// missing parameters are kept as is
     void parse(const nlohmann::json& composition)
     {
-        clear();
         auto postScaling = composition.find(META_POSTSCALING);
         if (postScaling!=composition.end()) {
             auto offsetIter = postScaling->find(META_POFFSET);
@@ -132,9 +140,18 @@ struct PostScaling
 
 struct Range
 {
+    /// On construction limits are unlimited
     Range()
     {
         clear();
+    }
+
+    bool operator==(const Range& other) const
+    {
+        return (
+                (std::abs(low - other.low) < epsilon) &&
+                (std::abs(high - other.high) < epsilon)
+               );
     }
 
     /// remove limits
@@ -152,6 +169,7 @@ struct Range
                );
     }
 
+    /// unlimited limits are not composed
     void compose(nlohmann::json& composition) const
     {
         if (low!=-std::numeric_limits<double>::max()) {
@@ -162,9 +180,9 @@ struct Range
         }
     }
 
+    /// missing limits are kept as is
     void parse(const nlohmann::json& composition)
     {
-        clear();
         auto rangeIter = composition.find(META_RANGE);
         if (rangeIter!=composition.end()) {
             auto lowIter = rangeIter->find(META_LOW);

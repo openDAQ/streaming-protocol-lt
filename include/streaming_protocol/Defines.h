@@ -26,6 +26,8 @@ static const uint32_t TYPE_SHIFT = 28;
 static const uint32_t SIZE_MASK = 0x0ff00000;
 static const uint32_t SIZE_SHIFT = 20;
 
+static const double epsilon = 1E-9;
+
 // presentation layer
 static const uint32_t METAINFORMATION_MSGPACK = 2; /// Used in openDAQ streaming protocol
 
