@@ -127,11 +127,13 @@ public:
         return m_unit.displayName;
     }
 
+    /// \return Unit quantity of the scalar signal member
     std::string unitQuantity() const
     {
         return m_unit.quantity;
     }
 
+    /// \return Unit id of the scalar signal member
     int32_t unitId() const
     {
         return m_unit.unitId;
@@ -182,6 +184,18 @@ public:
 
     /// @param count Number of values to process, not the number of bytes!
     size_t interpretValuesAsDouble(const unsigned char* pData, size_t count, double *doubleValueBuffer) const;
+
+    /// \return Post scaling information of the scalar signal member
+    PostScaling postScaling() const
+    {
+        return m_postScaling;
+    }
+
+    /// \return Range of the scalar signal member
+    Range range() const
+    {
+        return m_range;
+    }
 
 private:
 

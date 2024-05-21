@@ -160,71 +160,71 @@ namespace daq::streaming_protocol {
         ASSERT_EQ(result, 0);
     }
 
-    TEST(SubscribedSignalTest, dataCb_uint16_test)
-    {
-        SignalNumber signalNumber = 9;
-        int result;
-        uint64_t startTime = 1000;
-        uint64_t signalDelayIndex = 10;
+	TEST(SubscribedSignalTest, dataCb_uint16_test)
+	{
+		SignalNumber signalNumber = 9;
+		int result;
+		uint64_t startTime = 1000;
+		uint64_t signalDelayIndex = 10;
 
-        std::shared_ptr < SubscribedSignal> timeSignal = std::make_shared<SubscribedSignal>(signalNumber+1, logCallback);
-        SubscribedSignal dataSignal(signalNumber, logCallback);
-        prepareSignals(dataSignal, timeSignal, startTime);
+		std::shared_ptr < SubscribedSignal> timeSignal = std::make_shared<SubscribedSignal>(signalNumber+1, logCallback);
+		SubscribedSignal dataSignal(signalNumber, logCallback);
+		prepareSignals(dataSignal, timeSignal, startTime);
 
-        nlohmann::json metaDataSignal;
-        metaDataSignal[META_VALUEINDEX] = signalDelayIndex; // this signal is late!
-        metaDataSignal[META_DEFINITION][META_RULE] = META_RULETYPE_EXPLICIT;
-        metaDataSignal[META_DEFINITION][META_DATATYPE] = DATA_TYPE_UINT16;
+		nlohmann::json metaDataSignal;
+		metaDataSignal[META_VALUEINDEX] = signalDelayIndex; // this signal is late!
+		metaDataSignal[META_DEFINITION][META_RULE] = META_RULETYPE_EXPLICIT;
+		metaDataSignal[META_DEFINITION][META_DATATYPE] = DATA_TYPE_UINT16;
 
-        result = dataSignal.processSignalMetaInformation(META_METHOD_SIGNAL, metaDataSignal);
-        ASSERT_EQ(result, 0);
-        ASSERT_EQ(dataSignal.ruleType(), RULETYPE_EXPLICIT);
-        ASSERT_EQ(dataSignal.dataValueType(), SAMPLETYPE_U16);
+		result = dataSignal.processSignalMetaInformation(META_METHOD_SIGNAL, metaDataSignal);
+		ASSERT_EQ(result, 0);
+		ASSERT_EQ(dataSignal.ruleType(), RULETYPE_EXPLICIT);
+		ASSERT_EQ(dataSignal.dataValueType(), SAMPLETYPE_U16);
 
-        std::array < uint16_t, 3 > expectedData = { 1, 2, 3};
+		std::array < uint16_t, 3 > expectedData = { 1, 2, 3};
 
-        uint64_t deliveredFirstTimestamp;
-        auto dataAsValueCb = [&](const SubscribedSignal& subscribedSignal, uint64_t timeStamp, const uint8_t* deliveredData, size_t valueCount)
-        {
-            std::vector <double> doubleData(valueCount);
-            deliveredFirstTimestamp = timeStamp;
-            subscribedSignal.interpretValuesAsDouble(deliveredData, valueCount, doubleData.data());
-            auto dataIter = doubleData.begin();
-            for (auto expectedIter : expectedData) {
-                double data = *dataIter;
-                double expected = expectedIter;
-                ASSERT_EQ(data, expected);
-                ++dataIter;
-            }
-            ASSERT_EQ(valueCount, sizeof(expectedData)/sizeof(expectedData[0]));
-        };
+		uint64_t deliveredFirstTimestamp;
+		auto dataAsValueCb = [&](const SubscribedSignal& subscribedSignal, uint64_t timeStamp, const uint8_t* deliveredData, size_t valueCount)
+		{
+			std::vector <double> doubleData(valueCount);
+			deliveredFirstTimestamp = timeStamp;
+			subscribedSignal.interpretValuesAsDouble(deliveredData, valueCount, doubleData.data());
+			auto dataIter = doubleData.begin();
+			for (auto expectedIter : expectedData) {
+				double data = *dataIter;
+				double expected = expectedIter;
+				ASSERT_EQ(data, expected);
+				++dataIter;
+			}
+			ASSERT_EQ(valueCount, sizeof(expectedData)/sizeof(expectedData[0]));
+		};
 
-        auto dataAsRawCb = [&](const SubscribedSignal& subscribedSignal, uint64_t timeStamp, const uint8_t* deliveredData, size_t byteCount)
-        {
-            ASSERT_EQ(byteCount, sizeof(expectedData));
-            ASSERT_EQ(memcmp(deliveredData, expectedData.data(), byteCount),0);
-        };
+		auto dataAsRawCb = [&](const SubscribedSignal& subscribedSignal, uint64_t timeStamp, const uint8_t* deliveredData, size_t byteCount)
+		{
+			ASSERT_EQ(byteCount, sizeof(expectedData));
+			ASSERT_EQ(memcmp(deliveredData, expectedData.data(), byteCount),0);
+		};
 
-        ssize_t processResult = dataSignal.processMeasuredData(reinterpret_cast <unsigned char*> (expectedData.data()), sizeof(expectedData), timeSignal, dataAsRawCb, dataAsValueCb);
-        /// check for the delay!
-        ASSERT_EQ(deliveredFirstTimestamp, (startTime+signalDelayIndex*timeSignal->linearDelta()));
-        ASSERT_EQ(processResult, sizeof(expectedData));
+		ssize_t processResult = dataSignal.processMeasuredData(reinterpret_cast <unsigned char*> (expectedData.data()), sizeof(expectedData), timeSignal, dataAsRawCb, dataAsValueCb);
+		/// check for the delay!
+		ASSERT_EQ(deliveredFirstTimestamp, (startTime+signalDelayIndex*timeSignal->linearDelta()));
+		ASSERT_EQ(processResult, sizeof(expectedData));
 
-        {
-            // check unit
-            nlohmann::json metaUnit;
-            std::string unitDisplayName = "V";
-            int32_t unitId = 6;
+		{
+			// check unit
+			nlohmann::json metaUnit;
+			std::string unitDisplayName = "V";
+			int32_t unitId = 6;
 
-            /// \warning no checking of display naming vs. unit id
-            metaUnit[META_DEFINITION][META_UNIT][META_DISPLAY_NAME] = unitDisplayName;
-            metaUnit[META_DEFINITION][META_UNIT][META_UNIT_ID] = unitId;
-            result = dataSignal.processSignalMetaInformation(META_METHOD_SIGNAL, metaUnit);
-            ASSERT_EQ(result, 0);
-            ASSERT_EQ(dataSignal.unitDisplayName(), unitDisplayName);
-            ASSERT_EQ(dataSignal.unitId(), unitId);
-        }
-    }
+			/// \warning no checking of display naming vs. unit id
+			metaUnit[META_DEFINITION][META_UNIT][META_DISPLAY_NAME] = unitDisplayName;
+			metaUnit[META_DEFINITION][META_UNIT][META_UNIT_ID] = unitId;
+			result = dataSignal.processSignalMetaInformation(META_METHOD_SIGNAL, metaUnit);
+			ASSERT_EQ(result, 0);
+			ASSERT_EQ(dataSignal.unitDisplayName(), unitDisplayName);
+			ASSERT_EQ(dataSignal.unitId(), unitId);
+		}
+	}
 
     /// Signals not following an explicit rule while have an value index attached to each value
     TEST(SubscribedSignalTest, dataCb_uint32_with_constant_rule_test)
@@ -681,4 +681,94 @@ namespace daq::streaming_protocol {
         ssize_t processResult = dataSignal.processMeasuredData(reinterpret_cast <unsigned char*> (expectedData), sizeof(expectedData), timeSignal, dataAsRawCb, dataAsValueCb);
         ASSERT_EQ(processResult, sizeof(expectedData));
     }
+
+	TEST(SubscribedSignalTest, dataCb_double_test)
+	{
+		SignalNumber signalNumber = 9;
+		int result;
+		uint64_t startTime = 1000;
+		uint64_t signalDelayIndex = 10;
+
+		std::shared_ptr < SubscribedSignal> timeSignal = std::make_shared<SubscribedSignal>(signalNumber+1, logCallback);
+		SubscribedSignal dataSignal(signalNumber, logCallback);
+		prepareSignals(dataSignal, timeSignal, startTime);
+
+		Range range;
+		PostScaling postScaling;
+		range.low = -20;
+		range.high = 30;
+
+		postScaling.offset = 10.1;
+		postScaling.scale = 10.0;
+
+		nlohmann::json metaDataSignal;
+		metaDataSignal[META_VALUEINDEX] = signalDelayIndex; // this signal is late!
+		metaDataSignal[META_DEFINITION][META_RULE] = META_RULETYPE_EXPLICIT;
+		metaDataSignal[META_DEFINITION][META_DATATYPE] = DATA_TYPE_REAL64;
+
+		range.compose(metaDataSignal[META_DEFINITION]);
+		postScaling.compose(metaDataSignal[META_DEFINITION]);
+
+		result = dataSignal.processSignalMetaInformation(META_METHOD_SIGNAL, metaDataSignal);
+		ASSERT_EQ(result, 0);
+		ASSERT_EQ(dataSignal.ruleType(), RULETYPE_EXPLICIT);
+		ASSERT_EQ(dataSignal.dataValueType(), SAMPLETYPE_REAL64);
+
+		std::array < double, 3 > expectedData = { 1.1, 2.2, 3.3};
+
+		uint64_t deliveredFirstTimestamp;
+		auto dataAsValueCb = [&](const SubscribedSignal& subscribedSignal, uint64_t timeStamp, const uint8_t* deliveredData, size_t valueCount)
+		{
+			std::vector <double> doubleData(valueCount);
+			deliveredFirstTimestamp = timeStamp;
+			subscribedSignal.interpretValuesAsDouble(deliveredData, valueCount, doubleData.data());
+			auto dataIter = doubleData.begin();
+			for (auto expectedIter : expectedData) {
+				double data = *dataIter;
+				double expected = expectedIter;
+				ASSERT_NEAR(data, expected, 0.000001);
+				++dataIter;
+			}
+			ASSERT_EQ(valueCount, sizeof(expectedData)/sizeof(expectedData[0]));
+		};
+
+		auto dataAsRawCb = [&](const SubscribedSignal& subscribedSignal, uint64_t timeStamp, const uint8_t* deliveredData, size_t byteCount)
+		{
+			ASSERT_EQ(byteCount, sizeof(expectedData));
+			ASSERT_EQ(memcmp(deliveredData, expectedData.data(), byteCount),0);
+		};
+
+		ssize_t processResult = dataSignal.processMeasuredData(reinterpret_cast <unsigned char*> (expectedData.data()), sizeof(expectedData), timeSignal, dataAsRawCb, dataAsValueCb);
+		/// check for the delay!
+		ASSERT_EQ(deliveredFirstTimestamp, (startTime+signalDelayIndex*timeSignal->linearDelta()));
+		ASSERT_EQ(processResult, sizeof(expectedData));
+
+		{
+			// check unit
+			nlohmann::json metaUnit;
+			std::string unitDisplayName = "V";
+			int32_t unitId = 6;
+
+			/// \warning no checking of display naming vs. unit id
+			metaUnit[META_DEFINITION][META_UNIT][META_DISPLAY_NAME] = unitDisplayName;
+			metaUnit[META_DEFINITION][META_UNIT][META_UNIT_ID] = unitId;
+			result = dataSignal.processSignalMetaInformation(META_METHOD_SIGNAL, metaUnit);
+			ASSERT_EQ(result, 0);
+			ASSERT_EQ(dataSignal.unitDisplayName(), unitDisplayName);
+			ASSERT_EQ(dataSignal.unitId(), unitId);
+		}
+
+
+		{
+			// check range
+			Range rangeResult =	dataSignal.range();
+			ASSERT_EQ(range, rangeResult);
+		}
+
+		{
+			// check post scaling
+			PostScaling postScalingResult = dataSignal.postScaling();
+			ASSERT_EQ(postScaling, postScalingResult);
+		}
+	}
 }
