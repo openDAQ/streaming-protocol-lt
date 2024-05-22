@@ -17,6 +17,7 @@
 #pragma once
 
 #include "streaming_protocol/BaseSignal.hpp"
+#include "streaming_protocol/Defines.h"
 #include "streaming_protocol/iWriter.hpp"
 
 namespace daq::streaming_protocol{
