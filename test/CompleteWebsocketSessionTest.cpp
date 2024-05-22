@@ -22,6 +22,7 @@
 #include "stream/WebsocketClientStream.hpp"
 #include "stream/WebsocketServer.hpp"
 
+#include "streaming_protocol/Defines.h"
 #include "streaming_protocol/ProducerSession.hpp"
 #include "streaming_protocol/ProtocolHandler.hpp"
 #include "streaming_protocol/SignalContainer.hpp"

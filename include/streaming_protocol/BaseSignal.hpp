@@ -16,11 +16,9 @@
 
 #pragma once
 
-#include <chrono>
 #include <string>
 #include <mutex>
 
-#include "streaming_protocol/Defines.h"
 #include "streaming_protocol/iWriter.hpp"
 #include "streaming_protocol/Types.h"
 #include "streaming_protocol/Logging.hpp"

@@ -1,5 +1,4 @@
-#include "boost/asio/error.hpp"
-
+#include "streaming_protocol/Defines.h"
 #include "streaming_protocol/jsonrpc_defines.hpp"
 #include "streaming_protocol/ProducerSession.hpp"
 #include "streaming_protocol/Types.h"

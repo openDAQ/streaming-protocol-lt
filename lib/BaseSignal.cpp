@@ -4,8 +4,7 @@
 #include "nlohmann/json.hpp"
 #include "streaming_protocol/BaseSignal.hpp"
 
-#include <iostream>
-
+#include "streaming_protocol/Defines.h"
 #include "streaming_protocol/Types.h"
 
 namespace daq::streaming_protocol {
