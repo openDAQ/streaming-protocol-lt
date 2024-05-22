@@ -30,5 +30,7 @@ nlohmann::json daq::streaming_protocol::BaseSynchronousSignal::createMember(cons
         memberInformation[META_UNIT][META_UNIT_ID] = m_unitId;
         memberInformation[META_UNIT][META_DISPLAY_NAME] = m_unitDisplayName;
     }
+    m_range.compose(memberInformation);
+    m_postScaling.compose(memberInformation);
     return memberInformation;
 }

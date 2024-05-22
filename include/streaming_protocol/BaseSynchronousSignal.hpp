@@ -21,7 +21,7 @@
 
 namespace daq::streaming_protocol{
     /// \addtogroup producer
-    /// Abstrace base class for producing signal data
+    /// Abstract base class for producing signal data
     class BaseSynchronousSignal : public BaseValueSignal {
     public:
         BaseSynchronousSignal(const std::string& signalId, const std::string& tableId, iWriter &writer, LogCallback logCb, std::uint64_t valueIndex);

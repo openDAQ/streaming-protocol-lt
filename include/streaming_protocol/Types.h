@@ -20,6 +20,8 @@
 #include <vector>
 #include <string>
 
+#include "nlohmann/json.hpp"
+
 namespace daq::streaming_protocol {
 /// Each signal has a id as string. It is unique for each producer.
 using SignalIds = std::vector < std::string >;
@@ -73,6 +75,49 @@ enum RuleType {
     RULETYPE_EXPLICIT, /// Time rule of asynchronous signals.
     RULETYPE_CONSTANT,
     RULETYPE_LINEAR, /// Time rule of synchronous signals delivering values that are equidistant in time.
+};
+
+struct PostScaling
+{
+    /// default to being "one to one"
+    PostScaling();
+
+    bool operator==(const PostScaling& other) const;
+
+    /// set to "one to one"
+    void clear();
+
+    bool isOneToOne() const;
+
+    void compose(nlohmann::json& composition) const;
+
+    /// missing parameters are kept as is
+    void parse(const nlohmann::json& composition);
+
+    double offset;
+    double scale;
+};
+
+struct Range
+{
+    /// On construction limits are unlimited
+    Range();
+
+    bool operator==(const Range& other) const;
+
+    /// remove limits
+    void clear();
+
+    bool isUnlimited() const;
+
+    /// unlimited limits are not composed
+    void compose(nlohmann::json& composition) const;
+
+    /// missing limits are kept as is
+    void parse(const nlohmann::json& composition);
+
+    double low;
+    double high;
 };
 
 }

@@ -26,6 +26,8 @@ static const uint32_t TYPE_SHIFT = 28;
 static const uint32_t SIZE_MASK = 0x0ff00000;
 static const uint32_t SIZE_SHIFT = 20;
 
+static const double epsilon = 1E-9;
+
 // presentation layer
 static const uint32_t METAINFORMATION_MSGPACK = 2; /// Used in openDAQ streaming protocol
 
@@ -119,6 +121,13 @@ static const char META_DISPLAY_NAME[] = "displayName";
 static const char META_UNIT_ID[] = "unitId";
 static const char META_QUANTITY[] = "quantity";
 
+static const char META_POSTSCALING[] = "postScaling";
+static const char META_SCALE[] = "scale";
+static const char META_POFFSET[] = "offset";
+
+static const char META_RANGE[] = "range";
+static const char META_LOW[] = "low";
+static const char META_HIGH[] = "high";
 
 static const char OPENDAQ_LT_STREAM_VERSION[] = "1.0.1";
 

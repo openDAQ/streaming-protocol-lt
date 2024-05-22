@@ -223,6 +223,14 @@ TEST(ProducerSessionTest, complete_session)
     int32_t newUnitId = 1111;
     std::string newUnitDisplayName = "new unit";
 
+    Range range;
+    range.low = -34.9;
+    range.high = 1000.1;
+
+    PostScaling postScaling;
+    postScaling.offset =-5;
+    postScaling.scale = 2;
+
     for (size_t index = 0; index<1024; ++index) {
         testData2Big.push_back(index * 1.1);
     }
@@ -253,8 +261,10 @@ TEST(ProducerSessionTest, complete_session)
         syncSignal->addData(testData1Small.data(), testData1Small.size());
         syncSignal->addData(testData2Big.data(), testData2Big.size());
 
-        // change unit of data signal
+        // change unit, range and postScaling of data signal
         syncSignal->setUnit(newUnitId, newUnitDisplayName);
+        syncSignal->setRange(range);
+        syncSignal->setPostScaling(postScaling);
         syncSignal->writeSignalMetaInformation();
 
         // change output rate of time signal
@@ -342,8 +352,18 @@ TEST(ProducerSessionTest, complete_session)
         std::string tableId1 = package.params[META_TABLEID];
         uint32_t unitId = package.params[META_DEFINITION][META_UNIT][META_UNIT_ID];
         std::string unitDisplayName = package.params[META_DEFINITION][META_UNIT][META_DISPLAY_NAME];
+
         ASSERT_EQ(unitId, originalUnitId);
         ASSERT_EQ(unitDisplayName, originalUnitDisplayName);
+        Range resultingRange;
+        resultingRange.parse(package.params[META_DEFINITION]);
+        // Range is not set => default
+        ASSERT_EQ(Range(), resultingRange);
+        PostScaling resultingPostScaling;
+        resultingPostScaling.parse(package.params[META_DEFINITION]);
+        // Post scaling is not set => default
+        ASSERT_EQ(PostScaling(), resultingPostScaling);
+
 
         package = receivedMetaInformation[5];
         ASSERT_EQ(package.method, META_METHOD_SUBSCRIBE); // time signal
@@ -369,11 +389,16 @@ TEST(ProducerSessionTest, complete_session)
         ASSERT_EQ(result, 0);
 
         package = receivedMetaInformation[9];
+        std::cout << package.params << std::endl;
         ASSERT_EQ(package.method, META_METHOD_SIGNAL); // data
         unitId = package.params[META_DEFINITION][META_UNIT][META_UNIT_ID];
         unitDisplayName = package.params[META_DEFINITION][META_UNIT][META_DISPLAY_NAME];
         ASSERT_EQ(unitId, newUnitId);
         ASSERT_EQ(unitDisplayName, newUnitDisplayName);
+        resultingRange.parse(package.params[META_DEFINITION]);
+        ASSERT_EQ(range, resultingRange);
+        resultingPostScaling.parse(package.params[META_DEFINITION]);
+        ASSERT_EQ(postScaling, resultingPostScaling);
 
         package = receivedMetaInformation[10];
         ASSERT_EQ(package.method, META_METHOD_SIGNAL); // time
