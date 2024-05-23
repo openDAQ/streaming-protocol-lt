@@ -385,15 +385,16 @@ int SubscribedSignal::processSignalMetaInformation(const std::string& method, co
                     }
                 }
 
-                definitionIter = params.find(META_RELATEDSIGNALS);
-                if (definitionIter != params.end()) {
-                    STREAMING_PROTOCOL_LOG_I("{}:", m_signalId);
+                auto relatedSignalsIter = definitionNode.find(META_RELATEDSIGNALS);
+                if (relatedSignalsIter != definitionNode.end()) {
+                    m_relatedSignals.clear();
                     STREAMING_PROTOCOL_LOG_I("\tRelated signals", m_signalId);
-                    nlohmann::json relatedSignals = *definitionIter;
+                    const nlohmann::json& relatedSignals = *relatedSignalsIter;
                     if (relatedSignals.is_array()) {
                         for (const auto& arrayItem: relatedSignals) {
-                            std::string type = arrayItem["type"];
-                            std::string signalId = arrayItem["signalId"];
+                            std::string type = arrayItem[META_TYPE];
+                            std::string signalId = arrayItem[META_SIGNALID];
+                            m_relatedSignals[type] = signalId;
                             STREAMING_PROTOCOL_LOG_I("\t\tsignal id: {}, type: ", signalId, type);
                         }
                     }

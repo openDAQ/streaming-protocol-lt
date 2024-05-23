@@ -59,6 +59,8 @@ static const char META_TABLEID[] = "tableId";
 static const char META_VALUEINDEX[] = "valueIndex";
 static const char META_RELATEDSIGNALS[] = "relatedSignals";
 
+static const char META_TYPE[] = "type";
+
 /// Is send to acknowldege the sunscription of a signal. It carries the signal id togehter with the signal number.
 static const char META_METHOD_SUBSCRIBE[] = "subscribe";
 /// Is send to acknowldege that sunscription a signal got unsubscribed.
