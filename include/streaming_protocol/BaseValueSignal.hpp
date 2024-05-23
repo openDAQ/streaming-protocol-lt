@@ -25,6 +25,7 @@
 #include "streaming_protocol/iWriter.hpp"
 #include "streaming_protocol/Types.h"
 #include "streaming_protocol/Logging.hpp"
+#include "streaming_protocol/Unit.hpp"
 
 /// \warning Since only C++ libraries under linux allow resolution down to nanoseconds, resolution is limited to microseconds
 //#define TIME_GRANULARITY_NS
@@ -53,11 +54,13 @@ namespace daq::streaming_protocol{
         /// \return Name of the root data member
         std::string getMemberName() const;
 
+        Unit getUnit() const;
         int32_t getUnitId() const;
         std::string getUnitDisplayName() const;
 
         //// \param unitId Unit::UNIT_ID_NONE for no unit
         void setUnit(int32_t unitId, const std::string& displayName);
+        void setUnit(const Unit& value);
 
         void setPostScaling(const PostScaling postScaling)
         {
@@ -82,8 +85,7 @@ namespace daq::streaming_protocol{
     protected:
 
         std::string m_valueName;
-        int32_t m_unitId;
-        std::string m_unitDisplayName;
+        Unit m_unit;
         PostScaling m_postScaling;
         Range m_range;
 

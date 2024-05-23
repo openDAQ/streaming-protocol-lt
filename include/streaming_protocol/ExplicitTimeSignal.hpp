@@ -21,7 +21,7 @@
 
 namespace daq::streaming_protocol{
     /// \addtogroup producer
-    /// Abstrace base class for producing signal data
+    /// Abstract base class for producing domain signal
     class ExplicitTimeSignal : public BaseDomainSignal {
     public:
         ExplicitTimeSignal(const std::string& signalId, const std::string& tableId, uint64_t timeTicksPerSecond, iWriter &writer, LogCallback logCb);

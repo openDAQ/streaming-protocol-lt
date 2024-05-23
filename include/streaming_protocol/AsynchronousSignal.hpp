@@ -97,11 +97,7 @@ private:
         memberInformation[META_NAME] = m_valueName;
         memberInformation[META_DATATYPE] = dataType;
         memberInformation[META_RULE] = META_RULETYPE_EXPLICIT;
-        if (m_unitId != Unit::UNIT_ID_NONE) {
-            memberInformation[META_UNIT][META_UNIT_ID] = m_unitId;
-            memberInformation[META_UNIT][META_DISPLAY_NAME] = m_unitDisplayName;
-        }
-
+        m_unit.compose(memberInformation);
         m_range.compose(memberInformation);
         m_postScaling.compose(memberInformation);
         return memberInformation;
