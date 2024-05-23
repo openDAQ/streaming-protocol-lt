@@ -19,6 +19,8 @@
 #include <string>
 #include <cstdint>
 
+#include <nlohmann/json.hpp>
+
 namespace daq::streaming_protocol {
 
 
@@ -31,9 +33,23 @@ struct Unit {
 
     Unit();
 
+    bool operator==(const Unit &other) const
+    {
+        return (
+                (id==other.id) &&
+                (displayName==other.displayName) &&
+                (quantity==other.quantity)
+               );
+    }
+
+    void clear();
+
+    void compose(nlohmann::json &composition) const;
+    void parse(const nlohmann::json& composition);
+
     /// -1 stands for no unit
     /// 0 stands for user defined unit without unit id
-    int32_t unitId;
+    int32_t id;
     std::string displayName;
     std::string quantity;
 };
