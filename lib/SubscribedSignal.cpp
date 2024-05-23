@@ -369,9 +369,8 @@ int SubscribedSignal::processSignalMetaInformation(const std::string& method, co
                     STREAMING_PROTOCOL_LOG_I("\tabsolute reference: {}", m_timeBaseEpochAsString);
                 }
 
-                const nlohmann::json definitionRef = *definitionIter;
-                m_range.parse(definitionRef);
-                m_postScaling.parse(definitionRef);
+                m_range.parse(definitionNode);
+                m_postScaling.parse(definitionNode);
 
                 if (m_isTimeSignal) {
                     // separate check because time chapter may only be send initialy, later changes won't have this again!
