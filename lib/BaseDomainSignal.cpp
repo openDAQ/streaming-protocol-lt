@@ -13,6 +13,9 @@ BaseDomainSignal::BaseDomainSignal(const std::string& signalId, const std::strin
     : BaseSignal(signalId, tableId, writer, logCb)
     , m_timeTicksPerSecond(timeTicksPerSecond)
 {
+    m_unitSecond.id = Unit::UNIT_ID_SECONDS;
+    m_unitSecond.displayName = "s";
+    m_unitSecond.quantity = META_TIME;
 }
 
 void BaseDomainSignal::setEpoch(const std::string& epoch)
