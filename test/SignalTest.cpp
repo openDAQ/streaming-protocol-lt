@@ -37,16 +37,14 @@ static LogCallback logCallback = daq::streaming_protocol::Logging::logCallback()
 struct SignalMetaInformation
 {
     SignalMetaInformation()
-        : unitId(Unit::UNIT_ID_NONE)
-        , ruleType(RULETYPE_EXPLICIT)
+        : ruleType(RULETYPE_EXPLICIT)
         , LinearRuleDelta(0)
         , timeTicksPerSecond(0)
     {
     }
     std::string dataType;
-    int32_t unitId;
-    std::string unitDisplayName;
-    std::string unitQuantity;
+
+    Unit unit;
 
     RuleType ruleType;
     uint64_t LinearRuleDelta;
@@ -79,16 +77,9 @@ public:
             }
 
             if (data[PARAMS][META_DEFINITION].contains(META_UNIT)) {
-                signalMeta.unitId = data[PARAMS][META_DEFINITION][META_UNIT][META_UNIT_ID];
-                signalMeta.unitDisplayName = data[PARAMS][META_DEFINITION][META_UNIT][META_DISPLAY_NAME];
-                if (data[PARAMS][META_DEFINITION][META_UNIT].contains(META_QUANTITY)) {
-                    signalMeta.unitQuantity = data[PARAMS][META_DEFINITION][META_UNIT][META_QUANTITY];
-                }
-
+                signalMeta.unit.parse(data[PARAMS][META_DEFINITION]);
             } else {
-                signalMeta.unitId = Unit::UNIT_ID_NONE;
-                signalMeta.unitDisplayName.clear();
-                signalMeta.unitQuantity.clear();
+                signalMeta.unit.clear();
             }
 
             std::string ruleAsString = data[PARAMS][META_DEFINITION][META_RULE];
@@ -106,7 +97,7 @@ public:
             }
             signalMeta.dataType = data[PARAMS][META_DEFINITION][META_DATATYPE];
 
-            if(signalMeta.unitQuantity == META_TIME ) {
+            if(signalMeta.unit.quantity == META_TIME ) {
                 signalMeta.epoch = data[PARAMS][META_DEFINITION][META_ABSOLUTE_REFERENCE];
                 signalMeta.timeTicksPerSecond = data[PARAMS][META_DEFINITION][META_RESOLUTION][META_DENOMINATOR];
             }
@@ -181,8 +172,8 @@ TEST(SignalTest, async_signalid_test)
     ASSERT_EQ(dataSignalMetaInformation.tableId, tableId);
     ASSERT_EQ(dataSignalMetaInformation.signalId, signalId);
     ASSERT_EQ(dataSignalMetaInformation.dataType, DATA_TYPE_REAL64);
-    ASSERT_EQ(dataSignalMetaInformation.unitId, unitId);
-    ASSERT_EQ(dataSignalMetaInformation.unitDisplayName, unitDisplayName);
+    ASSERT_EQ(dataSignalMetaInformation.unit.id, unitId);
+    ASSERT_EQ(dataSignalMetaInformation.unit.displayName, unitDisplayName);
     ASSERT_EQ(dataSignalMetaInformation.ruleType, RULETYPE_EXPLICIT);
     ASSERT_EQ(dataSignalMetaInformation.interpretationObject, dataInterpretationObject);
 
@@ -360,8 +351,9 @@ TEST(SignalTest, sync_signalid_test)
     static const std::string tableId = "the table Id";
 
     std::chrono::nanoseconds outputRate = std::chrono::milliseconds(1); // 1kHz
-    int32_t unitId = Unit::UNIT_ID_SECONDS;
-    std::string unitDisplayName = "s";
+    Unit unit;
+    unit.id = Unit::UNIT_ID_SECONDS;
+    unit.displayName = "s";
     static const nlohmann::json dataInterpretationObject = R"(
   {
     "pi": 3.141,
@@ -389,9 +381,9 @@ TEST(SignalTest, sync_signalid_test)
     ASSERT_EQ(timeSignal.getTimeDelta(), outputRateInTicks);
     ASSERT_EQ(syncSignal.getSampleType(), SAMPLETYPE_REAL64);
 
-    syncSignal.setUnit(unitId, unitDisplayName);
-    ASSERT_EQ(syncSignal.getUnitId(), unitId);
-    ASSERT_EQ(syncSignal.getUnitDisplayName(), unitDisplayName);
+    syncSignal.setUnit(unit.id, unit.displayName);
+    ASSERT_EQ(syncSignal.getUnitId(), unit.id);
+    ASSERT_EQ(syncSignal.getUnitDisplayName(), unit.displayName);
 
     ASSERT_EQ(syncSignal.getInterpretationObject(), nlohmann::json());
     ASSERT_EQ(timeSignal.getInterpretationObject(), nlohmann::json());
@@ -407,8 +399,7 @@ TEST(SignalTest, sync_signalid_test)
     ASSERT_EQ(dataSignalMetaInformation.signalId, signalId);
     ASSERT_EQ(dataSignalMetaInformation.tableId, tableId);
     ASSERT_EQ(dataSignalMetaInformation.ruleType, RULETYPE_EXPLICIT);
-    ASSERT_EQ(dataSignalMetaInformation.unitId, unitId);
-    ASSERT_EQ(dataSignalMetaInformation.unitDisplayName, unitDisplayName);
+    ASSERT_EQ(dataSignalMetaInformation.unit, unit);
     ASSERT_EQ(dataSignalMetaInformation.interpretationObject, dataInterpretationObject);
 
 

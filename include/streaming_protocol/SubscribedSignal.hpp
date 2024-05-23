@@ -136,7 +136,7 @@ public:
     /// \return Unit id of the scalar signal member
     int32_t unitId() const
     {
-        return m_unit.unitId;
+        return m_unit.id;
     }
 
     /// Set the current timestamp for the signal. It will be used for the next appearing value.

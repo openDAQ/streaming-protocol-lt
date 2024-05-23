@@ -337,25 +337,9 @@ int SubscribedSignal::processSignalMetaInformation(const std::string& method, co
                     }
                 }
 
-                auto unitIter = definitionNode.find(META_UNIT);
-                if (unitIter != definitionNode.end()) {
-                    nlohmann::json unitNode = *unitIter;
-                    auto displayNameIter = unitNode.find(META_DISPLAY_NAME);
-                    if (displayNameIter != unitNode.end()) {
-                        m_unit.displayName = *displayNameIter;
-                    }
-                    auto unitIdIter = unitNode.find(META_UNIT_ID);
-                    if (unitIdIter != unitNode.end()) {
-                        m_unit.unitId = *unitIdIter;
-                    }
-
-                    auto unitQuantityIter = unitNode.find(META_QUANTITY);
-                    if (unitQuantityIter != unitNode.end()) {
-                        m_unit.quantity = *unitQuantityIter;
-                        if (m_unit.quantity==META_TIME) {
-                            m_isTimeSignal = true;
-                        }
-                    }
+                m_unit.parse(definitionNode);
+                if (m_unit.quantity==META_TIME) {
+                    m_isTimeSignal = true;
                 }
 
                 auto resolutionIter = definitionNode.find(META_RESOLUTION);
@@ -368,7 +352,7 @@ int SubscribedSignal::processSignalMetaInformation(const std::string& method, co
                         return -1;
                     }
                     // numerator/denominator gives time between ticks, or period, in the uint of the signal.
-                    if (m_unit.unitId == Unit::UNIT_ID_SECONDS) {
+                    if (m_unit.id == Unit::UNIT_ID_SECONDS) {
                         // Unit for time signals is seconds. We want the frequency here!
                         m_timeBaseFrequency = denominator / numerator;
                         STREAMING_PROTOCOL_LOG_I("\ttime resolution: {} Hz", resolutionNode.dump());

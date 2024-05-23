@@ -95,10 +95,15 @@ namespace daq::streaming_protocol {
 
         SubscribedSignal timeSignal(signalNumber, logCallback);
 
-        static const std::string unitDisplayName = "s";
+
         static const std::string unixEpoch = "1970-01-01";
         static const uint64_t numerator = 1;
         static const uint64_t denominator = 1000000000;
+
+        Unit unit;
+        unit.id = Unit::UNIT_ID_SECONDS;
+        unit.displayName = "s";
+        unit.quantity = META_TIME;
 
         /// linear time rule with delta = 0 is not valid!
         nlohmann::json metaTimeSignal;
@@ -106,9 +111,7 @@ namespace daq::streaming_protocol {
         metaTimeSignal[META_DEFINITION][META_RULE] = META_RULETYPE_LINEAR;
         metaTimeSignal[META_DEFINITION][META_RULETYPE_LINEAR][META_DELTA] = 0;
         metaTimeSignal[META_DEFINITION][META_DATATYPE] = DATA_TYPE_UINT64;
-        metaTimeSignal[META_DEFINITION][META_UNIT][META_UNIT_ID] = Unit::UNIT_ID_SECONDS;
-        metaTimeSignal[META_DEFINITION][META_UNIT][META_DISPLAY_NAME] = unitDisplayName;
-        metaTimeSignal[META_DEFINITION][META_UNIT][META_QUANTITY] = META_TIME;
+        unit.compose(metaTimeSignal[META_DEFINITION]);
         metaTimeSignal[META_DEFINITION][META_ABSOLUTE_REFERENCE] = unixEpoch;
         metaTimeSignal[META_DEFINITION][META_RESOLUTION][META_DENOMINATOR] = denominator;
         metaTimeSignal[META_DEFINITION][META_RESOLUTION][META_NUMERATOR] = numerator;
@@ -123,9 +126,9 @@ namespace daq::streaming_protocol {
         result = timeSignal.processSignalMetaInformation(META_METHOD_SIGNAL, metaTimeSignal);
         ASSERT_EQ(result, 0);
 
-        ASSERT_EQ(timeSignal.unitId(), Unit::UNIT_ID_SECONDS);
-        ASSERT_EQ(timeSignal.unitDisplayName(), unitDisplayName);
-        ASSERT_EQ(timeSignal.unitQuantity(), META_TIME);
+        ASSERT_EQ(timeSignal.unitId(), unit.id);
+        ASSERT_EQ(timeSignal.unitDisplayName(), unit.displayName);
+        ASSERT_EQ(timeSignal.unitQuantity(), unit.quantity);
         ASSERT_EQ(timeSignal.tableId(), tableId);
         ASSERT_EQ(timeSignal.interpretationObject(), interpretationObject);
         ASSERT_EQ(timeSignal.timeBaseFrequency(), denominator/numerator);
@@ -160,71 +163,72 @@ namespace daq::streaming_protocol {
         ASSERT_EQ(result, 0);
     }
 
-	TEST(SubscribedSignalTest, dataCb_uint16_test)
-	{
-		SignalNumber signalNumber = 9;
-		int result;
-		uint64_t startTime = 1000;
-		uint64_t signalDelayIndex = 10;
+    TEST(SubscribedSignalTest, dataCb_uint16_test)
+    {
+        SignalNumber signalNumber = 9;
+        int result;
+        uint64_t startTime = 1000;
+        uint64_t signalDelayIndex = 10;
 
-		std::shared_ptr < SubscribedSignal> timeSignal = std::make_shared<SubscribedSignal>(signalNumber+1, logCallback);
-		SubscribedSignal dataSignal(signalNumber, logCallback);
-		prepareSignals(dataSignal, timeSignal, startTime);
+        std::shared_ptr < SubscribedSignal> timeSignal = std::make_shared<SubscribedSignal>(signalNumber+1, logCallback);
+        SubscribedSignal dataSignal(signalNumber, logCallback);
+        prepareSignals(dataSignal, timeSignal, startTime);
 
-		nlohmann::json metaDataSignal;
-		metaDataSignal[META_VALUEINDEX] = signalDelayIndex; // this signal is late!
-		metaDataSignal[META_DEFINITION][META_RULE] = META_RULETYPE_EXPLICIT;
-		metaDataSignal[META_DEFINITION][META_DATATYPE] = DATA_TYPE_UINT16;
+        nlohmann::json metaDataSignal;
+        metaDataSignal[META_VALUEINDEX] = signalDelayIndex; // this signal is late!
+        metaDataSignal[META_DEFINITION][META_RULE] = META_RULETYPE_EXPLICIT;
+        metaDataSignal[META_DEFINITION][META_DATATYPE] = DATA_TYPE_UINT16;
 
-		result = dataSignal.processSignalMetaInformation(META_METHOD_SIGNAL, metaDataSignal);
-		ASSERT_EQ(result, 0);
-		ASSERT_EQ(dataSignal.ruleType(), RULETYPE_EXPLICIT);
-		ASSERT_EQ(dataSignal.dataValueType(), SAMPLETYPE_U16);
+        result = dataSignal.processSignalMetaInformation(META_METHOD_SIGNAL, metaDataSignal);
+        ASSERT_EQ(result, 0);
+        ASSERT_EQ(dataSignal.ruleType(), RULETYPE_EXPLICIT);
+        ASSERT_EQ(dataSignal.dataValueType(), SAMPLETYPE_U16);
 
-		std::array < uint16_t, 3 > expectedData = { 1, 2, 3};
+        std::array < uint16_t, 3 > expectedData = { 1, 2, 3};
 
-		uint64_t deliveredFirstTimestamp;
-		auto dataAsValueCb = [&](const SubscribedSignal& subscribedSignal, uint64_t timeStamp, const uint8_t* deliveredData, size_t valueCount)
-		{
-			std::vector <double> doubleData(valueCount);
-			deliveredFirstTimestamp = timeStamp;
-			subscribedSignal.interpretValuesAsDouble(deliveredData, valueCount, doubleData.data());
-			auto dataIter = doubleData.begin();
-			for (auto expectedIter : expectedData) {
-				double data = *dataIter;
-				double expected = expectedIter;
-				ASSERT_EQ(data, expected);
-				++dataIter;
-			}
-			ASSERT_EQ(valueCount, sizeof(expectedData)/sizeof(expectedData[0]));
-		};
+        uint64_t deliveredFirstTimestamp;
+        auto dataAsValueCb = [&](const SubscribedSignal& subscribedSignal, uint64_t timeStamp, const uint8_t* deliveredData, size_t valueCount)
+        {
+            std::vector <double> doubleData(valueCount);
+            deliveredFirstTimestamp = timeStamp;
+            subscribedSignal.interpretValuesAsDouble(deliveredData, valueCount, doubleData.data());
+            auto dataIter = doubleData.begin();
+            for (auto expectedIter : expectedData) {
+                double data = *dataIter;
+                double expected = expectedIter;
+                ASSERT_EQ(data, expected);
+                ++dataIter;
+            }
+            ASSERT_EQ(valueCount, sizeof(expectedData)/sizeof(expectedData[0]));
+        };
 
-		auto dataAsRawCb = [&](const SubscribedSignal& subscribedSignal, uint64_t timeStamp, const uint8_t* deliveredData, size_t byteCount)
-		{
-			ASSERT_EQ(byteCount, sizeof(expectedData));
-			ASSERT_EQ(memcmp(deliveredData, expectedData.data(), byteCount),0);
-		};
+        auto dataAsRawCb = [&](const SubscribedSignal& subscribedSignal, uint64_t timeStamp, const uint8_t* deliveredData, size_t byteCount)
+        {
+            ASSERT_EQ(byteCount, sizeof(expectedData));
+            ASSERT_EQ(memcmp(deliveredData, expectedData.data(), byteCount),0);
+        };
 
-		ssize_t processResult = dataSignal.processMeasuredData(reinterpret_cast <unsigned char*> (expectedData.data()), sizeof(expectedData), timeSignal, dataAsRawCb, dataAsValueCb);
-		/// check for the delay!
-		ASSERT_EQ(deliveredFirstTimestamp, (startTime+signalDelayIndex*timeSignal->linearDelta()));
-		ASSERT_EQ(processResult, sizeof(expectedData));
+        ssize_t processResult = dataSignal.processMeasuredData(reinterpret_cast <unsigned char*> (expectedData.data()), sizeof(expectedData), timeSignal, dataAsRawCb, dataAsValueCb);
+        /// check for the delay!
+        ASSERT_EQ(deliveredFirstTimestamp, (startTime+signalDelayIndex*timeSignal->linearDelta()));
+        ASSERT_EQ(processResult, sizeof(expectedData));
 
-		{
-			// check unit
-			nlohmann::json metaUnit;
-			std::string unitDisplayName = "V";
-			int32_t unitId = 6;
+        {
+            // check unit
+            Unit unit;
+            unit.displayName = "V";
+            unit.id = 6;
+            nlohmann::json metaUnit;
 
-			/// \warning no checking of display naming vs. unit id
-			metaUnit[META_DEFINITION][META_UNIT][META_DISPLAY_NAME] = unitDisplayName;
-			metaUnit[META_DEFINITION][META_UNIT][META_UNIT_ID] = unitId;
-			result = dataSignal.processSignalMetaInformation(META_METHOD_SIGNAL, metaUnit);
-			ASSERT_EQ(result, 0);
-			ASSERT_EQ(dataSignal.unitDisplayName(), unitDisplayName);
-			ASSERT_EQ(dataSignal.unitId(), unitId);
-		}
-	}
+            /// \warning no checking of display naming vs. unit id
+            unit.compose(metaUnit[META_DEFINITION]);
+            result = dataSignal.processSignalMetaInformation(META_METHOD_SIGNAL, metaUnit);
+            ASSERT_EQ(result, 0);
+            ASSERT_EQ(dataSignal.unitDisplayName(), unit.displayName);
+            ASSERT_EQ(dataSignal.unitId(), unit.id);
+            ASSERT_TRUE(dataSignal.unitQuantity().empty());
+        }
+    }
 
     /// Signals not following an explicit rule while have an value index attached to each value
     TEST(SubscribedSignalTest, dataCb_uint32_with_constant_rule_test)
@@ -291,17 +295,17 @@ namespace daq::streaming_protocol {
 
         {
             // check unit
+            Unit unit;
+            unit.displayName = "V";
+            unit.id = 6;
             nlohmann::json metaUnit;
-            std::string unitDisplayName = "V";
-            int32_t unitId = 6;
 
             /// \warning no checking of display naming vs. unit id
-            metaUnit[META_DEFINITION][META_UNIT][META_DISPLAY_NAME] = unitDisplayName;
-            metaUnit[META_DEFINITION][META_UNIT][META_UNIT_ID] = unitId;
+            unit.compose(metaUnit[META_DEFINITION]);
             result = dataSignal.processSignalMetaInformation(META_METHOD_SIGNAL, metaUnit);
             ASSERT_EQ(result, 0);
-            ASSERT_EQ(dataSignal.unitDisplayName(), unitDisplayName);
-            ASSERT_EQ(dataSignal.unitId(), unitId);
+            ASSERT_EQ(dataSignal.unitDisplayName(), unit.displayName);
+            ASSERT_EQ(dataSignal.unitId(), unit.id);
         }
     }
 
@@ -745,21 +749,22 @@ namespace daq::streaming_protocol {
 
 		{
 			// check unit
-			nlohmann::json metaUnit;
-			std::string unitDisplayName = "V";
-			int32_t unitId = 6;
+            nlohmann::json metaUnit;
+            std::string unitDisplayName = "V";
+            int32_t unitId = 6;
 
-			/// \warning no checking of display naming vs. unit id
-			metaUnit[META_DEFINITION][META_UNIT][META_DISPLAY_NAME] = unitDisplayName;
-			metaUnit[META_DEFINITION][META_UNIT][META_UNIT_ID] = unitId;
-			result = dataSignal.processSignalMetaInformation(META_METHOD_SIGNAL, metaUnit);
-			ASSERT_EQ(result, 0);
-			ASSERT_EQ(dataSignal.unitDisplayName(), unitDisplayName);
-			ASSERT_EQ(dataSignal.unitId(), unitId);
-		}
+            Unit unit;
+            unit.id = unitId;
+            unit.displayName = unitDisplayName;
+            /// \warning no checking of display naming vs. unit id
+            unit.compose(metaUnit[META_DEFINITION]);
+            result = dataSignal.processSignalMetaInformation(META_METHOD_SIGNAL, metaUnit);
+            ASSERT_EQ(result, 0);
+            ASSERT_EQ(dataSignal.unitDisplayName(), unit.displayName);
+            ASSERT_EQ(dataSignal.unitId(), unit.id);
+        }
 
-
-		{
+        {
 			// check range
 			Range rangeResult =	dataSignal.range();
 			ASSERT_EQ(range, rangeResult);

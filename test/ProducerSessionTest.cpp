@@ -217,11 +217,13 @@ TEST(ProducerSessionTest, complete_session)
     // big data package adds addtional length information to protocol
     std::vector <double> testData2Big;
 
-    int32_t originalUnitId = 1;
-    std::string originalUnitDisplayName = "original unit";
+    Unit originalUnit;
+    originalUnit.id = 1;
+    originalUnit.displayName = "original unit";
 
-    int32_t newUnitId = 1111;
-    std::string newUnitDisplayName = "new unit";
+    Unit newUnit;
+    newUnit.id = 1111;
+    newUnit.displayName = "new unit";
 
     Range range;
     range.low = -34.9;
@@ -246,7 +248,7 @@ TEST(ProducerSessionTest, complete_session)
         // prepare the signal with initial configuration
         auto timeSignal = std::make_shared<LinearTimeSignal>(timeSignalId, tableId, timeTicksPerSecond, originalOutputRate, writer, logCallback);
         auto syncSignal = std::make_shared<SynchronousSignal<double>>(signalId, tableId, writer, logCallback);
-        syncSignal->setUnit(originalUnitId, originalUnitDisplayName);
+        syncSignal->setUnit(originalUnit.id, originalUnit.displayName);
 
         // since this is a data signal, this causes "availble" meta information
         producerSession->addSignal(syncSignal);
@@ -262,7 +264,7 @@ TEST(ProducerSessionTest, complete_session)
         syncSignal->addData(testData2Big.data(), testData2Big.size());
 
         // change unit, range and postScaling of data signal
-        syncSignal->setUnit(newUnitId, newUnitDisplayName);
+        syncSignal->setUnit(newUnit.id, newUnit.displayName);
         syncSignal->setRange(range);
         syncSignal->setPostScaling(postScaling);
         syncSignal->writeSignalMetaInformation();
@@ -350,11 +352,11 @@ TEST(ProducerSessionTest, complete_session)
         package = receivedMetaInformation[4];
         ASSERT_EQ(package.method, META_METHOD_SIGNAL);
         std::string tableId1 = package.params[META_TABLEID];
-        uint32_t unitId = package.params[META_DEFINITION][META_UNIT][META_UNIT_ID];
-        std::string unitDisplayName = package.params[META_DEFINITION][META_UNIT][META_DISPLAY_NAME];
 
-        ASSERT_EQ(unitId, originalUnitId);
-        ASSERT_EQ(unitDisplayName, originalUnitDisplayName);
+        Unit unit;
+        unit.parse(package.params[META_DEFINITION]);
+        ASSERT_EQ(unit.id, originalUnit.id);
+        ASSERT_EQ(unit.displayName, originalUnit.displayName);
         Range resultingRange;
         resultingRange.parse(package.params[META_DEFINITION]);
         // Range is not set => default
@@ -391,10 +393,8 @@ TEST(ProducerSessionTest, complete_session)
         package = receivedMetaInformation[9];
         std::cout << package.params << std::endl;
         ASSERT_EQ(package.method, META_METHOD_SIGNAL); // data
-        unitId = package.params[META_DEFINITION][META_UNIT][META_UNIT_ID];
-        unitDisplayName = package.params[META_DEFINITION][META_UNIT][META_DISPLAY_NAME];
-        ASSERT_EQ(unitId, newUnitId);
-        ASSERT_EQ(unitDisplayName, newUnitDisplayName);
+        unit.parse(package.params[META_DEFINITION]);
+        ASSERT_EQ(unit, newUnit);
         resultingRange.parse(package.params[META_DEFINITION]);
         ASSERT_EQ(range, resultingRange);
         resultingPostScaling.parse(package.params[META_DEFINITION]);
