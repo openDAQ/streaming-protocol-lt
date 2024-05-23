@@ -5,8 +5,6 @@
 #include "streaming_protocol/LinearTimeSignal.hpp"
 #include "streaming_protocol/Unit.hpp"
 
-#include <iostream>
-
 
 namespace daq::streaming_protocol {
 
@@ -57,9 +55,7 @@ nlohmann::json LinearTimeSignal::getMemberInformation() const
     memberInformation[META_RULE] = META_RULETYPE_LINEAR;
     memberInformation[META_RULETYPE_LINEAR][META_DELTA] = m_outputRateInTicks;
     memberInformation[META_DATATYPE] = DATA_TYPE_UINT64;
-    memberInformation[META_UNIT][META_UNIT_ID] = Unit::UNIT_ID_SECONDS;
-    memberInformation[META_UNIT][META_DISPLAY_NAME] = "s";
-    memberInformation[META_UNIT][META_QUANTITY] = META_TIME;
+    m_unitSecond.compose(memberInformation);
     memberInformation[META_ABSOLUTE_REFERENCE] = m_epoch;
     memberInformation[META_RESOLUTION][META_NUMERATOR] = 1;
     memberInformation[META_RESOLUTION][META_DENOMINATOR] = m_timeTicksPerSecond;
