@@ -199,6 +199,9 @@ public:
 
 private:
 
+    /// Signal type is the key signal id is the value.
+    /// Currently types "time" and "status" are specified
+    using RelatedSignals = std::map < std::string, std::string>;
     template < typename DataType >
     inline void convert(const uint8_t *pData, size_t count, double* doubleValueBuffer) const
     {
@@ -250,5 +253,6 @@ private:
 
     nlohmann::json m_interpretationObject;
     LogCallback logCallback;
+    RelatedSignals m_relatedSignals;
 };
 }
