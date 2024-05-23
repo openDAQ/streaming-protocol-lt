@@ -19,6 +19,7 @@
 #include "streaming_protocol/BaseSignal.hpp"
 #include "streaming_protocol/Defines.h"
 #include "streaming_protocol/iWriter.hpp"
+#include "streaming_protocol/Unit.hpp"
 
 namespace daq::streaming_protocol{
     /// \addtogroup producer
@@ -61,5 +62,6 @@ namespace daq::streaming_protocol{
 
         uint64_t m_timeTicksPerSecond;
         std::string m_epoch = UNIX_EPOCH;
+        Unit m_unitSecond;
     };
 }

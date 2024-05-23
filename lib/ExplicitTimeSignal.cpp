@@ -6,9 +6,6 @@
 #include "streaming_protocol/Unit.hpp"
 
 
-#include <iostream>
-
-
 namespace daq::streaming_protocol {
 
 ExplicitTimeSignal::ExplicitTimeSignal(const std::string& signalId, const std::string& tableId, uint64_t timeTicksPerSecond, iWriter &writer, LogCallback logCb)
@@ -40,9 +37,7 @@ nlohmann::json ExplicitTimeSignal::getMemberInformation() const
     memberInformation[META_NAME] = META_TIME;
     memberInformation[META_RULE] = META_RULETYPE_EXPLICIT;
     memberInformation[META_DATATYPE] = DATA_TYPE_UINT64;
-    memberInformation[META_UNIT][META_UNIT_ID] = Unit::UNIT_ID_SECONDS;
-    memberInformation[META_UNIT][META_DISPLAY_NAME] = "s";
-    memberInformation[META_UNIT][META_QUANTITY] = META_TIME;
+    m_unitSecond.compose(memberInformation);
     memberInformation[META_ABSOLUTE_REFERENCE] = m_epoch;
     memberInformation[META_RESOLUTION][META_NUMERATOR] = 1;
     memberInformation[META_RESOLUTION][META_DENOMINATOR] = m_timeTicksPerSecond;
