@@ -1,6 +1,6 @@
 ---
 title:  openDAQ Stream Protocol Specification
-subtitle: Version 1.0.1
+subtitle: Version 1.2.0
 titlepage: true
 toc: true
 toc-own-page: true
@@ -908,6 +908,6 @@ The request carries the stream id and an array of signal ids to be unsubscribed.
   another data signal to an existing table.
 - `origin` got renamed to `absoluteReference`
 
-## Version
+## Version 1.2.0
 
 - Introduced `range` and `postScaling` in signal members
