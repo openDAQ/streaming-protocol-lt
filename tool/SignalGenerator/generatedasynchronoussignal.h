@@ -50,11 +50,11 @@ namespace daq::streaming_protocol::siggen{
         /// \param samplePeriod Samples are taken with this rate. Not to be confused with the signal frequency!
         /// \param startTime The abolute start time can be used to enable a signal later than others. Usefull for implementing a phase shift between signals
         GeneratedAsynchronousSignal(const std::string& signalId,
-                           const std::string& tableId,
-                           FunctionParameters <DataType> functionParameters,
-                           std::chrono::nanoseconds samplePeriod,
-                           const std::chrono::time_point<std::chrono::system_clock> &currentTime,
-                           streaming_protocol::iWriter &writer)
+                                    const std::string& tableId,
+                                    FunctionParameters <DataType> functionParameters,
+                                    std::chrono::nanoseconds samplePeriod,
+                                    const std::chrono::time_point<std::chrono::system_clock> &currentTime,
+                                    streaming_protocol::iWriter &writer)
             : logCallback(daq::streaming_protocol::Logging::logCallback())
             , m_signal(std::make_shared<AsynchronousSignal <DataType>> (signalId, tableId, writer, logCallback))
             , m_function(functionParameters)
@@ -71,6 +71,9 @@ namespace daq::streaming_protocol::siggen{
 
             m_deltaTime = 1/m_samplePeriodDouble;
             m_timestamp = timeTicksPerSecond * timeSinceUnixEpochDouble;
+
+            m_signal->setRange(functionParameters.range);
+            m_signal->setPostScaling(functionParameters.postScaling);
         }
         /// not to be copied!
         GeneratedAsynchronousSignal(const GeneratedAsynchronousSignal&) = delete;

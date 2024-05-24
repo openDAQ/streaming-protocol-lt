@@ -39,7 +39,6 @@ namespace daq::streaming_protocol::siggen {
     static const char EXECUTIONTIME[] = "executionTime";
     static const char PROCESSPERIOD[] = "processPeriod";
 
-
     class StdoutWriter;
     class SignalGenerator {
     public:
@@ -202,12 +201,24 @@ namespace daq::streaming_protocol::siggen {
             delay = durationFromString(delayString, std::chrono::seconds::zero());
             samplePeriod = durationFromString(samplePeriodString, std::chrono::seconds::zero());
 
+            daq::streaming_protocol::Range range;
+            auto rangeConfig = configSignal.value(META_RANGE, R"({})"_json);
+            range.low = rangeConfig.value<double>(META_LOW, range.low);
+            range.high = rangeConfig.value<double>(META_HIGH, range.high);
+
+            daq::streaming_protocol::PostScaling postScaling;
+            auto postScalingConfig = configSignal.value(META_POSTSCALING, R"({})"_json);
+            postScaling.scale = postScalingConfig.value<double>(META_SCALE, postScaling.scale);
+            postScaling.offset = postScalingConfig.value<double>(META_POFFSET, postScaling.offset);
+
             FunctionParameters <T> signalParameters;
             signalParameters.amplitude = configSignal.value<T>(AMPLITUDE, 0);
             signalParameters.offset = configSignal.value<T>(OFFSET, 0);
             signalParameters.frequency = configSignal.value<double>(FREQUENCY, 0.0);
             signalParameters.dutyCycle = configSignal.value<double>(DUTYCYCLE, 0.0);
             signalParameters.functionType = functionType;
+            signalParameters.range = range;
+            signalParameters.postScaling = postScaling;
 
             std::string tableId = configSignal.value<std::string>("tableId", std::string());
             if (tableId.empty())

@@ -20,6 +20,7 @@
 #include <cstdint>
 
 #include "defines.h"
+#include <streaming_protocol/Types.h>
 
 namespace daq::streaming_protocol::siggen{
     template < typename T >
@@ -33,6 +34,10 @@ namespace daq::streaming_protocol::siggen{
          double frequency;
          /// relevant for daq::streaming_protocol::siggen::PATTERN_TYPE_SQUARE only
          double dutyCycle;
+         /// signal value range
+         daq::streaming_protocol::Range range;
+         /// signal post scaling rule
+         daq::streaming_protocol::PostScaling postScaling;
     };
 
     /// A synthetic signal delivers meta information describing the properties of the signal a synthetic measured data.
