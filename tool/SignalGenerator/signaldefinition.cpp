@@ -52,7 +52,7 @@ void daq::streaming_protocol::siggen::addSignals(daq::streaming_protocol::siggen
     dblSignalParameters.dutyCycle = 0.5;
     dblSignalParameters.functionType = daq::streaming_protocol::siggen::FUNCTION_TYPE_RECTANGLE;
     signalGenerator.addExplicitTimeSignal("async_time", "table_50ms", samplePeriod);
-    signalGenerator.addAsynchronousSignal<double>("async_square", "table_50ms", dblSignalParameters, samplePeriod);
+    signalGenerator.addAsynchronousSignal<double>("async_square", "table_50ms", "async_time", dblSignalParameters, samplePeriod);
 
     samplePeriod = std::chrono::milliseconds(10);
     dblSignalParameters.amplitude = 10;
@@ -60,7 +60,7 @@ void daq::streaming_protocol::siggen::addSignals(daq::streaming_protocol::siggen
     dblSignalParameters.frequency = 0.1;
     dblSignalParameters.functionType = daq::streaming_protocol::siggen::FUNCTION_TYPE_SINE;
     signalGenerator.addLinearTimeSignal("sine_time", "table_10ms", samplePeriod);
-    signalGenerator.addSynchronousSignal<double>("sine", "table_10ms", dblSignalParameters, samplePeriod, 0);
+    signalGenerator.addSynchronousSignal<double>("sine", "table_10ms", "sine_time", dblSignalParameters, samplePeriod, 0);
 
     samplePeriod = std::chrono::milliseconds(100);
     dblSignalParameters.amplitude = 2.5;
@@ -68,16 +68,16 @@ void daq::streaming_protocol::siggen::addSignals(daq::streaming_protocol::siggen
     dblSignalParameters.frequency = 0.2;
     dblSignalParameters.functionType = daq::streaming_protocol::siggen::FUNCTION_TYPE_SAWTOOTH;
     signalGenerator.addLinearTimeSignal("saw_tooth_time", "table_100ms", samplePeriod);
-    signalGenerator.addSynchronousSignal<double>("saw_tooth", "table_100ms", dblSignalParameters, samplePeriod, 0);
+    signalGenerator.addSynchronousSignal<double>("saw_tooth", "table_100ms", "saw_tooth_time", dblSignalParameters, samplePeriod, 0);
     // ToDo: This should work for test purposes - but the handling of the value index is not in sync to the correct time.
-    signalGenerator.addSynchronousSignal<double>("saw_tooth_2", "table_100ms", dblSignalParameters, samplePeriod, 100);
+    signalGenerator.addSynchronousSignal<double>("saw_tooth_2", "table_100ms", "saw_tooth_time",dblSignalParameters, samplePeriod, 100);
 
     dblSignalParameters.amplitude = 2.5;
     dblSignalParameters.offset = 0;
     dblSignalParameters.frequency = 0.5;
     dblSignalParameters.dutyCycle = 0.0;
     dblSignalParameters.functionType = FUNCTION_TYPE_IMPULSE;
-    signalGenerator.addSynchronousSignal("impulse", "table_100ms", dblSignalParameters, samplePeriod, 0);
+    signalGenerator.addSynchronousSignal("impulse", "table_100ms", "saw_tooth_time", dblSignalParameters, samplePeriod, 0);
 
     // we want whole numbers here!
     samplePeriod = std::chrono::seconds(1);
@@ -88,6 +88,5 @@ void daq::streaming_protocol::siggen::addSignals(daq::streaming_protocol::siggen
     int32SignalParameters.dutyCycle = 0.0;
     int32SignalParameters.functionType = FUNCTION_TYPE_SAWTOOTH;
     signalGenerator.addLinearTimeSignal("slow_counter_time", "table_1s", samplePeriod);
-    signalGenerator.addSynchronousSignal<int32_t>("slow_counter", "table_1s", int32SignalParameters, samplePeriod, 0);
-
+    signalGenerator.addSynchronousSignal<int32_t>("slow_counter", "table_1s", "slow_counter_time", int32SignalParameters, samplePeriod, 0);
 }

@@ -51,6 +51,7 @@ namespace daq::streaming_protocol::siggen{
         /// \param startTime The abolute start time can be used to enable a signal later than others. Usefull for implementing a phase shift between signals
         GeneratedAsynchronousSignal(const std::string& signalId,
                                     const std::string& tableId,
+                                    const std::string& timeSignalId,
                                     FunctionParameters <DataType> functionParameters,
                                     std::chrono::nanoseconds samplePeriod,
                                     const std::chrono::time_point<std::chrono::system_clock> &currentTime,
@@ -74,6 +75,9 @@ namespace daq::streaming_protocol::siggen{
 
             m_signal->setRange(functionParameters.range);
             m_signal->setPostScaling(functionParameters.postScaling);
+            RelatedSignals relatedSignals;
+            relatedSignals[META_TIME] = timeSignalId;
+            m_signal->setRelatedSignals(relatedSignals);
         }
         /// not to be copied!
         GeneratedAsynchronousSignal(const GeneratedAsynchronousSignal&) = delete;
