@@ -385,8 +385,8 @@ int SubscribedSignal::processSignalMetaInformation(const std::string& method, co
                     }
                 }
 
-                auto relatedSignalsIter = definitionNode.find(META_RELATEDSIGNALS);
-                if (relatedSignalsIter != definitionNode.end()) {
+                auto relatedSignalsIter = params.find(META_RELATEDSIGNALS);
+                if (relatedSignalsIter != params.end()) {
                     m_relatedSignals.clear();
                     STREAMING_PROTOCOL_LOG_I("\tRelated signals", m_signalId);
                     const nlohmann::json& relatedSignals = *relatedSignalsIter;

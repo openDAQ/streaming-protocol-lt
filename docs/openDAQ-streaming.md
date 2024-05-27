@@ -394,15 +394,13 @@ There are some example of signal descriptions in a separate document.
     },
     "tableId": <string>,
     ["valueIndex": <uint64>],
-    {
-      "relatedSignals": 
-      [
-        { 
-          "type" : <relation type>, 
-          "signalId" : <id of the related signal>
-        } 
-      ]
-    },
+    "relatedSignals": 
+    [
+      { 
+        "type" : <relation type>, 
+        "signalId" : <id of the related signal>
+      } 
+    ],
     ["interpretation": {}]
   }
 }
