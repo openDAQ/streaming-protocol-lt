@@ -173,8 +173,8 @@ namespace daq::streaming_protocol {
         {
             nlohmann::json metaDataSignal;
             metaDataSignal[META_TABLEID] = dataSignal.tableId();
-            metaDataSignal[META_DEFINITION][META_RELATEDSIGNALS][0][META_TYPE] = META_TIME;
-            metaDataSignal[META_DEFINITION][META_RELATEDSIGNALS][0][META_SIGNALID] = timeSignal->signalId();
+            metaDataSignal[META_RELATEDSIGNALS][0][META_TYPE] = META_TIME;
+            metaDataSignal[META_RELATEDSIGNALS][0][META_SIGNALID] = timeSignal->signalId();
             result = timeSignal->processSignalMetaInformation(META_METHOD_SIGNAL, metaDataSignal);
             ASSERT_EQ(result, 0);
         }
