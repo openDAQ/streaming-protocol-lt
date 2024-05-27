@@ -13,10 +13,12 @@ void BaseConstantSignal::writeSignalMetaInformation() const
     nlohmann::json dataSignal;
     dataSignal[METHOD] = META_METHOD_SIGNAL;
     dataSignal[PARAMS][META_TABLEID] = m_tableId;
-    dataSignal[PARAMS][META_DEFINITION] = getMemberInformation();
     if (!m_interpretationObject.is_null()) {
         dataSignal[PARAMS][META_INTERPRETATION] = m_interpretationObject;
     }
+
+    dataSignal[PARAMS][META_DEFINITION] = getMemberInformation();
+    composeRelatedSignals(dataSignal[PARAMS]);
     m_writer.writeMetaInformation(m_signalNumber, dataSignal);
 }
 

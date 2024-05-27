@@ -74,7 +74,7 @@ namespace daq::streaming_protocol{
 
         void setRange(const Range& range)
         {
-            m_range =range;
+            m_range = range;
         }
 
         void clearRange()
@@ -82,12 +82,27 @@ namespace daq::streaming_protocol{
             m_range.clear();
         }
 
+        void setRelatedSignals(const RelatedSignals& relatedSignals)
+        {
+            m_relatedSignals = relatedSignals;
+        }
+
     protected:
+
+        void composeRelatedSignals(nlohmann::json& composition) const
+        {
+            for(auto iter : m_relatedSignals) {
+                 nlohmann::json relatedSignal;
+                 relatedSignal[META_TYPE] = iter.first;
+                 relatedSignal[META_SIGNALID] = iter.second;
+                 composition[META_RELATEDSIGNALS].push_back(relatedSignal);
+             }
+        }
 
         std::string m_valueName;
         Unit m_unit;
         PostScaling m_postScaling;
         Range m_range;
-
+        RelatedSignals m_relatedSignals;
     };
 }

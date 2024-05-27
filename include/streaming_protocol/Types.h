@@ -120,4 +120,9 @@ struct Range
     double high;
 };
 
+/// Signal type is the key signal id is the value.
+/// Currently types "time" and "status" are specified
+using RelatedSignals = std::map < std::string, std::string>;
+
+
 }
