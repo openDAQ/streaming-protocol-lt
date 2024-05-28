@@ -202,6 +202,7 @@ TEST(ProducerSessionTest, complete_session)
         std::string method;
         nlohmann::json params;
         std::vector<uint8_t> data;
+        RelatedSignals relatedSignals;
     };
 
     static const std::string fileName = "theFile";
@@ -249,14 +250,17 @@ TEST(ProducerSessionTest, complete_session)
         auto timeSignal = std::make_shared<LinearTimeSignal>(timeSignalId, tableId, timeTicksPerSecond, originalOutputRate, writer, logCallback);
         auto syncSignal = std::make_shared<SynchronousSignal<double>>(signalId, tableId, writer, logCallback);
         syncSignal->setUnit(originalUnit.id, originalUnit.displayName);
+        RelatedSignals relatedSignals;
+        relatedSignals[META_TIME] = timeSignal->getId();
+        syncSignal->setRelatedSignals(relatedSignals);
 
+        producerSession->addSignal(timeSignal);
         // since this is a data signal, this causes "availble" meta information
         producerSession->addSignal(syncSignal);
-        producerSession->addSignal(timeSignal);
 
         SignalIds signalIds;
-        signalIds.push_back(signalId);
         signalIds.push_back(timeSignalId);
+        signalIds.push_back(signalId);
         // this causes "subscribe" and "signal" meta information for the data and time signal
         producerSession->subscribeSignals(signalIds);
         // adds real data
@@ -296,6 +300,7 @@ TEST(ProducerSessionTest, complete_session)
             packageInformation.signalNumber = subscribedSignal.signalNumber();
             packageInformation.method = method;
             packageInformation.params = params;
+            packageInformation.relatedSignals = subscribedSignal.relatedSignals();
             receivedMetaInformation.push_back(packageInformation);
         };
 
@@ -329,10 +334,10 @@ TEST(ProducerSessionTest, complete_session)
         // - "apiVerison"
         // - "init"
         // - "available"
+        // - "subscribe" (time, since data signal relates to time, time has to come first!)
+        // - "signal" (time) initial signal description
         // - "subscribe" (data)
         // - "signal" (data) initial signal description
-        // - "subscribe" (time)
-        // - "signal" (time) initial signal description
         // - measured data (small)
         // - measured data (big)
         // - "signal" (data) because of updated unit
@@ -344,14 +349,36 @@ TEST(ProducerSessionTest, complete_session)
         ASSERT_EQ(receivedMetaInformation[1].method, META_METHOD_INIT);
         ASSERT_EQ(receivedMetaInformation[2].method, META_METHOD_AVAILABLE); // data + time
 
+
+        std::string signalIdTime;
+        std::string signalIdData;
+        std::string tableIdTime;
+        std::string tableIdData;
+        RelatedSignals relatedSignals;
+
         PackageInformation& package = receivedMetaInformation[3];
-        ASSERT_EQ(package.method, META_METHOD_SUBSCRIBE); // data signal
-        std::string signalIdData = package.params[META_SIGNALID];
-        ASSERT_FALSE(signalIdData.empty());
+        ASSERT_EQ(package.method, META_METHOD_SUBSCRIBE); // time signal
+        signalIdTime = package.params[META_SIGNALID];
 
         package = receivedMetaInformation[4];
+        ASSERT_EQ(package.method, META_METHOD_SIGNAL); // time
+        tableIdTime = package.params[META_TABLEID];
+
+        uint64_t outputRateInTicks = package.params[META_DEFINITION][META_RULETYPE_LINEAR][META_DELTA];
+        relatedSignals = package.relatedSignals;
+        ASSERT_TRUE(relatedSignals.empty());
+        ASSERT_EQ(outputRateInTicks, originalOutputRateInTicks);
+
+
+        package = receivedMetaInformation[5];
+        ASSERT_EQ(package.method, META_METHOD_SUBSCRIBE); // data signal
+        signalIdData = package.params[META_SIGNALID];
+        ASSERT_FALSE(signalIdData.empty());
+
+        package = receivedMetaInformation[6];
         ASSERT_EQ(package.method, META_METHOD_SIGNAL);
-        std::string tableId1 = package.params[META_TABLEID];
+        tableIdData = package.params[META_TABLEID];
+        ASSERT_EQ(tableIdTime, tableIdData);
 
         Unit unit;
         unit.parse(package.params[META_DEFINITION]);
@@ -366,20 +393,11 @@ TEST(ProducerSessionTest, complete_session)
         // Post scaling is not set => default
         ASSERT_EQ(PostScaling(), resultingPostScaling);
 
+        // there should be one relation to the time signal
+        relatedSignals = package.relatedSignals;
+        ASSERT_EQ(relatedSignals.size(), 1);
+        ASSERT_EQ(relatedSignals[META_TIME], signalIdTime);
 
-        package = receivedMetaInformation[5];
-        ASSERT_EQ(package.method, META_METHOD_SUBSCRIBE); // time signal
-        std::string signalIdTime = package.params[META_SIGNALID];
-        ASSERT_FALSE(signalIdData.empty());
-        ASSERT_NE(signalIdData, signalIdTime);
-
-        package = receivedMetaInformation[6];
-        ASSERT_EQ(package.method, META_METHOD_SIGNAL); // time
-        std::string tableId2 = package.params[META_TABLEID];
-        uint64_t outputRateInTicks = package.params[META_DEFINITION][META_RULETYPE_LINEAR][META_DELTA];
-        ASSERT_FALSE(tableId1.empty());
-        ASSERT_EQ(tableId1, tableId2);
-        ASSERT_EQ(outputRateInTicks, originalOutputRateInTicks);
         package = receivedMetaInformation[7];
         ASSERT_EQ(package.transportType, TYPE_SIGNALDATA);
         int result = memcmp(package.data.data(), testData1Small.data(), package.data.size());

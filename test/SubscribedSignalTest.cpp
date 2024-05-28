@@ -139,28 +139,45 @@ namespace daq::streaming_protocol {
     void static prepareSignals(SubscribedSignal& dataSignal, std::shared_ptr < SubscribedSignal> timeSignal, uint64_t startTime)
     {
         int result;
-        nlohmann::json metaTimeSignal;
-        nlohmann::json metaTimeSubscribe;
-        metaTimeSubscribe[META_SIGNALID] = "da time!";
-        result = timeSignal->processSignalMetaInformation(META_METHOD_SUBSCRIBE, metaTimeSubscribe);
-        ASSERT_EQ(result, 0);
-        uint64_t deltaTime = 1;
 
-        metaTimeSignal[META_TABLEID] = dataSignal.tableId();
-        metaTimeSignal[META_DEFINITION][META_RULE] = META_RULETYPE_LINEAR;
-        metaTimeSignal[META_DEFINITION][META_RULETYPE_LINEAR][META_DELTA] = deltaTime;
-        metaTimeSignal[META_DEFINITION][META_DATATYPE] = DATA_TYPE_UINT64;
-        result = timeSignal->processSignalMetaInformation(META_METHOD_SIGNAL, metaTimeSignal);
-        ASSERT_EQ(result, 0);
+        {
+            nlohmann::json metaTimeSubscribe;
+            std::string timeSignalId = "da time!";
+            metaTimeSubscribe[META_SIGNALID] = timeSignalId;
+            result = timeSignal->processSignalMetaInformation(META_METHOD_SUBSCRIBE, metaTimeSubscribe);
+            ASSERT_EQ(result, 0);
+        }
+
+        {
+            uint64_t deltaTime = 1;
+            nlohmann::json metaTimeSignal;
+            metaTimeSignal[META_TABLEID] = dataSignal.tableId();
+            metaTimeSignal[META_DEFINITION][META_RULE] = META_RULETYPE_LINEAR;
+            metaTimeSignal[META_DEFINITION][META_RULETYPE_LINEAR][META_DELTA] = deltaTime;
+            metaTimeSignal[META_DEFINITION][META_DATATYPE] = DATA_TYPE_UINT64;
+            result = timeSignal->processSignalMetaInformation(META_METHOD_SIGNAL, metaTimeSignal);
+            ASSERT_EQ(result, 0);
+        }
 
         /// timestamp of the next value to be delivered
         timeSignal->setTime(startTime);
 
-        nlohmann::json metaDataSubscribe;
-        std::string signalId = "da data!";
-        metaDataSubscribe[META_SIGNALID] = signalId;
-        result = dataSignal.processSignalMetaInformation(META_METHOD_SUBSCRIBE, metaDataSubscribe);
-        ASSERT_EQ(result, 0);
+        {
+            nlohmann::json metaDataSubscribe;
+            std::string dataSignalId = "da data!";
+            metaDataSubscribe[META_SIGNALID] = dataSignalId;
+            result = dataSignal.processSignalMetaInformation(META_METHOD_SUBSCRIBE, metaDataSubscribe);
+            ASSERT_EQ(result, 0);
+        }
+
+        {
+            nlohmann::json metaDataSignal;
+            metaDataSignal[META_TABLEID] = dataSignal.tableId();
+            metaDataSignal[META_RELATEDSIGNALS][0][META_TYPE] = META_TIME;
+            metaDataSignal[META_RELATEDSIGNALS][0][META_SIGNALID] = timeSignal->signalId();
+            result = timeSignal->processSignalMetaInformation(META_METHOD_SIGNAL, metaDataSignal);
+            ASSERT_EQ(result, 0);
+        }
     }
 
     TEST(SubscribedSignalTest, dataCb_uint16_test)

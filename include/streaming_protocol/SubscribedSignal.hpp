@@ -197,6 +197,11 @@ public:
         return m_range;
     }
 
+    RelatedSignals relatedSignals() const
+    {
+        return m_relatedSignals;
+    }
+
 private:
 
     template < typename DataType >
@@ -250,5 +255,6 @@ private:
 
     nlohmann::json m_interpretationObject;
     LogCallback logCallback;
+    RelatedSignals m_relatedSignals;
 };
 }

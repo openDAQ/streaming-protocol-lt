@@ -53,6 +53,7 @@ namespace daq::streaming_protocol::siggen{
         /// \param samplePeriod Samples are taken with this rate. Not to be confused with the signal frequency!
         GeneratedSynchronousSignal(const std::string& signalId,
                                    const std::string& tableId,
+                                   const std::string& timeSignalId,
                                    FunctionParameters <DataType> functionParameters,
                                    std::chrono::nanoseconds samplePeriod,
                                    const std::chrono::time_point<std::chrono::system_clock> &currentTime,
@@ -71,6 +72,9 @@ namespace daq::streaming_protocol::siggen{
         {
             m_signal->setRange(functionParameters.range);
             m_signal->setPostScaling(functionParameters.postScaling);
+            RelatedSignals relatedSignals;
+            relatedSignals[META_TIME] = timeSignalId;
+            m_signal->setRelatedSignals(relatedSignals);
         }
         /// not to be copied!
         GeneratedSynchronousSignal(const GeneratedSynchronousSignal&) = delete;

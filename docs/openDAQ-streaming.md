@@ -158,8 +158,11 @@ This allows the client to know when all signals are described and data is to be 
 ### Value Index
 An uint64 sent with each value of an implicit signal. It is used to align the value of the implicit signal with the table steps.
 
+### Related Signals
+A signal may have related signals that carry additional information. Examples are domain signal and status signal.
+Each relation is described by the id of the related signal and the type of the related signal (i.e. "domain", "status").
 
-
+Only signals that are already subscribed may be used as related signals!
 
 ### Meta Information
 
@@ -394,15 +397,13 @@ There are some example of signal descriptions in a separate document.
     },
     "tableId": <string>,
     ["valueIndex": <uint64>],
-    {
-      "relatedSignals": 
-      [
-        { 
-          "type" : <relation type>, 
-          "signalId" : <id of the related signal>
-        } 
-      ]
-    },
+    "relatedSignals": 
+    [
+      { 
+        "type" : <relation type>, 
+        "signalId" : <id of the related signal>
+      } 
+    ],
     ["interpretation": {}]
   }
 }
