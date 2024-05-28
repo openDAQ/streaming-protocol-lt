@@ -162,7 +162,7 @@ An uint64 sent with each value of an implicit signal. It is used to align the va
 A signal may have related signals that carry additional information. Examples are domain signal and status signal.
 Each relation is described by the id of the related signal and the type of the related signal (i.e. "domain", "status").
 
-Only signal that are already subscribed may be used as related signal!
+Only signals that are already subscribed may be used as related signals!
 
 ### Meta Information
 
