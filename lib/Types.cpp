@@ -36,21 +36,21 @@ bool Range::operator==(const Range &other) const
 
 void Range::clear()
 {
-    low = -std::numeric_limits<double>::max();
+    low = std::numeric_limits<double>::lowest();
     high = std::numeric_limits<double>::max();
 }
 
 bool Range::isUnlimited() const
 {
     return (
-            (low == -std::numeric_limits<double>::max())&&
+            (low == std::numeric_limits<double>::lowest())&&
             (high == std::numeric_limits<double>::max())
            );
 }
 
 void Range::compose(nlohmann::json &composition) const
 {
-    if (low!=-std::numeric_limits<double>::max()) {
+    if (low!=std::numeric_limits<double>::lowest()) {
         composition[META_RANGE][META_LOW] = low;
     }
     if (high!=std::numeric_limits<double>::max()) {
