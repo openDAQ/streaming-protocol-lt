@@ -53,6 +53,7 @@ struct SignalMetaInformation
     nlohmann::json interpretationObject;
     std::string signalId;
     std::string tableId;
+    RelatedSignals relatedSignals;
 };
 
 
@@ -80,6 +81,18 @@ public:
                 signalMeta.unit.parse(data[PARAMS][META_DEFINITION]);
             } else {
                 signalMeta.unit.clear();
+            }
+
+            signalMeta.relatedSignals.clear();
+            if (data[PARAMS].contains(META_RELATEDSIGNALS)) {
+                const nlohmann::json& relatedSignals = data[PARAMS][META_RELATEDSIGNALS];
+                if (relatedSignals.is_array()) {
+                    for (const auto& arrayItem: relatedSignals) {
+                        std::string type = arrayItem[META_TYPE];
+                        std::string signalId = arrayItem[META_SIGNALID];
+                        signalMeta.relatedSignals[type] = signalId;
+                    }
+                }
             }
 
             std::string ruleAsString = data[PARAMS][META_DEFINITION][META_RULE];
@@ -346,7 +359,7 @@ TEST(SignalTest, sync_sampletype_test)
 
 TEST(SignalTest, sync_signalid_test)
 {
-    static const std::string signalId = "the Id";
+    static const std::string syncSignalId = "the Id";
     static const std::string timeSignalId = "the time Id";
     static const std::string tableId = "the table Id";
 
@@ -368,20 +381,23 @@ TEST(SignalTest, sync_signalid_test)
     )"_json;
 
     TestSubscribeWriter writer;
+    RelatedSignals relatedSignals;
 
     /// \todo domain signal tests!
     uint64_t outputRateInTicks = BaseDomainSignal::timeTicksFromNanoseconds(outputRate, s_timeTicksPerSecond);
     LinearTimeSignal timeSignal(timeSignalId, tableId, s_timeTicksPerSecond, outputRate, writer, logCallback);
-    SynchronousSignal<double> syncSignal(signalId, tableId, writer, logCallback);
+    SynchronousSignal<double> syncSignal(syncSignalId, tableId, writer, logCallback);
     ASSERT_EQ(timeSignal.getRuleType(), RULETYPE_LINEAR);
 
     ASSERT_EQ(syncSignal.getUnitId(), Unit::UNIT_ID_NONE);
-    ASSERT_EQ(syncSignal.getId(), signalId);
+    ASSERT_EQ(syncSignal.getId(), syncSignalId);
 
     ASSERT_EQ(timeSignal.getTimeDelta(), outputRateInTicks);
     ASSERT_EQ(syncSignal.getSampleType(), SAMPLETYPE_REAL64);
 
+    relatedSignals[META_TIME] = timeSignal.getId();
     syncSignal.setUnit(unit.id, unit.displayName);
+    syncSignal.setRelatedSignals(relatedSignals);
     ASSERT_EQ(syncSignal.getUnitId(), unit.id);
     ASSERT_EQ(syncSignal.getUnitDisplayName(), unit.displayName);
 
@@ -396,13 +412,12 @@ TEST(SignalTest, sync_signalid_test)
     syncSignal.subscribe(); // causes subscribe ack and all signal meta information of data signal to be written to fileName
     SignalMetaInformation dataSignalMetaInformation = writer.allSignalMetaInformation[syncSignal.getNumber()];
     SignalMetaInformation timeSignalMetaInformation = writer.allSignalMetaInformation[timeSignal.getNumber()];
-    ASSERT_EQ(dataSignalMetaInformation.signalId, signalId);
+    ASSERT_EQ(dataSignalMetaInformation.signalId, syncSignalId);
     ASSERT_EQ(dataSignalMetaInformation.tableId, tableId);
     ASSERT_EQ(dataSignalMetaInformation.ruleType, RULETYPE_EXPLICIT);
     ASSERT_EQ(dataSignalMetaInformation.unit, unit);
     ASSERT_EQ(dataSignalMetaInformation.interpretationObject, dataInterpretationObject);
-
-
+    ASSERT_EQ(dataSignalMetaInformation.relatedSignals, relatedSignals);
     ASSERT_EQ(timeSignalMetaInformation.signalId, timeSignalId);
     ASSERT_EQ(timeSignalMetaInformation.tableId, tableId);
     ASSERT_EQ(timeSignalMetaInformation.ruleType, RULETYPE_LINEAR);
