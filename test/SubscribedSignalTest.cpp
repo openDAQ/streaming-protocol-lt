@@ -99,6 +99,7 @@ namespace daq::streaming_protocol {
         static const std::string unixEpoch = "1970-01-01";
         static const uint64_t numerator = 1;
         static const uint64_t denominator = 1000000000;
+        static const uint64_t timeDelta = 3;
 
         Unit unit;
         unit.id = Unit::UNIT_ID_SECONDS;
@@ -120,7 +121,7 @@ namespace daq::streaming_protocol {
         ASSERT_EQ(result, -1);
 
         // change to a valid linear rule
-        metaTimeSignal[META_DEFINITION][META_RULETYPE_LINEAR][META_DELTA] = 1;
+        metaTimeSignal[META_DEFINITION][META_RULETYPE_LINEAR][META_DELTA] = timeDelta;
         metaTimeSignal[META_INTERPRETATION] = interpretationObject;
 
         result = timeSignal.processSignalMetaInformation(META_METHOD_SIGNAL, metaTimeSignal);
@@ -133,6 +134,7 @@ namespace daq::streaming_protocol {
         ASSERT_EQ(timeSignal.interpretationObject(), interpretationObject);
         ASSERT_EQ(timeSignal.timeBaseFrequency(), denominator/numerator);
         ASSERT_EQ(timeSignal.timeBaseEpochAsString(), unixEpoch);
+        ASSERT_EQ(timeSignal.linearDelta(), timeDelta);
     }
 
     /// prepare time signal and attach it to synchronous data signal

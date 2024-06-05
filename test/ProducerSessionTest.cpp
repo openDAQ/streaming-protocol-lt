@@ -331,20 +331,20 @@ TEST(ProducerSessionTest, complete_session)
         ioc.run();
 
         // expected package sequence:
-        // - "apiVerison"
-        // - "init"
-        // - "available"
-        // - "subscribe" (time, since data signal relates to time, time has to come first!)
-        // - "signal" (time) initial signal description
-        // - "subscribe" (data)
-        // - "signal" (data) initial signal description
-        // - measured data (small)
-        // - measured data (big)
-        // - "signal" (data) because of updated unit
-        // - "signal" (time) because of updated output rate
-        // - "unsubscribe" (data)
-        // - "unsubscribe" (time)
-        // - "unavailable"
+        // 0: "apiVerison"
+        // 1: "init"
+        // 2: "available"
+        // 3: "subscribe" (time, since data signal relates to time, time has to come first!)
+        // 4: "signal" (time) initial signal description
+        // 5: "subscribe" (data)
+        // 6: "signal" (data) initial signal description
+        // 7: measured data (small)
+        // 8: measured data (big)
+        // 9: "signal" (data) because of updated unit
+        // 10: "signal" (time) because of updated output rate
+        // 11: "unsubscribe" (data)
+        // 12: "unsubscribe" (time)
+        // 13: "unavailable"
         ASSERT_EQ(receivedMetaInformation[0].method, META_METHOD_APIVERSION);
         ASSERT_EQ(receivedMetaInformation[1].method, META_METHOD_INIT);
         ASSERT_EQ(receivedMetaInformation[2].method, META_METHOD_AVAILABLE); // data + time
