@@ -492,7 +492,7 @@ Gives information about the highest and/or lowest possible value. Both values ar
 
 ##### Post Scaling Object
 
-Tells how the value need to be scaled with an offset and a scale factor. All parameters are optional.
+Tells how to calculate the scaled value from the delivered raw value, using a scale and an offset parameter. All parameters are optional.
 
 ~~~~ {.javascript}
 {
@@ -503,6 +503,9 @@ Tells how the value need to be scaled with an offset and a scale factor. All par
 }
 ~~~~
 
+Calculation rule:
+
+`scaledValue = scale * rawValue + offset`
 
 
 
