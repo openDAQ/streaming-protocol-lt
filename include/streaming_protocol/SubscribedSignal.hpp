@@ -60,6 +60,7 @@ public:
     ssize_t processMeasuredData(const unsigned char* pData, size_t size, std::shared_ptr < SubscribedSignal> timeSignal, DataAsRawCb cbRaw, DataAsValueCb cbValues);
 
     /// process signal related meta information.
+    /// \return 0 on success, -1 on error
     int processSignalMetaInformation(const std::string& method, const nlohmann::json& params);
 
     /// \return the unique signal number. Signals have also an unique id which is a string.
@@ -248,6 +249,7 @@ private:
     uint64_t m_linearDelta;
     size_t m_linearValueIndex;
     std::string m_timeBaseEpochAsString;
+    Resolution m_resolution;
     uint64_t m_timeBaseFrequency;
     Unit m_unit;
     Range m_range;

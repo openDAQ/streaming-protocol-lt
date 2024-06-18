@@ -18,14 +18,12 @@
 
 #include <stdint.h>
 
+#include "streaming_protocol/Types.h"
+
+namespace daq::streaming_protocol {
 class TimeResolution
 {
 public:
-
-    struct Resolution {
-        uint64_t numerator;
-        uint64_t denominator;
-    };
 
     static const Resolution TIME_RESOLUTION_1HZ;
 
@@ -35,3 +33,4 @@ public:
     /// NTP can also be expresses (beware: epoch of NTP is 1900)
     static const Resolution TIME_RESOLUTION_NTP;
 };
+}

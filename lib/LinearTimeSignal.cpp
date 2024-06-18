@@ -32,7 +32,7 @@ void daq::streaming_protocol::LinearTimeSignal::setOutputRate(uint64_t timeTicks
 
 void LinearTimeSignal::setOutputRate(const std::chrono::nanoseconds &nanoseconds)
 {
-    setOutputRate(m_timeTicksPerSecond * nanoseconds.count() / 1000000000);
+    setOutputRate(m_resolution.denominator * nanoseconds.count() / 1000000000);
 }
 
 void daq::streaming_protocol::LinearTimeSignal::writeSignalMetaInformation() const
@@ -55,10 +55,9 @@ nlohmann::json LinearTimeSignal::getMemberInformation() const
     memberInformation[META_RULE] = META_RULETYPE_LINEAR;
     memberInformation[META_RULETYPE_LINEAR][META_DELTA] = m_outputRateInTicks;
     memberInformation[META_DATATYPE] = DATA_TYPE_UINT64;
-    m_unitSecond.compose(memberInformation);
     memberInformation[META_ABSOLUTE_REFERENCE] = m_epoch;
-    memberInformation[META_RESOLUTION][META_NUMERATOR] = 1;
-    memberInformation[META_RESOLUTION][META_DENOMINATOR] = m_timeTicksPerSecond;
+    m_unitSecond.compose(memberInformation);
+    m_resolution.compose(memberInformation);
 
     return memberInformation;
 }

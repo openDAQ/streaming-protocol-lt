@@ -17,6 +17,7 @@
 #include <limits>
 
 #include "streaming_protocol/Defines.h"
+#include "streaming_protocol/Logging.hpp"
 #include "streaming_protocol/Types.h"
 
 namespace daq::streaming_protocol {
@@ -119,5 +120,60 @@ void PostScaling::parse(const nlohmann::json &composition)
             scale = *scaleIter;
         }
     }
+}
+
+Resolution::Resolution()
+    : numerator(1)
+    , denominator(1)
+{
+}
+
+Resolution::Resolution(uint64_t numerator, uint64_t denominator)
+    : numerator(numerator)
+    , denominator(denominator)
+{
+}
+
+void Resolution::compose(nlohmann::json &composition) const
+{
+    composition[META_RESOLUTION][META_NUMERATOR] = numerator;
+    composition[META_RESOLUTION][META_DENOMINATOR] = denominator;
+}
+
+int Resolution::parse(const nlohmann::json &composition, LogCallback logCallback)
+{
+    int result = 0;
+    uint64_t newNumerator = numerator;
+    uint64_t newDenominator = denominator;
+
+    auto resolutionIter = composition.find(META_RESOLUTION);
+    if (resolutionIter!=composition.cend()) {
+        auto numeratorIter = resolutionIter->find(META_NUMERATOR);
+        if(numeratorIter!=resolutionIter->cend()) {
+            newNumerator = *numeratorIter;
+            if (newNumerator==0) {
+                STREAMING_PROTOCOL_LOG_E("\tResolution numerator may not be 0!");
+                return -1;
+            }
+            result = 1;
+        }
+        auto denominatorIter = resolutionIter->find(META_DENOMINATOR);
+        if(denominatorIter!=resolutionIter->cend()) {
+            newDenominator = *denominatorIter;
+            if (newDenominator==0) {
+                STREAMING_PROTOCOL_LOG_E("\tResolution denominator may not be 0!");
+                return -1;
+            }
+            result = 1;
+        }
+    }
+    numerator = newNumerator;
+    denominator = newDenominator;
+    return result;
+}
+
+std::string Resolution::toString() const
+{
+    return std::to_string(numerator) + "/" + std::to_string(denominator);
 }
 };
