@@ -22,6 +22,8 @@
 
 #include "nlohmann/json.hpp"
 
+#include "streaming_protocol/Logging.hpp"
+
 namespace daq::streaming_protocol {
 /// Each signal has a id as string. It is unique for each producer.
 using SignalIds = std::vector < std::string >;
@@ -119,6 +121,22 @@ struct Range
     double low;
     double high;
 };
+
+class Resolution {
+public:
+    Resolution();
+    Resolution(uint64_t numerator, uint64_t denominator);
+    uint64_t numerator;
+    uint64_t denominator;
+
+    void compose(nlohmann::json& composition) const;
+
+    /// \return -1 on error 1 on change of value
+    int parse(const nlohmann::json& composition, LogCallback logCallback);
+
+    std::string toString() const;
+};
+
 
 /// Signal type is the key signal id is the value.
 /// Currently types "time" and "status" are specified

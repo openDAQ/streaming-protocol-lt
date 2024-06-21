@@ -11,7 +11,7 @@ namespace daq::streaming_protocol {
 
 BaseDomainSignal::BaseDomainSignal(const std::string& signalId, const std::string& tableId, uint64_t timeTicksPerSecond, iWriter &writer, LogCallback logCb)
     : BaseSignal(signalId, tableId, writer, logCb)
-    , m_timeTicksPerSecond(timeTicksPerSecond)
+    , m_resolution(1, timeTicksPerSecond)
 {
     m_unitSecond.id = Unit::UNIT_ID_SECONDS;
     m_unitSecond.displayName = "s";
@@ -37,12 +37,12 @@ void BaseDomainSignal::setEpoch(const std::chrono::system_clock::time_point& epo
 
 void BaseDomainSignal::setTimeTicksPerSecond(uint64_t timeTicksPerSecond)
 {
-    m_timeTicksPerSecond = timeTicksPerSecond;
+    m_resolution.denominator = timeTicksPerSecond;
 }
 
 uint64_t BaseDomainSignal::getTimeTicksPerSecond() const
 {
-    return m_timeTicksPerSecond;
+    return m_resolution.denominator;
 }
 
 uint64_t BaseDomainSignal::timeTicksFromNanoseconds(std::chrono::nanoseconds ns, uint64_t m_timeTicksPerSecond)

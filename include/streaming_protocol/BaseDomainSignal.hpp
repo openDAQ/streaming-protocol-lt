@@ -60,7 +60,7 @@ namespace daq::streaming_protocol{
 
         uint64_t m_startInTicks;
 
-        uint64_t m_timeTicksPerSecond;
+        Resolution m_resolution;
         std::string m_epoch = UNIX_EPOCH;
         Unit m_unitSecond;
     };

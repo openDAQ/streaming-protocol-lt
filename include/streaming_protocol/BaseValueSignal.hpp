@@ -91,7 +91,7 @@ namespace daq::streaming_protocol{
 
         void composeRelatedSignals(nlohmann::json& composition) const
         {
-            for(auto iter : m_relatedSignals) {
+            for(const auto& iter : m_relatedSignals) {
                  nlohmann::json relatedSignal;
                  relatedSignal[META_TYPE] = iter.first;
                  relatedSignal[META_SIGNALID] = iter.second;

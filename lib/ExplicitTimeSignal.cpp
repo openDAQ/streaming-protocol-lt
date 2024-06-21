@@ -39,8 +39,7 @@ nlohmann::json ExplicitTimeSignal::getMemberInformation() const
     memberInformation[META_DATATYPE] = DATA_TYPE_UINT64;
     m_unitSecond.compose(memberInformation);
     memberInformation[META_ABSOLUTE_REFERENCE] = m_epoch;
-    memberInformation[META_RESOLUTION][META_NUMERATOR] = 1;
-    memberInformation[META_RESOLUTION][META_DENOMINATOR] = m_timeTicksPerSecond;
+    m_resolution.compose(memberInformation);
 
     return memberInformation;
 }

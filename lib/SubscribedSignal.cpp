@@ -342,24 +342,17 @@ int SubscribedSignal::processSignalMetaInformation(const std::string& method, co
                     m_isTimeSignal = true;
                 }
 
-                auto resolutionIter = definitionNode.find(META_RESOLUTION);
-                if (resolutionIter!=definitionNode.end()) {
-                    const nlohmann::json& resolutionNode = *resolutionIter;
-                    uint64_t numerator = resolutionNode[META_NUMERATOR];
-                    uint64_t denominator = resolutionNode[META_DENOMINATOR];
-                    if (numerator==0 || denominator==0) {
-                        STREAMING_PROTOCOL_LOG_E("\tResolution numerator and denominator may not be 0!");
-                        return -1;
-                    }
-                    // numerator/denominator gives time between ticks, or period, in the uint of the signal.
-                    if (m_unit.id == Unit::UNIT_ID_SECONDS) {
-                        // Unit for time signals is seconds. We want the frequency here!
-                        m_timeBaseFrequency = denominator / numerator;
-                        STREAMING_PROTOCOL_LOG_I("\ttime resolution: {} Hz", resolutionNode.dump());
-                    } else {
-                        STREAMING_PROTOCOL_LOG_E("\tFor time unit 's' is required!");
-                        return -1;
-                    }
+                int result = m_resolution.parse(definitionNode, logCallback);
+                if (result==1) {
+                  if (m_unit.id == Unit::UNIT_ID_SECONDS) {
+                    // numerator/denominator gives time between ticks, or period, in the unit of the signal.
+                    // Unit for time signals is seconds. We want the frequency here!
+                    m_timeBaseFrequency = m_resolution.denominator / m_resolution.numerator;
+                    STREAMING_PROTOCOL_LOG_I("\ttime resolution: {} Hz", m_resolution.toString());
+                  } else {
+                    STREAMING_PROTOCOL_LOG_E("\tFor time unit 's' is required!");
+                    return -1;
+                  }
                 }
 
                 // openDAQ streaming
