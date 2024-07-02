@@ -136,9 +136,9 @@ namespace daq::streaming_protocol {
     {
         m_allSignals.insert(signals.begin(), signals.end());
         SignalIds signalIds;
-        for (auto signalsIter = signals.begin(); signalsIter!=signals.end(); ++signalsIter) {
-            if(signalsIter->second->isDataSignal()) {
-                signalIds.push_back(signalsIter->first);
+        for (const auto& signalsIter : signals) {
+            if(signalsIter.second->isDataSignal()) {
+                signalIds.push_back(signalsIter.first);
             }
         }
 
