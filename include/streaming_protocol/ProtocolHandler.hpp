@@ -85,6 +85,9 @@ namespace daq::streaming_protocol {
         SignalContainer& m_signalContainer;
         StreamMetaCb m_streamMetaCb;
         std::unique_ptr < daq::stream::Stream > m_stream;
+        /// Will be set upon start with infomation from m_stream.
+        /// We use this to omit possible race condition after reset of m_stream
+        std::string m_remoteHost;
         CompletionCb m_completionCb;
         boost::system::error_code m_sessionEc;
 
