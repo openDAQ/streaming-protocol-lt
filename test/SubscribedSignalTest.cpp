@@ -189,7 +189,7 @@ namespace daq::streaming_protocol {
         uint64_t startTime = 1000;
         uint64_t signalDelayIndex = 10;
 
-        std::shared_ptr < SubscribedSignal> timeSignal = std::make_shared<SubscribedSignal>(signalNumber+1, logCallback);
+        auto timeSignal = std::make_shared<SubscribedSignal>(signalNumber+1, logCallback);
         SubscribedSignal dataSignal(signalNumber, logCallback);
         prepareSignals(dataSignal, timeSignal, startTime);
 
@@ -266,7 +266,7 @@ namespace daq::streaming_protocol {
 #pragma pack(pop)
 
 
-        std::shared_ptr < SubscribedSignal> timeSignal = std::make_shared<SubscribedSignal>(signalNumber+1, logCallback);
+        auto timeSignal = std::make_shared<SubscribedSignal>(signalNumber+1, logCallback);
         SubscribedSignal dataSignal(signalNumber, logCallback);
         prepareSignals(dataSignal, timeSignal, startTime);
 
@@ -334,7 +334,7 @@ namespace daq::streaming_protocol {
         int result;
         uint64_t startTime = 1000;
 
-        std::shared_ptr < SubscribedSignal> timeSignal = std::make_shared<SubscribedSignal>(signalNumber+1, logCallback);
+        auto timeSignal = std::make_shared<SubscribedSignal>(signalNumber+1, logCallback);
         SubscribedSignal dataSignal(signalNumber, logCallback);
         prepareSignals(dataSignal, timeSignal, startTime);
 
@@ -378,7 +378,7 @@ namespace daq::streaming_protocol {
         int result;
         uint64_t startTime = 1000;
 
-        std::shared_ptr < SubscribedSignal> timeSignal = std::make_shared<SubscribedSignal>(signalNumber+1, logCallback);
+        auto timeSignal = std::make_shared<SubscribedSignal>(signalNumber+1, logCallback);
         SubscribedSignal dataSignal(signalNumber, logCallback);
         prepareSignals(dataSignal, timeSignal, startTime);
 
@@ -424,7 +424,7 @@ namespace daq::streaming_protocol {
         uint64_t startTime = 1000;
 
 
-        std::shared_ptr < SubscribedSignal> timeSignal = std::make_shared<SubscribedSignal>(signalNumber+1, logCallback);
+        auto timeSignal = std::make_shared<SubscribedSignal>(signalNumber+1, logCallback);
         SubscribedSignal dataSignal(signalNumber, logCallback);
         prepareSignals(dataSignal, timeSignal, startTime);
 
@@ -474,7 +474,7 @@ namespace daq::streaming_protocol {
             int64_t bitfield;
         };
 
-        std::shared_ptr < SubscribedSignal> timeSignal = std::make_shared<SubscribedSignal>(signalNumber+1, logCallback);
+        auto timeSignal = std::make_shared<SubscribedSignal>(signalNumber+1, logCallback);
         SubscribedSignal dataSignal(signalNumber, logCallback);
         prepareSignals(dataSignal, timeSignal, startTime);
 
@@ -519,7 +519,7 @@ namespace daq::streaming_protocol {
         uint64_t startTime = 1000;
 
 
-        std::shared_ptr < SubscribedSignal> timeSignal = std::make_shared<SubscribedSignal>(signalNumber+1, logCallback);
+        auto timeSignal = std::make_shared<SubscribedSignal>(signalNumber+1, logCallback);
         SubscribedSignal dataSignal(signalNumber, logCallback);
         prepareSignals(dataSignal, timeSignal, startTime);
 
@@ -539,7 +539,7 @@ namespace daq::streaming_protocol {
         int result;
         uint64_t startTime = 1000;
 
-        std::shared_ptr < SubscribedSignal> timeSignal = std::make_shared<SubscribedSignal>(signalNumber+1, logCallback);
+        auto timeSignal = std::make_shared<SubscribedSignal>(signalNumber+1, logCallback);
         SubscribedSignal dataSignal(signalNumber, logCallback);
         prepareSignals(dataSignal, timeSignal, startTime);
 
@@ -577,7 +577,7 @@ namespace daq::streaming_protocol {
         int result;
         uint64_t startTime = 1000;
 
-        std::shared_ptr < SubscribedSignal> timeSignal = std::make_shared<SubscribedSignal>(signalNumber+1, logCallback);
+        auto timeSignal = std::make_shared<SubscribedSignal>(signalNumber+1, logCallback);
         SubscribedSignal dataSignal(signalNumber, logCallback);
         prepareSignals(dataSignal, timeSignal, startTime);
 
@@ -616,7 +616,7 @@ namespace daq::streaming_protocol {
         uint64_t startTime = 1000;
         static const unsigned int count = 3;
 
-        std::shared_ptr < SubscribedSignal> timeSignal = std::make_shared<SubscribedSignal>(signalNumber+1, logCallback);
+        auto timeSignal = std::make_shared<SubscribedSignal>(signalNumber+1, logCallback);
         SubscribedSignal dataSignal(signalNumber, logCallback);
         prepareSignals(dataSignal, timeSignal, startTime);
 
@@ -661,7 +661,7 @@ namespace daq::streaming_protocol {
             int32_t Int32;
         };
 
-        std::shared_ptr < SubscribedSignal> timeSignal = std::make_shared<SubscribedSignal>(signalNumber+1, logCallback);
+        auto timeSignal = std::make_shared<SubscribedSignal>(signalNumber+1, logCallback);
         SubscribedSignal dataSignal(signalNumber, logCallback);
         prepareSignals(dataSignal, timeSignal, startTime);
 
@@ -712,7 +712,7 @@ namespace daq::streaming_protocol {
 		uint64_t startTime = 1000;
 		uint64_t signalDelayIndex = 10;
 
-		std::shared_ptr < SubscribedSignal> timeSignal = std::make_shared<SubscribedSignal>(signalNumber+1, logCallback);
+        auto timeSignal = std::make_shared<SubscribedSignal>(signalNumber+1, logCallback);
 		SubscribedSignal dataSignal(signalNumber, logCallback);
 		prepareSignals(dataSignal, timeSignal, startTime);
 

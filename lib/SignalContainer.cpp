@@ -93,7 +93,7 @@ int SignalContainer::processMetaInformation(SignalNumber signalNumber, const Met
             STREAMING_PROTOCOL_LOG_E("Invalid subscribe ack: No signal id!");
             return -1;
         }
-        std::unique_ptr < SubscribedSignal > subscribedSignal = std::make_unique < SubscribedSignal > (signalNumber, logCallback);
+        auto subscribedSignal = std::make_unique < SubscribedSignal > (signalNumber, logCallback);
         //STREAMING_PROTOCOL_LOG_I(":\n\tGot subscribed! (signal number: {})", signalNumber);
         std::pair < Signals::iterator, bool > result = m_subscribedSignals.emplace(signalNumber, std::move(subscribedSignal));
         if (result.second==false) {
