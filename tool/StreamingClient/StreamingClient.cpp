@@ -253,8 +253,7 @@ int main(int argc, char** argv)
     }
 
     std::unique_ptr < daq::stream::Stream > stream;
-    std::shared_ptr < daq::streaming_protocol::ProtocolHandler > protocolHandler =
-        std::make_shared < daq::streaming_protocol::ProtocolHandler > (s_ioc, signalContainer, streamMetaInformationCb, logCallback);
+    auto protocolHandler = std::make_shared < daq::streaming_protocol::ProtocolHandler > (s_ioc, signalContainer, streamMetaInformationCb, logCallback);
     // Prepare the asynchronous operation depending on the protocol to use
     if (!target.empty()) {
         std::cout << "Using websocket..." << std::endl;
