@@ -203,9 +203,6 @@ int main(int argc, char** argv)
             ("signalFilter", boost::program_options::value<SignalFilterParameter>()->multitoken(), "Signal filter, if given only those are to be subscribed");
             ;
 
-    daq::streaming_protocol::SignalContainer signalContainer(logCallback);
-    signalContainer.setSignalMetaCb(signalMetaCb);
-
     boost::program_options::variables_map optionMap;
     try {
         boost::program_options::store(boost::program_options::parse_command_line(argc, argv, optionsDescription), optionMap);
@@ -221,11 +218,11 @@ int main(int argc, char** argv)
         return EXIT_SUCCESS;
     }
 
-
     std::string fileName;
     std::string host;
     std::string port;
     std::string target;
+    bool quiet;
 
     if (optionMap.count("host")) {
         host = optionMap["host"].as < std::string >();
@@ -237,19 +234,25 @@ int main(int argc, char** argv)
         target = optionMap["target"].as < std::string >();
     }
     if (optionMap.count("quiet")) {
-        std::cout << "Quiet mode" << std::endl;
         // In this case we use the default data callback that does nothing...
+        std::cout << "Quiet mode. Measured values will not be printed." << std::endl;
+        quiet = true;
     } else {
         std::cout << "Printing measured values" << std::endl;
-        signalContainer.setDataAsRawCb(rawDataCb);
-        // signalContainer.setDataAsValueCb(valueDataCb);
+        quiet = false;
     }
-
     if (optionMap.count("signalFilter")) {
         SignalFilterParameter signalFilterParameter = optionMap["signalFilter"].as <SignalFilterParameter>();
         for (const auto &iter : signalFilterParameter) {
             s_signalFilter.insert(iter);
         }
+    }
+
+    daq::streaming_protocol::SignalContainer signalContainer(logCallback);
+    signalContainer.setSignalMetaCb(signalMetaCb);
+    if (!quiet) {
+        signalContainer.setDataAsRawCb(rawDataCb);
+        // signalContainer.setDataAsValueCb(valueDataCb);
     }
 
     std::unique_ptr < daq::stream::Stream > stream;
