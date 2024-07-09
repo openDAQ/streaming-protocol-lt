@@ -32,8 +32,6 @@
 
 #include "nlohmann/json.hpp"
 
-#include "streaming_protocol/iWriter.hpp"
-#include "streaming_protocol/jsonrpc_defines.hpp"
 #include "streaming_protocol/Logging.hpp"
 #include "streaming_protocol/ProducerSession.hpp"
 
