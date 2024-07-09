@@ -248,10 +248,6 @@ int main(int argc, char** argv)
         }
     }
 
-
-
-
-
     daq::streaming_protocol::SignalContainer signalContainer(logCallback);
     signalContainer.setSignalMetaCb(signalMetaCb);
     if (!quiet) {
