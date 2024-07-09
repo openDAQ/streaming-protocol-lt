@@ -142,6 +142,36 @@ namespace daq::streaming_protocol {
         ioContext.run();
     }
 
+    TEST(ProtocolHandlerTest, start_wait_one_second_stop)
+    {
+        boost::asio::io_context ioContext;
+
+        auto streamMetaCb = [](ProtocolHandler& prtotocolHandler, const std::string& method, const nlohmann::json& params)
+        {
+        };
+
+        SignalContainer signalContainer(logCallback);
+        auto protocolHandler = std::make_shared<ProtocolHandler>(ioContext, signalContainer, streamMetaCb, logCallback);
+        auto fileStream = std::make_unique < TestStream > ();
+
+        auto completionCb = [](const boost::system::error_code& ec) {
+            ASSERT_EQ(ec, boost::system::error_code());
+        };
+
+        protocolHandler->start(std::move(fileStream), completionCb);
+
+        auto ThreadFunction = [&]()
+        {
+            ioContext.run();
+        };
+
+        auto workerThread = std::thread(ThreadFunction);
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        protocolHandler->stop();
+        workerThread.join();
+    }
+
     TEST(ProtocolHandlerTest, stop_without_start)
     {
         boost::asio::io_context ioContext;
