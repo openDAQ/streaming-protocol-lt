@@ -148,19 +148,15 @@ the sender can simply leave out the value and send the value index only as a tab
 Several pairs of value index and value can be transferred in one package.
 There may be only one progress marker per package. A progress marker may only be at the end of a package.
 
-### Automatic Additional Signal
-When subscribing a signal, additional signals might be subscribed automatically. 
-If this is the case, meta information about the additional signals is to be 
-transferred before the meta information about the signal originally subscribed.
-
-This allows the client to know when all signals are described and data is to be expected.
-
 ### Value Index
 An uint64 sent with each value of an implicit signal. It is used to align the value of the implicit signal with the table steps.
 
 ### Related Signals
 A signal may have related signals that carry additional information. Examples are domain signal and status signal.
 Each relation is described by the id of the related signal and the type of the related signal (i.e. "domain", "status").
+
+When subscribing a signal, all related signals will also be subscribed. 
+Subscribe acknowledge meta information of all related signals has to be send before the subscribe acknowledge of the original signal.
 
 Only signals that are already subscribed may be used as related signals!
 
