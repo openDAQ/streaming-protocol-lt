@@ -23,7 +23,7 @@ endif()
 
 option(STREAMING_PROTOCOL_SPECIFICATION "Enable building the specification" OFF)
 option(STREAMING_PROTOCOL_LIB "Enable building the library implementing the protocol" ON)
-option(STREAMING_PROTOCOL_TOOLS "Enable building some tools that use the streaming_protocol library" ON)
+option(STREAMING_PROTOCOL_TOOLS "Enable building some tools that use the streaming_protocol library" OFF)
 option(STREAMING_PROTOCOL_POST_BUILD_UNITTEST "Automatically run unit-tests as a post build step" OFF)
 
 set(OPENDAQ_REPO_PREFIX "https://github.com/openDAQ" CACHE STRING "Set this if using a repository mirror")
