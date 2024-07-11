@@ -155,7 +155,7 @@ An uint64 sent with each value of an implicit signal. It is used to align the va
 A signal may have related signals that carry additional information. Examples are domain signal and status signal.
 Each relation is described by the id of the related signal and the type of the related signal (i.e. "domain", "status").
 
-When subscribing a signal, all related signals will also be subscribed. 
+When a client subscribes a signal, all related signals will also be subscribed by the server.
 Subscribe acknowledge meta information of all related signals has to be send before the subscribe acknowledge of the original signal.
 
 ### Meta Information
