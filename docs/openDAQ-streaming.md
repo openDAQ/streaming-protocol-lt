@@ -158,8 +158,6 @@ Each relation is described by the id of the related signal and the type of the r
 When subscribing a signal, all related signals will also be subscribed. 
 Subscribe acknowledge meta information of all related signals has to be send before the subscribe acknowledge of the original signal.
 
-Only signals that are already subscribed may be used as related signals!
-
 ### Meta Information
 
 The `Data` section contains additional ("Meta") information related to
