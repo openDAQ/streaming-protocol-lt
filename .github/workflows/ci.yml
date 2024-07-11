@@ -8,7 +8,7 @@ jobs:
 
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}-${{ matrix.name }}
-      cancel-in-progress: true
+      cancel-in-progress: false
     timeout-minutes: 30
     strategy:
       fail-fast: false
