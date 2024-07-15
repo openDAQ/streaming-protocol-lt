@@ -53,3 +53,7 @@ dkms.conf
 
 # Build directory
 build/
+
+# license-header-checker
+tool/license-header-checker/bin/
+tool/license-header-checker/*.log
