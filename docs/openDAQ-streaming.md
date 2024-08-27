@@ -1,6 +1,6 @@
 ---
 title:  openDAQ Stream Protocol Specification
-subtitle: Version 1.2.1
+subtitle: Version 1.3.0
 titlepage: true
 toc: true
 toc-own-page: true
@@ -910,6 +910,6 @@ The request carries the stream id and an array of signal ids to be unsubscribed.
 
 - Introduced `range` and `postScaling` in signal members
 
-## Version 1.2.1
+## Version 1.3.0
 
 - Documentation fixes for related signals and post scaling
