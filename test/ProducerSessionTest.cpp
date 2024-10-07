@@ -220,6 +220,9 @@ TEST(ProducerSessionTest, complete_session)
     // big data package adds addtional length information to protocol
     std::vector <double> testData2Big;
 
+    std::array <uint64_t, 2> statusValueIndices = { 1000, 1001 };
+    std::array <uint64_t, 2> statusValues = { 0x1000, 0x1001 };
+
     Unit originalUnit;
     originalUnit.id = 1;
     originalUnit.displayName = "original unit";
@@ -272,6 +275,9 @@ TEST(ProducerSessionTest, complete_session)
         // adds real data
         syncSignal->addData(testData1Small.data(), testData1Small.size());
         syncSignal->addData(testData2Big.data(), testData2Big.size());
+
+        // 2 status values with constant rule
+        statusSignal->addData(statusValues.data(), statusValueIndices.data(), statusValues.size());
 
         // change unit, range and postScaling of data signal
         syncSignal->setUnit(newUnit.id, newUnit.displayName);
@@ -349,12 +355,13 @@ TEST(ProducerSessionTest, complete_session)
         // 9: "signal" (data) initial signal description
         // 10: measured data (small)
         // 11: measured data (big)
-        // 12: "signal" (data) because of updated unit
-        // 13: "signal" (time) because of updated output rate
-        // 14: "unsubscribe" (data)
-        // 15: "unsubscribe" (status)
-        // 16: "unsubscribe" (time)
-        // 17: "unavailable"
+        // 12: status data (2 values with value index)
+        // 13: "signal" (data) because of updated unit
+        // 14: "signal" (time) because of updated output rate
+        // 15: "unsubscribe" (data)
+        // 16: "unsubscribe" (status)
+        // 17: "unsubscribe" (time)
+        // 18: "unavailable"
         ASSERT_EQ(receivedMetaInformation[0].method, META_METHOD_APIVERSION);
         ASSERT_EQ(receivedMetaInformation[1].method, META_METHOD_INIT);
         ASSERT_EQ(receivedMetaInformation[2].method, META_METHOD_AVAILABLE); // data
@@ -433,6 +440,11 @@ TEST(ProducerSessionTest, complete_session)
         ASSERT_EQ(result, 0);
 
         package = receivedMetaInformation[12];
+        ASSERT_EQ(package.transportType, TYPE_SIGNALDATA);
+        // There are two values following a constant rule. Each consists of the value itself and the value index of the table the signal belongs to
+        ASSERT_EQ(package.data.size(), 2 * (sizeof(uint64_t)+sizeof(uint64_t)));
+
+        package = receivedMetaInformation[13];
         std::cout << package.params << std::endl;
         ASSERT_EQ(package.method, META_METHOD_SIGNAL); // data
         unit.parse(package.params[META_DEFINITION]);
@@ -442,16 +454,16 @@ TEST(ProducerSessionTest, complete_session)
         resultingPostScaling.parse(package.params[META_DEFINITION]);
         ASSERT_EQ(postScaling, resultingPostScaling);
 
-        package = receivedMetaInformation[13];
+        package = receivedMetaInformation[14];
         ASSERT_EQ(package.method, META_METHOD_SIGNAL); // time
         outputRateInTicks = package.params[META_DEFINITION][META_RULETYPE_LINEAR][META_DELTA];
         ASSERT_EQ(outputRateInTicks, newOutputRateInTicks);
 
-        ASSERT_EQ(receivedMetaInformation[14].method, META_METHOD_UNSUBSCRIBE); // data
-        ASSERT_EQ(receivedMetaInformation[15].method, META_METHOD_UNSUBSCRIBE); // status
-        ASSERT_EQ(receivedMetaInformation[16].method, META_METHOD_UNSUBSCRIBE); // time
-        ASSERT_EQ(receivedMetaInformation[17].method, META_METHOD_UNAVAILABLE); // data + stazus + time
-        ASSERT_EQ(receivedMetaInformation.size(), 18);
+        ASSERT_EQ(receivedMetaInformation[15].method, META_METHOD_UNSUBSCRIBE); // data
+        ASSERT_EQ(receivedMetaInformation[16].method, META_METHOD_UNSUBSCRIBE); // status
+        ASSERT_EQ(receivedMetaInformation[17].method, META_METHOD_UNSUBSCRIBE); // time
+        ASSERT_EQ(receivedMetaInformation[18].method, META_METHOD_UNAVAILABLE); // data + status + time
+        ASSERT_EQ(receivedMetaInformation.size(), 19);
     }
 }
 
