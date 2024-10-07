@@ -49,10 +49,12 @@ set(TEST_LIB_SOURCES
 
     # producer
     ../lib/AsynchronousSignal.cpp
+    ../lib/BaseConstantSignal.cpp
     ../lib/BaseDomainSignal.cpp
     ../lib/BaseSignal.cpp
     ../lib/BaseValueSignal.cpp
     ../lib/BaseSynchronousSignal.cpp
+    ../lib/ConstantSignal.cpp
     ../lib/ControlServer.cpp
     ../lib/ExplicitTimeSignal.cpp
     ../lib/LinearTimeSignal.cpp
