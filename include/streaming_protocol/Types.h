@@ -137,6 +137,13 @@ public:
     std::string toString() const;
 };
 
+/// signals following an implicit rule produce indexed values that consist of the signal value and a value index
+template<class Type>
+struct IndexedValue
+{
+    uint64_t index;
+    Type value;
+};
 
 /// Signal type is the key signal id is the value.
 /// Currently types "time" and "status" are specified

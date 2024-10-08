@@ -11,8 +11,8 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   set(GCOV_LIB gcov)
 
   if (NOT MINGW)
-      set(ASAN_COMPILE_FLAGS -fsanitize=address -fno-omit-frame-pointer)
-      set(ASAN_LIB asan)
+#      set(ASAN_COMPILE_FLAGS -fsanitize=address -fno-omit-frame-pointer)
+#      set(ASAN_LIB asan)
   endif()
 endif()
 

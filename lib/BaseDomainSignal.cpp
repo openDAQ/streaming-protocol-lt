@@ -4,8 +4,7 @@
 #include "nlohmann/json.hpp"
 #include "streaming_protocol/BaseDomainSignal.hpp"
 
-#include <iostream>
-
+#include "streaming_protocol/Types.h"
 
 namespace daq::streaming_protocol {
 
@@ -105,13 +104,9 @@ void BaseDomainSignal::setTimeStart(uint64_t timeTicks)
     m_startInTicks = timeTicks;
     /// @warning here we rely on a data type uint64_t for the valueindex followed by the value itself. This is some implicit knowledge the client has to have.
     /// The size of a complete value it equals to sizeof(uint64_t) +
-    struct BinaryUint64StartValue {
-        uint64_t valueIndex;
-        uint64_t timeStart;
-    };
-    BinaryUint64StartValue startValue;
-    startValue.valueIndex = 0; // start new indexing
-    startValue.timeStart = timeTicks; // initial start time!
+    IndexedValue <uint64_t> startValue;
+    startValue.index = 0; // start new indexing
+    startValue.value = timeTicks; // initial start time!
     int result = m_writer.writeSignalData(m_signalNumber, reinterpret_cast<uint8_t*>(&startValue), sizeof(startValue));
     if (result < 0) {
         STREAMING_PROTOCOL_LOG_E("{}: Could not write signal time!", m_signalNumber);

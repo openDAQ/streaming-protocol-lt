@@ -147,11 +147,11 @@ ssize_t SignalContainer::processMeasuredData(SignalNumber signalNumber, const un
     if(signal->isTimeSignal()) {
         RuleType ruleType = signal->ruleType();
         std::string tableId = signal->tableId();
-        uint64_t timeStamp;
         if (ruleType == RULETYPE_EXPLICIT) {
             // for explicit time rule, there is no value index
             const auto tableIter = m_tables.find(tableId);
             if (tableIter != m_tables.end()) {
+                uint64_t timeStamp;
                 memcpy(&timeStamp, data, sizeof(timeStamp));
                 const auto dataSignalNumbers = tableIter->second.dataSignalNumbers;
                 for(const auto signalNumberIter : dataSignalNumbers) {
@@ -167,13 +167,12 @@ ssize_t SignalContainer::processMeasuredData(SignalNumber signalNumber, const un
             const auto tableIter = m_tables.find(tableId);
             if (tableIter != m_tables.end()) {
                 const Table& table = tableIter->second;
-                memcpy(&timeStamp, data+sizeof(uint64_t), sizeof(timeStamp));
-
+                auto *indexedTimeStamp = reinterpret_cast<const IndexedValue<uint64_t>*>(data);
                 const auto dataSignalNumbers = table.dataSignalNumbers;
                 for(const auto signalNumberIter : dataSignalNumbers) {
                     auto& dataSignal = m_subscribedSignals[signalNumberIter];
-                    signal->setTime(timeStamp);
-                    STREAMING_PROTOCOL_LOG_D("{}:\n\tStart time is: {}", dataSignal->signalId(), timeStamp);
+                    signal->setTime(indexedTimeStamp->value);
+                    STREAMING_PROTOCOL_LOG_D("{}:\n\tStart time is: {}", dataSignal->signalId(), indexedTimeStamp->value);
                 }
             }
         }

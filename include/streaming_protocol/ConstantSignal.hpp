@@ -46,7 +46,7 @@ public:
 
     int addData(const void* values, const uint64_t* indices, size_t valuesCount) override
     {
-        size_t entrySize = sizeof(uint64_t) + sizeof(DataType);
+        size_t entrySize = sizeof(IndexedValue<DataType>);
         size_t dataSize = valuesCount * entrySize;
         uint8_t* signalData = static_cast<uint8_t*>(std::malloc(dataSize));
 

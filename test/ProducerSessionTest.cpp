@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
+#include <array>
 #include <fstream>
 #include <gtest/gtest.h>
 
-#include <fstream>
 
 #include "boost/asio/error.hpp"
 #include "boost/asio/io_context.hpp"
@@ -220,8 +220,9 @@ TEST(ProducerSessionTest, complete_session)
     // big data package adds addtional length information to protocol
     std::vector <double> testData2Big;
 
-    std::array <uint64_t, 2> statusValueIndices = { 1000, 1001 };
-    std::array <uint64_t, 2> statusValues = { 0x1000, 0x1001 };
+    constexpr unsigned int StatusValueCount = 2;
+    std::array <uint64_t, StatusValueCount> statusValueIndices = { 1000, 1001 };
+    std::array <uint64_t, StatusValueCount> statusValues = { 0x1000, 0x1001 };
 
     Unit originalUnit;
     originalUnit.id = 1;
@@ -442,7 +443,15 @@ TEST(ProducerSessionTest, complete_session)
         package = receivedMetaInformation[12];
         ASSERT_EQ(package.transportType, TYPE_SIGNALDATA);
         // There are two values following a constant rule. Each consists of the value itself and the value index of the table the signal belongs to
-        ASSERT_EQ(package.data.size(), 2 * (sizeof(uint64_t)+sizeof(uint64_t)));
+        IndexedValue<uint64_t> *pIndexedStatusValue;
+
+        ASSERT_EQ(package.data.size(), StatusValueCount * (sizeof(*pIndexedStatusValue)));
+        pIndexedStatusValue = reinterpret_cast<IndexedValue<uint64_t> *>(package.data.data());
+        for (unsigned int statusValueIndex = 0; statusValueIndex<StatusValueCount; ++statusValueIndex) {
+            ASSERT_EQ(statusValueIndices[statusValueIndex], pIndexedStatusValue->index);
+            ASSERT_EQ(statusValues[statusValueIndex], pIndexedStatusValue->value);
+            ++pIndexedStatusValue;
+        }
 
         package = receivedMetaInformation[13];
         std::cout << package.params << std::endl;
