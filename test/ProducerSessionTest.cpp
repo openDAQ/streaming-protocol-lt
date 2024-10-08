@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
+#include <array>
 #include <fstream>
 #include <gtest/gtest.h>
 
-#include <fstream>
 
 #include "boost/asio/error.hpp"
 #include "boost/asio/io_context.hpp"
@@ -30,6 +30,7 @@
 #endif
 
 #include "streaming_protocol/BaseDomainSignal.hpp"
+#include "streaming_protocol/ConstantSignal.hpp"
 #include "streaming_protocol/Defines.h"
 #include "streaming_protocol/LinearTimeSignal.hpp"
 #include "streaming_protocol/ProducerSession.hpp"
@@ -208,6 +209,7 @@ TEST(ProducerSessionTest, complete_session)
     static const std::string fileName = "theFile";
     static const std::string signalId = "the 1st Id";
     static const std::string timeSignalId = "the time signal Id";
+    static const std::string statusSignalId = "the status signal Id";
     static const std::string tableId = "the table Id";
     uint64_t timeTicksPerSecond = 1000000000;
     std::chrono::nanoseconds originalOutputRate = std::chrono::milliseconds(1); // 1kHz
@@ -217,6 +219,10 @@ TEST(ProducerSessionTest, complete_session)
     std::vector <double> testData1Small = { 1.0, 67.4365};
     // big data package adds addtional length information to protocol
     std::vector <double> testData2Big;
+
+    constexpr unsigned int StatusValueCount = 2;
+    std::array <uint64_t, StatusValueCount> statusValueIndices = { 1000, 1001 };
+    std::array <uint64_t, StatusValueCount> statusValues = { 0x1000, 0x1001 };
 
     Unit originalUnit;
     originalUnit.id = 1;
@@ -249,23 +255,30 @@ TEST(ProducerSessionTest, complete_session)
         // prepare the signal with initial configuration
         auto timeSignal = std::make_shared<LinearTimeSignal>(timeSignalId, tableId, timeTicksPerSecond, originalOutputRate, writer, logCallback);
         auto syncSignal = std::make_shared<SynchronousSignal<double>>(signalId, tableId, writer, logCallback);
+        auto statusSignal = std::make_shared<ConstantSignal<uint64_t>>(statusSignalId, tableId, writer, logCallback);
         syncSignal->setUnit(originalUnit.id, originalUnit.displayName);
         RelatedSignals relatedSignals;
         relatedSignals[META_TIME] = timeSignal->getId();
+        relatedSignals[META_STATUS] = statusSignal->getId();
         syncSignal->setRelatedSignals(relatedSignals);
 
         producerSession->addSignal(timeSignal);
+        producerSession->addSignal(statusSignal);
         // since this is a data signal, this causes "availble" meta information
         producerSession->addSignal(syncSignal);
 
         SignalIds signalIds;
         signalIds.push_back(timeSignalId);
+        signalIds.push_back(statusSignalId);
         signalIds.push_back(signalId);
         // this causes "subscribe" and "signal" meta information for the data and time signal
         producerSession->subscribeSignals(signalIds);
         // adds real data
         syncSignal->addData(testData1Small.data(), testData1Small.size());
         syncSignal->addData(testData2Big.data(), testData2Big.size());
+
+        // 2 status values with constant rule
+        statusSignal->addData(statusValues.data(), statusValueIndices.data(), statusValues.size());
 
         // change unit, range and postScaling of data signal
         syncSignal->setUnit(newUnit.id, newUnit.displayName);
@@ -334,33 +347,40 @@ TEST(ProducerSessionTest, complete_session)
         // 0: "apiVerison"
         // 1: "init"
         // 2: "available"
-        // 3: "subscribe" (time, since data signal relates to time, time has to come first!)
-        // 4: "signal" (time) initial signal description
-        // 5: "subscribe" (data)
-        // 6: "signal" (data) initial signal description
-        // 7: measured data (small)
-        // 8: measured data (big)
-        // 9: "signal" (data) because of updated unit
-        // 10: "signal" (time) because of updated output rate
-        // 11: "unsubscribe" (data)
-        // 12: "unsubscribe" (time)
-        // 13: "unavailable"
+        // 3: "available"
+        // 4: "subscribe" (time, since data signal relates to time, time has to come first!)
+        // 5: "signal" (time) initial signal description
+        // 6: "subscribe" (status)
+        // 7: "signal" (status) initial signal description
+        // 6: "subscribe" (data)
+        // 9: "signal" (data) initial signal description
+        // 10: measured data (small)
+        // 11: measured data (big)
+        // 12: status data (2 values with value index)
+        // 13: "signal" (data) because of updated unit
+        // 14: "signal" (time) because of updated output rate
+        // 15: "unsubscribe" (data)
+        // 16: "unsubscribe" (status)
+        // 17: "unsubscribe" (time)
+        // 18: "unavailable"
         ASSERT_EQ(receivedMetaInformation[0].method, META_METHOD_APIVERSION);
         ASSERT_EQ(receivedMetaInformation[1].method, META_METHOD_INIT);
-        ASSERT_EQ(receivedMetaInformation[2].method, META_METHOD_AVAILABLE); // data + time
+        ASSERT_EQ(receivedMetaInformation[2].method, META_METHOD_AVAILABLE); // data
+        ASSERT_EQ(receivedMetaInformation[3].method, META_METHOD_AVAILABLE); // status
 
 
         std::string signalIdTime;
+        std::string signalIdStatus;
         std::string signalIdData;
         std::string tableIdTime;
         std::string tableIdData;
         RelatedSignals relatedSignals;
 
-        PackageInformation& package = receivedMetaInformation[3];
+        PackageInformation& package = receivedMetaInformation[4];
         ASSERT_EQ(package.method, META_METHOD_SUBSCRIBE); // time signal
         signalIdTime = package.params[META_SIGNALID];
 
-        package = receivedMetaInformation[4];
+        package = receivedMetaInformation[5];
         ASSERT_EQ(package.method, META_METHOD_SIGNAL); // time
         tableIdTime = package.params[META_TABLEID];
 
@@ -369,13 +389,22 @@ TEST(ProducerSessionTest, complete_session)
         ASSERT_TRUE(relatedSignals.empty());
         ASSERT_EQ(outputRateInTicks, originalOutputRateInTicks);
 
+        package = receivedMetaInformation[6];
+        ASSERT_EQ(package.method, META_METHOD_SUBSCRIBE); // status signal
+        signalIdStatus = package.params[META_SIGNALID];
+        ASSERT_FALSE(signalIdStatus.empty());
 
-        package = receivedMetaInformation[5];
+        package = receivedMetaInformation[7];
+        ASSERT_EQ(package.method, META_METHOD_SIGNAL);
+        tableIdData = package.params[META_TABLEID];
+        ASSERT_EQ(tableIdTime, tableIdData);
+
+        package = receivedMetaInformation[8];
         ASSERT_EQ(package.method, META_METHOD_SUBSCRIBE); // data signal
         signalIdData = package.params[META_SIGNALID];
         ASSERT_FALSE(signalIdData.empty());
 
-        package = receivedMetaInformation[6];
+        package = receivedMetaInformation[9];
         ASSERT_EQ(package.method, META_METHOD_SIGNAL);
         tableIdData = package.params[META_TABLEID];
         ASSERT_EQ(tableIdTime, tableIdData);
@@ -393,22 +422,38 @@ TEST(ProducerSessionTest, complete_session)
         // Post scaling is not set => default
         ASSERT_EQ(PostScaling(), resultingPostScaling);
 
-        // there should be one relation to the time signal
+        // there should be:
+        //  -one relation to the time signal
+        //  -one relation to the status signal
         relatedSignals = package.relatedSignals;
-        ASSERT_EQ(relatedSignals.size(), 1);
+        ASSERT_EQ(relatedSignals.size(), 2);
         ASSERT_EQ(relatedSignals[META_TIME], signalIdTime);
+        ASSERT_EQ(relatedSignals[META_STATUS], signalIdStatus);
 
-        package = receivedMetaInformation[7];
+        package = receivedMetaInformation[10];
         ASSERT_EQ(package.transportType, TYPE_SIGNALDATA);
         int result = memcmp(package.data.data(), testData1Small.data(), package.data.size());
         ASSERT_EQ(result, 0);
 
-        package = receivedMetaInformation[8];
+        package = receivedMetaInformation[11];
         ASSERT_EQ(package.transportType, TYPE_SIGNALDATA);
         result = memcmp(package.data.data(), testData2Big.data(), package.data.size());
         ASSERT_EQ(result, 0);
 
-        package = receivedMetaInformation[9];
+        package = receivedMetaInformation[12];
+        ASSERT_EQ(package.transportType, TYPE_SIGNALDATA);
+        // There are two values following a constant rule. Each consists of the value itself and the value index of the table the signal belongs to
+        IndexedValue<uint64_t> *pIndexedStatusValue;
+
+        ASSERT_EQ(package.data.size(), StatusValueCount * (sizeof(*pIndexedStatusValue)));
+        pIndexedStatusValue = reinterpret_cast<IndexedValue<uint64_t> *>(package.data.data());
+        for (unsigned int statusValueIndex = 0; statusValueIndex<StatusValueCount; ++statusValueIndex) {
+            ASSERT_EQ(statusValueIndices[statusValueIndex], pIndexedStatusValue->index);
+            ASSERT_EQ(statusValues[statusValueIndex], pIndexedStatusValue->value);
+            ++pIndexedStatusValue;
+        }
+
+        package = receivedMetaInformation[13];
         std::cout << package.params << std::endl;
         ASSERT_EQ(package.method, META_METHOD_SIGNAL); // data
         unit.parse(package.params[META_DEFINITION]);
@@ -418,15 +463,16 @@ TEST(ProducerSessionTest, complete_session)
         resultingPostScaling.parse(package.params[META_DEFINITION]);
         ASSERT_EQ(postScaling, resultingPostScaling);
 
-        package = receivedMetaInformation[10];
+        package = receivedMetaInformation[14];
         ASSERT_EQ(package.method, META_METHOD_SIGNAL); // time
         outputRateInTicks = package.params[META_DEFINITION][META_RULETYPE_LINEAR][META_DELTA];
         ASSERT_EQ(outputRateInTicks, newOutputRateInTicks);
 
-        ASSERT_EQ(receivedMetaInformation[11].method, META_METHOD_UNSUBSCRIBE); // data
-        ASSERT_EQ(receivedMetaInformation[12].method, META_METHOD_UNSUBSCRIBE); // time
-        ASSERT_EQ(receivedMetaInformation[13].method, META_METHOD_UNAVAILABLE); // data + time
-        ASSERT_EQ(receivedMetaInformation.size(), 14);
+        ASSERT_EQ(receivedMetaInformation[15].method, META_METHOD_UNSUBSCRIBE); // data
+        ASSERT_EQ(receivedMetaInformation[16].method, META_METHOD_UNSUBSCRIBE); // status
+        ASSERT_EQ(receivedMetaInformation[17].method, META_METHOD_UNSUBSCRIBE); // time
+        ASSERT_EQ(receivedMetaInformation[18].method, META_METHOD_UNAVAILABLE); // data + status + time
+        ASSERT_EQ(receivedMetaInformation.size(), 19);
     }
 }
 

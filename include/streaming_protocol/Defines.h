@@ -98,6 +98,7 @@ static const char META_RULETYPE_LINEAR[] = "linear";
 static const char META_RULETYPE_CONSTANT[] = "constant";
 static const char META_NAME[] = "name";
 static const char META_TIME[] = "time";
+static const char META_STATUS[] = "status";
 
 /// openDAQ
 static const char META_RESOLUTION[] = "resolution";

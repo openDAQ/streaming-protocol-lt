@@ -11,8 +11,8 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   set(GCOV_LIB gcov)
 
   if (NOT MINGW)
-      set(ASAN_COMPILE_FLAGS -fsanitize=address -fno-omit-frame-pointer)
-      set(ASAN_LIB asan)
+#      set(ASAN_COMPILE_FLAGS -fsanitize=address -fno-omit-frame-pointer)
+#      set(ASAN_LIB asan)
   endif()
 endif()
 
@@ -49,10 +49,12 @@ set(TEST_LIB_SOURCES
 
     # producer
     ../lib/AsynchronousSignal.cpp
+    ../lib/BaseConstantSignal.cpp
     ../lib/BaseDomainSignal.cpp
     ../lib/BaseSignal.cpp
     ../lib/BaseValueSignal.cpp
     ../lib/BaseSynchronousSignal.cpp
+    ../lib/ConstantSignal.cpp
     ../lib/ControlServer.cpp
     ../lib/ExplicitTimeSignal.cpp
     ../lib/LinearTimeSignal.cpp
