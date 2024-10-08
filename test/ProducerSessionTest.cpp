@@ -203,6 +203,7 @@ TEST(ProducerSessionTest, complete_session)
         std::string method;
         nlohmann::json params;
         std::vector<uint8_t> data;
+        uint64_t timeStamp;
         RelatedSignals relatedSignals;
     };
 
@@ -211,7 +212,9 @@ TEST(ProducerSessionTest, complete_session)
     static const std::string timeSignalId = "the time signal Id";
     static const std::string statusSignalId = "the status signal Id";
     static const std::string tableId = "the table Id";
-    uint64_t timeTicksPerSecond = 1000000000;
+    static const uint64_t timeTicksPerSecond = 1000000000;
+    static const uint64_t newStartTime = 30000000;
+
     std::chrono::nanoseconds originalOutputRate = std::chrono::milliseconds(1); // 1kHz
     uint64_t originalOutputRateInTicks = BaseDomainSignal::timeTicksFromNanoseconds(originalOutputRate, timeTicksPerSecond);
     std::chrono::nanoseconds newOutputRate = std::chrono::seconds(1); // 1Hz
@@ -275,6 +278,10 @@ TEST(ProducerSessionTest, complete_session)
         producerSession->subscribeSignals(signalIds);
         // adds real data
         syncSignal->addData(testData1Small.data(), testData1Small.size());
+
+        // Time does change!
+        timeSignal->setTimeStart(newStartTime);
+
         syncSignal->addData(testData2Big.data(), testData2Big.size());
 
         // 2 status values with constant rule
@@ -324,6 +331,7 @@ TEST(ProducerSessionTest, complete_session)
             packageInformation.signalNumber = subscribedSignal.signalNumber();
             packageInformation.data.resize(byteCount);
             memcpy(packageInformation.data.data(), data, byteCount);
+            packageInformation.timeStamp = timeStamp;
             receivedMetaInformation.push_back(packageInformation);
         };
 
@@ -355,7 +363,8 @@ TEST(ProducerSessionTest, complete_session)
         // 6: "subscribe" (data)
         // 9: "signal" (data) initial signal description
         // 10: measured data (small)
-        // 11: measured data (big)
+        //     Time does change! No callbakc is executed.
+        // 11: measured data (big), check change of time
         // 12: status data (2 values with value index)
         // 13: "signal" (data) because of updated unit
         // 14: "signal" (time) because of updated output rate
@@ -433,12 +442,14 @@ TEST(ProducerSessionTest, complete_session)
         package = receivedMetaInformation[10];
         ASSERT_EQ(package.transportType, TYPE_SIGNALDATA);
         int result = memcmp(package.data.data(), testData1Small.data(), package.data.size());
+        ASSERT_EQ(package.timeStamp, 0);
         ASSERT_EQ(result, 0);
 
         package = receivedMetaInformation[11];
         ASSERT_EQ(package.transportType, TYPE_SIGNALDATA);
         result = memcmp(package.data.data(), testData2Big.data(), package.data.size());
-        ASSERT_EQ(result, 0);
+        // check new time because of changed since last data packet
+        ASSERT_EQ(package.timeStamp, newStartTime);
 
         package = receivedMetaInformation[12];
         ASSERT_EQ(package.transportType, TYPE_SIGNALDATA);

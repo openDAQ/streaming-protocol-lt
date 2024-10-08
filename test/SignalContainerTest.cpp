@@ -458,14 +458,9 @@ namespace daq::streaming_protocol {
             measuredData.push_back(valueIndex*0.1);
         }
 
-        struct IndexedStartTime {
-            uint64_t valueIndex;
-            uint64_t start;
-        };
-
-        IndexedStartTime indexedStartTime;
-        indexedStartTime.valueIndex = 0;
-        indexedStartTime.start = 20;
+        IndexedValue <uint64_t> indexedStartTime;
+        indexedStartTime.index = 0;
+        indexedStartTime.value = 20;
 
         ssize_t result;
         SignalContainer signalContainer(logCallback);
@@ -528,7 +523,7 @@ namespace daq::streaming_protocol {
             ASSERT_EQ(s_measuredDataAsDouble, measuredData);
             ASSERT_EQ(s_measuredRawDataSignalNumber, s_dataSignalNumber);
             // time stamp of first value equals start time!
-            ASSERT_EQ(s_measuredRawDataTimestamp, indexedStartTime.start);
+            ASSERT_EQ(s_measuredRawDataTimestamp, indexedStartTime.value);
 
             ASSERT_EQ(s_measuredTimeSignalNumber, s_timeSignalNumber);
 
@@ -536,18 +531,18 @@ namespace daq::streaming_protocol {
             ASSERT_EQ(s_measuredRawDataSignalNumber, s_dataSignalNumber);
             //ASSERT_EQ(s_measuredRawDataTimestamp, indexedStartTime.start+measuredData.size());
             // time stamp of first value equals start time!
-            ASSERT_EQ(s_measuredRawDataTimestamp, indexedStartTime.start);
+            ASSERT_EQ(s_measuredRawDataTimestamp, indexedStartTime.value);
 
             result = signalContainer.processMeasuredData(s_dataSignalNumber, reinterpret_cast< const uint8_t* >(measuredData.data()), measuredData.size()*sizeof(double));
             ASSERT_EQ(result, measuredData.size()*sizeof(double));
             ASSERT_EQ(s_measuredDataAsDouble, measuredData);
             ASSERT_EQ(s_measuredRawDataSignalNumber, s_dataSignalNumber);
 
-            ASSERT_EQ(s_measuredRawDataTimestamp, indexedStartTime.start+measuredData.size());
+            ASSERT_EQ(s_measuredRawDataTimestamp, indexedStartTime.value+measuredData.size());
 
             ASSERT_EQ(memcmp(s_measuredRawData.data(), measuredData.data(), measuredData.size()*sizeof(double)), 0);
             ASSERT_EQ(s_measuredRawDataSignalNumber, s_dataSignalNumber);
-            ASSERT_EQ(s_measuredRawDataTimestamp, indexedStartTime.start+measuredData.size());
+            ASSERT_EQ(s_measuredRawDataTimestamp, indexedStartTime.value+measuredData.size());
 
         }
 

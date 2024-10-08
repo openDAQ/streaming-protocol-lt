@@ -157,6 +157,7 @@ ssize_t SignalContainer::processMeasuredData(SignalNumber signalNumber, const un
                 for(const auto signalNumberIter : dataSignalNumbers) {
                     auto dataSignal = m_subscribedSignals[signalNumberIter];
                     signal->setTime(timeStamp);
+                    dataSignal->clearLinearValueIndex();
                     STREAMING_PROTOCOL_LOG_D("{}:\n\tTime is: {}", dataSignal->signalId(), timeStamp);
                 }
             }
@@ -172,6 +173,7 @@ ssize_t SignalContainer::processMeasuredData(SignalNumber signalNumber, const un
                 for(const auto signalNumberIter : dataSignalNumbers) {
                     auto& dataSignal = m_subscribedSignals[signalNumberIter];
                     signal->setTime(indexedTimeStamp->value);
+                    dataSignal->clearLinearValueIndex();
                     STREAMING_PROTOCOL_LOG_D("{}:\n\tStart time is: {}", dataSignal->signalId(), indexedTimeStamp->value);
                 }
             }

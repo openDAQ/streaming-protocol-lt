@@ -135,6 +135,27 @@ namespace daq::streaming_protocol {
         ASSERT_EQ(timeSignal.timeBaseFrequency(), denominator/numerator);
         ASSERT_EQ(timeSignal.timeBaseEpochAsString(), unixEpoch);
         ASSERT_EQ(timeSignal.linearDelta(), timeDelta);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     }
 
     /// prepare time signal and attach it to synchronous data signal

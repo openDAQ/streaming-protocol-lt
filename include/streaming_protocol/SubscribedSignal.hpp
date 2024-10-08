@@ -203,6 +203,12 @@ public:
         return m_relatedSignals;
     }
 
+    /// has to be done if start value is being set
+    void clearLinearValueIndex()
+    {
+        m_linearValueIndex = 0;
+    }
+
 private:
 
     template < typename DataType >
