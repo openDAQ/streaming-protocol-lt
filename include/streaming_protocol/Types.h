@@ -138,12 +138,15 @@ public:
 };
 
 /// signals following an implicit rule produce indexed values that consist of the signal value and a value index
+/// To be packed because this is serialized to binary/deserialized from binary
+#pragma pack(push, 1)
 template<class Type>
 struct IndexedValue
 {
     uint64_t index;
     Type value;
 };
+#pragma pack(pop)
 
 /// Signal type is the key signal id is the value.
 /// Currently types "time" and "status" are specified
