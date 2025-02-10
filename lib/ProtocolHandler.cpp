@@ -136,9 +136,7 @@ namespace daq::streaming_protocol {
         switch(m_type) {
         case TYPE_SIGNALDATA:
             if (m_signalContainer.processMeasuredData(m_signalNumber, m_stream->data(), m_length) < 0) {
-                boost::system::error_code localEc = boost::system::errc::make_error_code(boost::system::errc::protocol_error);
-                closeSession(localEc, "failed to interprete measured data!");
-                return;
+                STREAMING_PROTOCOL_LOG_E("Failed to interprete measured data!");
             }
             break;
         case TYPE_METAINFORMATION:

@@ -24,7 +24,7 @@ namespace daq::streaming_protocol{
 /// Abstrace base class for producing constant rule signal data
 class BaseConstantSignal : public BaseValueSignal {
 public:
-    BaseConstantSignal(const std::string& signalId, const std::string& tableId, iWriter &writer, LogCallback logCb);
+    BaseConstantSignal(const std::string& signalId, const std::string& tableId, iWriter& writer, const nlohmann::json& defaultStartValue, LogCallback logCb);
 
     virtual int addData(const void* values, const uint64_t* indices, size_t valuesCount) = 0;
 
@@ -35,6 +35,8 @@ protected:
 
     nlohmann::json createMember(const std::string& dataType) const;
     virtual nlohmann::json getMemberInformation() const = 0;
+
+    nlohmann::json m_defaultStartValue;
 };
 
 }

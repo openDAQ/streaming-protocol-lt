@@ -118,7 +118,9 @@ public:
     /// >0 if signal has a linear time rule. If 0 the signal does not have a linear time rule!
     uint64_t timeLinearDelta() const
     {
-        return m_linearDelta;
+        if (m_timeSignal)
+            return m_timeSignal->m_linearDelta;
+        return 0;
     }
 
     /// \return The unit or an empty string when there is no unit
@@ -162,6 +164,11 @@ public:
         return m_linearDelta;
     }
 
+    nlohmann::json linearDeltaMeta() const
+    {
+        return m_linearDeltaJson;
+    }
+
     std::string timeBaseEpochAsString() const
     {
         return m_timeBaseEpochAsString;
@@ -195,6 +202,11 @@ public:
     Range range() const
     {
         return m_range;
+    }
+
+    nlohmann::json constRuleStartMeta() const
+    {
+        return m_constRuleStartJson;
     }
 
 private:
@@ -241,6 +253,8 @@ private:
     std::shared_ptr<SubscribedSignal> m_timeSignal;
     uint64_t m_time;
     uint64_t m_linearDelta;
+    nlohmann::json m_linearDeltaJson;
+    nlohmann::json m_constRuleStartJson;
     size_t m_linearValueIndex;
     std::string m_timeBaseEpochAsString;
     uint64_t m_timeBaseFrequency;
