@@ -139,7 +139,7 @@ ssize_t SignalContainer::processMeasuredData(SignalNumber signalNumber, const un
 {
     Signals::iterator signalIter = m_subscribedSignals.find(signalNumber);
     if (signalIter == m_subscribedSignals.end()) {
-        STREAMING_PROTOCOL_LOG_E("Got data for signal '{}', that was not subscribed before", signalNumber);
+        STREAMING_PROTOCOL_LOG_W("Got data for signal '{}', that has not been yet reported as subscribed by server", signalNumber);
         return -1;
     }
 
@@ -184,7 +184,7 @@ ssize_t SignalContainer::processMeasuredData(SignalNumber signalNumber, const un
             const Table& table = tableIter->second;
             unsigned int timeSignalNumber = table.timeSignalNumber;
             if (timeSignalNumber == 0) {
-                STREAMING_PROTOCOL_LOG_E("No time signal available for signal id '{}', number {}, table '{}'!",
+                STREAMING_PROTOCOL_LOG_W("The time signal isn't yet known for value signal id '{}', number {}, table '{}'!",
                                          signalIter->second->signalId(),
                                          signalNumber,
                                          tableId);

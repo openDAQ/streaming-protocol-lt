@@ -25,6 +25,8 @@ SubscribedSignal::SubscribedSignal(unsigned int signalNumber, LogCallback logCb)
     , m_ruleType(RULETYPE_EXPLICIT) // explicit rule is default
     , m_time(0)
     , m_linearDelta(0)
+    , m_linearDeltaJson(nullptr)
+    , m_constRuleStartJson(nullptr)
     , m_linearValueIndex(0)
     , m_timeBaseFrequency(0)
     , logCallback(logCb)
@@ -198,7 +200,26 @@ int SubscribedSignal::processSignalMetaInformation(const std::string& method, co
                     const nlohmann::json& linearNode = *linearIter;
                     nlohmann::json::const_iterator deltaIter = linearNode.find(META_DELTA);
                     if (deltaIter != linearNode.end()) {
+                        m_linearDeltaJson = *deltaIter;
+                        if (!m_linearDeltaJson.is_number()) {
+                            STREAMING_PROTOCOL_LOG_E("{}: Non-numeric delta value is not allowed for linear rule!", m_signalId);
+                            return -1;
+                        }
                         m_linearDelta = *deltaIter;
+                    }
+                }
+
+                nlohmann::json::const_iterator constantRuleIter = definitionNode.find(META_RULETYPE_CONSTANT);
+                if (constantRuleIter != definitionNode.end()) {
+                    const nlohmann::json& constantRuleNode = *constantRuleIter;
+                    nlohmann::json::const_iterator startValueIter = constantRuleNode.find(META_START);
+                    if (startValueIter != constantRuleNode.end()) {
+                        m_constRuleStartJson = *startValueIter;
+                        if (!m_constRuleStartJson.is_number()) {
+                            STREAMING_PROTOCOL_LOG_E("{}: Non-numeric start value is not allowed for constant rule!", m_signalId);
+                            return -1;
+                        }
+                        STREAMING_PROTOCOL_LOG_I("\tConst rule \"start\" value: {}\n", m_constRuleStartJson.dump());
                     }
                 }
 
@@ -207,7 +228,7 @@ int SubscribedSignal::processSignalMetaInformation(const std::string& method, co
                     std::string rule = *ruleIter;
                     if (rule == META_RULETYPE_LINEAR) {
                         // always make sure that linear rule is valid.
-                        // linear reul has to be delivered in a prior meta information at at the latest with this package.
+                        // linear rule has to be delivered in a prior meta information at at the latest with this package.
                         if (m_linearDelta == 0) {
                             STREAMING_PROTOCOL_LOG_E("{}: Time delta of 0 is not allowed for linear rule!", m_signalId);
                             return -1;

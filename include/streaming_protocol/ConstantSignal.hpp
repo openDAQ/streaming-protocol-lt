@@ -34,8 +34,8 @@ template < class DataType >
 class ConstantSignal : public BaseConstantSignal {
 public:
     /// \param signalId The signal id. Unique on this streaming server.
-    ConstantSignal(const std::string& signalId, const std::string& tableId, iWriter& writer, LogCallback logCb)
-        : BaseConstantSignal(signalId, tableId, writer, logCb)
+    ConstantSignal(const std::string& signalId, const std::string& tableId, iWriter& writer, const nlohmann::json& defaultStartValue, LogCallback logCb)
+        : BaseConstantSignal(signalId, tableId, writer, defaultStartValue, logCb)
     {
     }
 
