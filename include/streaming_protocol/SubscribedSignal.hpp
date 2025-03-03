@@ -114,6 +114,11 @@ public:
         return m_time;
     }
 
+    uint64_t timeIndex() const
+    {
+        return m_linearValueIndex;
+    }
+
     /// \return linear time delta of the signal.
     /// >0 if signal has a linear time rule. If 0 the signal does not have a linear time rule!
     uint64_t timeLinearDelta() const
@@ -145,6 +150,11 @@ public:
     void setTime(uint64_t timeStamp)
     {
         m_time = timeStamp;
+    }
+
+    void setTimeIndex(uint64_t valueIndex)
+    {
+        m_linearValueIndex = valueIndex;
     }
 
     /// Return the time signal for this signal. Only relevant for data signals.

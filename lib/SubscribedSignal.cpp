@@ -47,7 +47,7 @@ ssize_t SubscribedSignal::processMeasuredData(const unsigned char* pData, size_t
             // We increment timestamp after execution of the callback methods.
             // short read is not allowed! We expect complete packages only!
 
-            uint64_t timeStamp = timeSignal->time() + (m_linearValueIndex * m_linearDelta);
+            uint64_t timeStamp = timeSignal->time() + ((m_linearValueIndex - timeSignal->timeIndex()) * m_linearDelta);
             cbRaw(*this, timeStamp, pData, size);
 
             bytesPerValue = m_dataValueSize;

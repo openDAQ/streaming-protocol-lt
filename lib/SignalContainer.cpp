@@ -169,11 +169,16 @@ ssize_t SignalContainer::processMeasuredData(SignalNumber signalNumber, const un
                 const Table& table = tableIter->second;
                 memcpy(&timeStamp, data+sizeof(uint64_t), sizeof(timeStamp));
 
+                uint64_t valueIndex;
+                memcpy(&valueIndex, data, sizeof(valueIndex));
+
                 const auto dataSignalNumbers = table.dataSignalNumbers;
                 for(const auto signalNumberIter : dataSignalNumbers) {
                     auto& dataSignal = m_subscribedSignals[signalNumberIter];
                     signal->setTime(timeStamp);
-                    STREAMING_PROTOCOL_LOG_D("{}:\n\tStart time is: {}", dataSignal->signalId(), timeStamp);
+                    signal->setTimeIndex(valueIndex);
+
+                    STREAMING_PROTOCOL_LOG_I("{}:\n\tStart time is: {}, for value index: {} ", dataSignal->signalId(), timeStamp, valueIndex);
                 }
             }
         }
