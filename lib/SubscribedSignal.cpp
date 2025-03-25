@@ -73,15 +73,17 @@ ssize_t SubscribedSignal::processMeasuredData(const unsigned char* pData, size_t
         // In openDAQ streaming protocol, time stamp and value are delivered separately as explicit values
         // in the time signal and the data signal.
         // The device will deliver the time stamp before the value => Time (m_time) is already set! 
-        // This of course works only when there is one asynchronous value at a time.
-        // As a result, only one value can be processed here!
-        if (size != m_dataValueSize) {
-            STREAMING_PROTOCOL_LOG_E("Only one asynchronous signal value can be handled here");
+        if ((size % m_dataValueSize) != 0) {
+            STREAMING_PROTOCOL_LOG_E("Data is not an even multiple of expected data size");
             return (ssize_t) size;
         }
 
-        cbRaw(*this, timeSignal->m_time, pData, m_dataValueSize);
-        cbValues(*this, timeSignal->m_time, pData, 1);
+        std::size_t offset = 0;
+        while (offset + m_dataValueSize <= size) {
+            cbRaw(*this, timeSignal->m_time, pData + offset, m_dataValueSize);
+            cbValues(*this, timeSignal->m_time, pData + offset, 1);
+            offset += m_dataValueSize;
+        }
         break;
     }
     case RULETYPE_CONSTANT:
@@ -98,46 +100,72 @@ ssize_t SubscribedSignal::processMeasuredData(const unsigned char* pData, size_t
 
 static size_t getDataTypeSize(const nlohmann::json& definitionNode)
 {
+    std::size_t count = 1;
+    std::string name = definitionNode.value(META_NAME, "");
+
+    // Check for one-dimensional arrays of primitives.
+    if (definitionNode.count(META_DIMENSIONS) > 0)
+    {
+        auto dimensions = definitionNode[META_DIMENSIONS];
+        if (!dimensions.is_array() ||
+                dimensions.size() != 1 ||
+                !dimensions[0].is_object())
+            return 0;
+
+        auto dimension = dimensions[0];
+        if (dimension.value(META_RULE, "") != "linear" ||
+                dimension.count(META_RULETYPE_LINEAR) != 1 ||
+                !dimension[META_RULETYPE_LINEAR].is_object())
+            return 0;
+
+        auto linear = dimension[META_RULETYPE_LINEAR];
+        if (linear.value(META_START, 0) != 1 ||
+                linear.value(META_DELTA, 0) != 0)
+            return 0;
+
+        count = linear.value(META_SIZE, 1);
+    }
+
     auto dataTypeIter = definitionNode.find(META_DATATYPE);
     if (dataTypeIter != definitionNode.end()) {
         nlohmann::json datatypeNode = *dataTypeIter;
         std::string dataType = datatypeNode;
         if (dataType == DATA_TYPE_UINT8) {
-            return sizeof(uint8_t);
+            return sizeof(uint8_t) * count;
         } else if (dataType == DATA_TYPE_UINT16) {
-            return sizeof(uint16_t);
+            return sizeof(uint16_t) * count;
         } else if (dataType == DATA_TYPE_UINT32) {
-            return sizeof(uint32_t);
+            return sizeof(uint32_t) * count;
         } else if (dataType == DATA_TYPE_UINT64) {
-            return sizeof(uint64_t);;
+            return sizeof(uint64_t) * count;
         } else if (dataType == DATA_TYPE_INT8) {
-            return sizeof(int8_t);;
+            return sizeof(int8_t) * count;
         } else if (dataType == DATA_TYPE_INT16) {
-            return sizeof(int16_t);;
+            return sizeof(int16_t) * count;
         } else if (dataType == DATA_TYPE_INT32) {
-            return sizeof(int32_t);;
+            return sizeof(int32_t) * count;
         } else if (dataType == DATA_TYPE_INT64) {
-            return sizeof(int64_t);;
+            return sizeof(int64_t) * count;
         } else if (dataType == DATA_TYPE_REAL32) {
-            return sizeof(float);;
+            return sizeof(float) * count;
         } else if (dataType == DATA_TYPE_REAL64) {
-            return sizeof(double);;
+            return sizeof(double) * count;
         } else if (dataType == DATA_TYPE_COMPLEX32) {
-            return sizeof(Complex32Type);
+            return sizeof(Complex32Type) * count;
         } else if (dataType == DATA_TYPE_COMPLEX64) {
-            return sizeof(Complex64Type);
+            return sizeof(Complex64Type) * count;
         } else if (dataType == DATA_TYPE_BITFIELD) {
             nlohmann::json subDatatypeNode = definitionNode[DATA_TYPE_BITFIELD];
-            return getDataTypeSize(subDatatypeNode);
+            return getDataTypeSize(subDatatypeNode) * count;
         } else if (dataType == DATA_TYPE_ARRAY) {
             nlohmann::json subDatatypeNode = definitionNode[DATA_TYPE_ARRAY];
-            size_t count = subDatatypeNode[META_COUNT];
-            return getDataTypeSize(subDatatypeNode) * count;
+            size_t arrayCount = subDatatypeNode[META_COUNT];
+            return getDataTypeSize(subDatatypeNode) * count * arrayCount;
         } else if (dataType == DATA_TYPE_STRUCT) {
             size_t dataTypeSize = 0;
             for (const auto& subDatatypeNodeIter: definitionNode[DATA_TYPE_STRUCT] ) {
                 const nlohmann::json& subDatatypeNode = subDatatypeNodeIter;
-                dataTypeSize += getDataTypeSize(subDatatypeNode);
+                dataTypeSize += getDataTypeSize(subDatatypeNode) * count;
             }
             return dataTypeSize;
         } else {
@@ -389,7 +417,7 @@ int SubscribedSignal::processSignalMetaInformation(const std::string& method, co
                         return -1;
                     }
                     // numerator/denominator gives time between ticks, or period, in the uint of the signal.
-                    if (m_unit.unitId == Unit::UNIT_ID_SECONDS) {
+                    if (m_unit.unitId == Unit::UNIT_ID_SECONDS || (m_unit.unitId == -1 && m_unit.displayName == "s")) {
                         // Unit for time signals is seconds. We want the frequency here!
                         m_timeBaseFrequency = denominator / numerator;
                         STREAMING_PROTOCOL_LOG_I("\ttime resolution: {} Hz", resolutionNode.dump());

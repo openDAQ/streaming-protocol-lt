@@ -219,6 +219,11 @@ public:
         return m_constRuleStartJson;
     }
 
+    const nlohmann::json& datatypeDetails() const
+    {
+        return m_datatypeDetails;
+    }
+
 private:
 
     template < typename DataType >
