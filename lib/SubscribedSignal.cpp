@@ -35,7 +35,11 @@ SubscribedSignal::SubscribedSignal(unsigned int signalNumber, LogCallback logCb)
 
 ssize_t SubscribedSignal::processMeasuredData(const unsigned char* pData, size_t size, std::shared_ptr<SubscribedSignal> timeSignal, DataAsRawCb cbRaw, DataAsValueCb cbValues)
 {
-    switch (timeSignal->m_ruleType) {
+    auto timeSignalRule = RULETYPE_EXPLICIT;
+    if (timeSignal)
+        timeSignalRule = timeSignal->m_ruleType;
+
+    switch (timeSignalRule) {
     case RULETYPE_LINEAR:
     {
         // Signals with a non-explicit rule will have a value index for each value
@@ -77,13 +81,9 @@ ssize_t SubscribedSignal::processMeasuredData(const unsigned char* pData, size_t
             STREAMING_PROTOCOL_LOG_E("Data is not an even multiple of expected data size");
             return (ssize_t) size;
         }
-
-        std::size_t offset = 0;
-        while (offset + m_dataValueSize <= size) {
-            cbRaw(*this, timeSignal->m_time, pData + offset, m_dataValueSize);
-            cbValues(*this, timeSignal->m_time, pData + offset, 1);
-            offset += m_dataValueSize;
-        }
+        uint64_t time = timeSignal ? timeSignal->m_time : 0;
+        cbRaw(*this, time, pData, size);
+        cbValues(*this, time, pData, size / m_dataValueSize);
         break;
     }
     case RULETYPE_CONSTANT:
