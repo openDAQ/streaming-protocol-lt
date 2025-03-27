@@ -160,6 +160,7 @@ ssize_t SignalContainer::processMeasuredData(SignalNumber signalNumber, const un
                     STREAMING_PROTOCOL_LOG_D("{}:\n\tTime is: {}", dataSignal->signalId(), timeStamp);
                 }
             }
+            signal->processMeasuredData(data, len, nullptr, m_dataAsRawCb, m_dataAsValueCb);
         } else {
             // for implicit time rule:
             // 1st 64 bit are value index, followed by 64 bit timestamp
