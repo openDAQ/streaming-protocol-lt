@@ -178,7 +178,7 @@ ssize_t SignalContainer::processMeasuredData(SignalNumber signalNumber, const un
                     signal->setTime(timeStamp);
                     signal->setTimeIndex(valueIndex);
 
-                    STREAMING_PROTOCOL_LOG_I("{}:\n\tStart time is: {}, for value index: {} ", dataSignal->signalId(), timeStamp, valueIndex);
+                    STREAMING_PROTOCOL_LOG_D("{}:\n\tStart time is: {}, for value index: {} ", dataSignal->signalId(), timeStamp, valueIndex);
                 }
             }
         }
