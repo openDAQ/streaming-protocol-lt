@@ -417,7 +417,7 @@ int SubscribedSignal::processSignalMetaInformation(const std::string& method, co
                         return -1;
                     }
                     // numerator/denominator gives time between ticks, or period, in the uint of the signal.
-                    if (m_unit.unitId == Unit::UNIT_ID_SECONDS || (m_unit.unitId == -1 && m_unit.displayName == "s")) {
+                    if (m_unit.unitId == Unit::UNIT_ID_SECONDS || (m_unit.unitId == Unit::UNIT_ID_NONE && m_unit.displayName == "s")) {
                         // Unit for time signals is seconds. We want the frequency here!
                         m_timeBaseFrequency = denominator / numerator;
                         STREAMING_PROTOCOL_LOG_I("\ttime resolution: {} Hz", resolutionNode.dump());
