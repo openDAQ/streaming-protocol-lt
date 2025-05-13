@@ -1,6 +1,6 @@
 ---
 title:  openDAQ Stream Protocol Specification
-subtitle: Version 1.4.0
+subtitle: Version 1.5.0
 titlepage: true
 toc: true
 toc-own-page: true
