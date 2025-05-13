@@ -2,7 +2,7 @@
 title:  openDAQ Signal Definition Examples
 author: Matthias Loy, Helge Rasmussen
 version: 0.1
-subtitle: Version 1.3.1
+subtitle: Version 1.4.0
 titlepage: true
 toc: true
 toc-own-page: true

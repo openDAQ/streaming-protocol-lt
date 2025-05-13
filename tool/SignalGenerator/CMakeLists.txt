@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.11)
 
-project("Signal Generator" VERSION 1.3.1)
+project("Signal Generator" VERSION 1.4.0)
 
 # Adding nanoseconds to a point in time does work on Linux only
 # Other platforms convert nanoseconds to microseconds and loose some accuracy
