@@ -93,7 +93,11 @@ foreach(tgt ${SIGGEN_TARGETS})
       )
     endif()
 
-    install(TARGETS ${tgt} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+    install(
+      TARGETS ${tgt}
+      BUNDLE DESTINATION ${CMAKE_INSTALL_BINDIR}
+      RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    )
 endforeach()
 
 
