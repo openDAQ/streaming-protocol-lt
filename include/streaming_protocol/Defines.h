@@ -135,6 +135,6 @@ static const char META_HIGH[] = "high";
 static const char META_DIMENSIONS[] = "dimensions";
 static const char META_SIZE[] = "size";
 
-static const char OPENDAQ_LT_STREAM_VERSION[] = "1.4.0";
+static const char OPENDAQ_LT_STREAM_VERSION[] = "1.5.0";
 
 }
