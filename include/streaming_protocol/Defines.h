@@ -132,6 +132,6 @@ static const char META_RANGE[] = "range";
 static const char META_LOW[] = "low";
 static const char META_HIGH[] = "high";
 
-static const char OPENDAQ_LT_STREAM_VERSION[] = "1.2.1";
+static const char OPENDAQ_LT_STREAM_VERSION[] = "1.3.1";
 
 }
