@@ -139,7 +139,7 @@ ssize_t SignalContainer::processMeasuredData(SignalNumber signalNumber, const un
 {
     Signals::iterator signalIter = m_subscribedSignals.find(signalNumber);
     if (signalIter == m_subscribedSignals.end()) {
-        STREAMING_PROTOCOL_LOG_E("Got data for signal '{}', that was not subscribed before", signalNumber);
+        STREAMING_PROTOCOL_LOG_W("Got data for signal '{}', that has not been yet reported as subscribed by server", signalNumber);
         return -1;
     }
 
@@ -160,6 +160,7 @@ ssize_t SignalContainer::processMeasuredData(SignalNumber signalNumber, const un
                     STREAMING_PROTOCOL_LOG_D("{}:\n\tTime is: {}", dataSignal->signalId(), timeStamp);
                 }
             }
+            signal->processMeasuredData(data, len, nullptr, m_dataAsRawCb, m_dataAsValueCb);
         } else {
             // for implicit time rule:
             // 1st 64 bit are value index, followed by 64 bit timestamp
@@ -172,6 +173,8 @@ ssize_t SignalContainer::processMeasuredData(SignalNumber signalNumber, const un
                 for(const auto signalNumberIter : dataSignalNumbers) {
                     auto& dataSignal = m_subscribedSignals[signalNumberIter];
                     signal->setTime(indexedTimeStamp->value);
+                    signal->setTimeIndex(indexedTimeStamp->index);
+
                     STREAMING_PROTOCOL_LOG_D("{}:\n\tStart time is: {}", dataSignal->signalId(), indexedTimeStamp->value);
                 }
             }
@@ -183,7 +186,7 @@ ssize_t SignalContainer::processMeasuredData(SignalNumber signalNumber, const un
             const Table& table = tableIter->second;
             unsigned int timeSignalNumber = table.timeSignalNumber;
             if (timeSignalNumber == 0) {
-                STREAMING_PROTOCOL_LOG_E("No time signal available for signal id '{}', number {}, table '{}'!",
+                STREAMING_PROTOCOL_LOG_W("The time signal isn't yet known for value signal id '{}', number {}, table '{}'!",
                                          signalIter->second->signalId(),
                                          signalNumber,
                                          tableId);

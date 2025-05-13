@@ -258,7 +258,7 @@ TEST(ProducerSessionTest, complete_session)
         // prepare the signal with initial configuration
         auto timeSignal = std::make_shared<LinearTimeSignal>(timeSignalId, tableId, timeTicksPerSecond, originalOutputRate, writer, logCallback);
         auto syncSignal = std::make_shared<SynchronousSignal<double>>(signalId, tableId, writer, logCallback);
-        auto statusSignal = std::make_shared<ConstantSignal<uint64_t>>(statusSignalId, tableId, writer, logCallback);
+        auto statusSignal = std::make_shared<ConstantSignal<uint64_t>>(statusSignalId, tableId, writer, nullptr, logCallback);
         syncSignal->setUnit(originalUnit.id, originalUnit.displayName);
         RelatedSignals relatedSignals;
         relatedSignals[META_TIME] = timeSignal->getId();

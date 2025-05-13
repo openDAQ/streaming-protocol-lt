@@ -57,7 +57,8 @@ public:
 
 private:
     boost::asio::io_context& m_ioc;
-    std::shared_ptr<listener> m_listener;
+    std::shared_ptr<listener> m_listener_v4;
+    std::shared_ptr<listener> m_listener_v6;
     uint16_t m_port;
     CommandCb m_commandCb;
     LogCallback logCallback;

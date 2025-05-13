@@ -19,6 +19,7 @@
 #include <boost/beast/http/string_body.hpp>
 #include <boost/beast/version.hpp>
 #include <boost/asio/strand.hpp>
+#include <boost/asio/ip/v6_only.hpp>
 #include <boost/config.hpp>
 #include <algorithm>
 #include <functional>
@@ -137,7 +138,7 @@ void handle_request(http::request<Body, http::basic_fields<Allocator>>&& req,
     return send(std::move(res));
 }
 
-static void fail(beast::error_code ec, char const* what, LogCallback logCallback)
+static void log_error(beast::error_code ec, char const* what, LogCallback logCallback)
 {
     STREAMING_PROTOCOL_LOG_E("{}: {}", what, ec.message());
 }
@@ -230,7 +231,7 @@ public:
         }
 
         if(ec) {
-            fail(ec, "read", logCallback);
+            log_error(ec, "read", logCallback);
             return;
         }
 
@@ -243,7 +244,7 @@ public:
         boost::ignore_unused(bytes_transferred);
 
         if(ec) {
-            fail(ec, "write", logCallback);
+            log_error(ec, "write", logCallback);
             return;
         }
 
@@ -293,35 +294,30 @@ public:
         // Open the acceptor
         m_acceptor.open(endpoint.protocol(), ec);
         if(ec)
+            throw std::runtime_error(::fmt::format("open: {}", ec.message()));
+
+        if (endpoint.address().is_v6())
         {
-            fail(ec, "open", logCallback);
-            return;
+            m_acceptor.set_option(net::ip::v6_only(true), ec);
+            if(ec)
+                throw std::runtime_error(::fmt::format("set_option v6 only: {}", ec.message()));
         }
 
         // Allow address reuse
-        m_acceptor.set_option(net::socket_base::reuse_address(true), ec);
+        m_acceptor.set_option(tcp::acceptor::reuse_address(true), ec);
         if(ec)
-        {
-            fail(ec, "set_option", logCallback);
-            return;
-        }
+            throw std::runtime_error(::fmt::format("set_option reuse: {}", ec.message()));
 
         // Bind to the server address
         m_acceptor.bind(endpoint, ec);
         if(ec)
-        {
-            fail(ec, "bind", logCallback);
-            return;
-        }
+            throw std::runtime_error(::fmt::format("bind: {}", ec.message()));
 
         // Start listening for connections
         m_acceptor.listen(
             net::socket_base::max_listen_connections, ec);
         if(ec)
-        {
-            fail(ec, "listen", logCallback);
-            return;
-        }
+            throw std::runtime_error(::fmt::format("listen: {}", ec.message()));
     }
 
     // Start accepting incoming connections
@@ -339,7 +335,7 @@ public:
         m_acceptor.close(ec);
         if(ec)
         {
-            fail(ec, "close", logCallback);
+            log_error(ec, "close", logCallback);
         }
     }
 
@@ -357,7 +353,7 @@ private:
     void on_accept(beast::error_code ec, tcp::socket socket)
     {
         if(ec) {
-            fail(ec, "accept", logCallback);
+            log_error(ec, "accept", logCallback);
         } else {
             // Create the session and run it
             std::make_shared<session>(std::move(socket), m_commandCb, logCallback)->run();
@@ -386,18 +382,32 @@ ControlServer::~ControlServer()
 
 void ControlServer::start()
 {
-    // listen to any interface using ipv4 or ipv6
-    auto const address = net::ip::make_address("::");
+    try {
+        // listen to any interface using ipv4
+        m_listener_v4 = std::make_shared<listener>(m_ioc, tcp::endpoint{net::ip::tcp::v4(), m_port}, m_commandCb, logCallback);
+        m_listener_v4->run();
+    }
+    catch (const std::exception& e) {
+        STREAMING_PROTOCOL_LOG_W("Failed to start listen on v4 addresses: {}", e.what());
+    }
 
-    // Create and launch a listening port
-    m_listener = std::make_shared<listener>(m_ioc, tcp::endpoint{address, m_port}, m_commandCb, logCallback);
-    m_listener->run();
+    try {
+        // listen to any interface using ipv6
+        m_listener_v6 = std::make_shared<listener>(m_ioc, tcp::endpoint{net::ip::tcp::v6(), m_port}, m_commandCb, logCallback);
+        m_listener_v6->run();
+    }
+    catch (const std::exception& e) {
+        STREAMING_PROTOCOL_LOG_W("Failed to start listen on v6 addresses: {}", e.what());
+    }
 }
 
 void ControlServer::stop()
 {
-    if (m_listener)
-        m_listener->stop();
+    if (m_listener_v4)
+        m_listener_v4->stop();
+
+    if (m_listener_v6)
+        m_listener_v6->stop();
 }
 
 uint16_t ControlServer::getPort()

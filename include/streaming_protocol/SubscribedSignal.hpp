@@ -115,11 +115,18 @@ public:
         return m_time;
     }
 
+    uint64_t timeIndex() const
+    {
+        return m_linearValueIndex;
+    }
+
     /// \return linear time delta of the signal.
     /// >0 if signal has a linear time rule. If 0 the signal does not have a linear time rule!
     uint64_t timeLinearDelta() const
     {
-        return m_linearDelta;
+        if (m_timeSignal)
+            return m_timeSignal->m_linearDelta;
+        return 0;
     }
 
     /// \return The unit or an empty string when there is no unit
@@ -146,6 +153,11 @@ public:
         m_time = timeStamp;
     }
 
+    void setTimeIndex(uint64_t valueIndex)
+    {
+        m_linearValueIndex = valueIndex;
+    }
+
     /// Return the time signal for this signal. Only relevant for data signals.
     std::shared_ptr<SubscribedSignal> timeSignal() const
     {
@@ -161,6 +173,11 @@ public:
     uint64_t linearDelta() const
     {
         return m_linearDelta;
+    }
+
+    nlohmann::json linearDeltaMeta() const
+    {
+        return m_linearDeltaJson;
     }
 
     std::string timeBaseEpochAsString() const
@@ -201,6 +218,16 @@ public:
     RelatedSignals relatedSignals() const
     {
         return m_relatedSignals;
+    }
+
+    nlohmann::json constRuleStartMeta() const
+    {
+        return m_constRuleStartJson;
+    }
+
+    const nlohmann::json& datatypeDetails() const
+    {
+        return m_datatypeDetails;
     }
 
 private:
@@ -247,6 +274,8 @@ private:
     std::shared_ptr<SubscribedSignal> m_timeSignal;
     uint64_t m_time;
     uint64_t m_linearDelta;
+    nlohmann::json m_linearDeltaJson;
+    nlohmann::json m_constRuleStartJson;
     size_t m_linearValueIndex;
     std::string m_timeBaseEpochAsString;
     Resolution m_resolution;
