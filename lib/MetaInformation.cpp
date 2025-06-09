@@ -23,7 +23,8 @@ namespace daq::streaming_protocol {
         case METAINFORMATION_MSGPACK:
             {
                 try {
-                    m_jsonContent = nlohmann::json::from_msgpack(data+sizeof(m_metaInformationType), data+size);
+                    m_jsonContent = nlohmann::json::from_msgpack(reinterpret_cast<const char*>(data+sizeof(m_metaInformationType)), 
+                                                                 reinterpret_cast<const char*>(data+size));
                 } catch (const nlohmann::json::parse_error& e) {
                     STREAMING_PROTOCOL_LOG_E("parsing meta information failed : {}", e.what());
                     return -1;
