@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.24)
 
 set_cmake_folder_context(TARGET_FOLDER_NAME)
 
-set(nlohmann_json_REQUIREDVERSION "3.10.5")
+set(nlohmann_json_REQUIREDVERSION "3.11.3")
 if (NOT STREAMING_PROTOCOL_ALWAYS_FETCH_DEPS)
     message(STATUS "Looking for preinstalled nlohmann_json")
     find_package(nlohmann_json GLOBAL QUIET ${nlohmann_json_REQUIREDVERSION})
