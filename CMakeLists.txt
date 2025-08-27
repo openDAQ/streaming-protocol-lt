@@ -1,3 +1,4 @@
+set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
 cmake_minimum_required(VERSION 3.24)
 
 if (NOT CMAKE_MESSAGE_CONTEXT)
@@ -5,7 +6,7 @@ if (NOT CMAKE_MESSAGE_CONTEXT)
     set(CMAKE_MESSAGE_CONTEXT_SHOW ON CACHE BOOL "Show CMake message context")
 endif()
 
-project(streaming_protocol_complete VERSION 1.2.6 LANGUAGES CXX)
+project(streaming_protocol_complete VERSION 1.2.7 LANGUAGES CXX)
 
 if (POLICY CMP0074)
     cmake_policy(SET CMP0074 NEW)
