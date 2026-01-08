@@ -1,6 +1,6 @@
 set_cmake_folder_context(TARGET_FOLDER_NAME)
 
-set(fmt_REQUIREDVERSION "7.0.3")
+set(fmt_REQUIREDVERSION "12.1.0")
 if (NOT STREAMING_PROTOCOL_ALWAYS_FETCH_DEPS)
     message(STATUS "Looking for preinstalled fmt")
     find_package(fmt GLOBAL QUIET ${fmt_REQUIREDVERSION} EXACT)

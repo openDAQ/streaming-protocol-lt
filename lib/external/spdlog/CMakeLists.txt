@@ -1,7 +1,7 @@
 set_cmake_folder_context(TARGET_FOLDER_NAME)
 
 
-set(spdlog_REQUIREDVERSION "1.8.0")
+set(spdlog_REQUIREDVERSION "1.16.0")
 
 if (NOT STREAMING_PROTOCOL_ALWAYS_FETCH_DEPS)
     message(STATUS "Looking for preinstalled spdlog")
