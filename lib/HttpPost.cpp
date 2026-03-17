@@ -1,6 +1,6 @@
 #include <boost/beast/core.hpp>
 
-#if defined(__GNUC__)
+#if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 // gcc version 13.2.1 reports maybe-unitialized warning in boost/beast/http.hpp. Suppress it
@@ -8,7 +8,7 @@
 
 #include <boost/beast/http.hpp>
 
-#if defined(__GNUC__)
+#if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic pop
 #endif
 

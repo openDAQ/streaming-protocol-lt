@@ -10,12 +10,8 @@ endif()
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 
-list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake
-)
-
 set(FETCHCONTENT_EXTERNALS_DIR ${ROOT_DIR}/build/__external CACHE PATH "FetchContent folder prefix")
 
-include(StreamingUtils)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 if (WIN32)
@@ -26,13 +22,6 @@ if (WIN32)
     )
 
     message(STATUS "Setting minimum supported API to Windows 7 (${MIN_SUPPORTED_WINDOWS})")
-endif()
-
-if (NOT COMMAND set_mode)
-    message(STATUS "Including Modern.cmake")
-    include(Modern)
-else()
-    set_mode(MODERN)
 endif()
 
 add_subdirectory(external)
@@ -74,7 +63,7 @@ set(STREAMING_PROTOCOL_STREAMING_INTERFACE_HEADERS
 )
 
 
-prepend_include(${PROJECT_NAME} STREAMING_PROTOCOL_STREAMING_INTERFACE_HEADERS)
+opendaq_prepend_include(${PROJECT_NAME} STREAMING_PROTOCOL_STREAMING_INTERFACE_HEADERS)
 
 set(STREAMING_PROTOCOL_STREAMING_LIB_SOURCES
     ${STREAMING_PROTOCOL_STREAMING_INTERFACE_HEADERS}
