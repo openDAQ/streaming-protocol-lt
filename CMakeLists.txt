@@ -6,20 +6,26 @@ if (NOT CMAKE_MESSAGE_CONTEXT)
     set(CMAKE_MESSAGE_CONTEXT_SHOW ON CACHE BOOL "Show CMake message context")
 endif()
 
-project(streaming_protocol_complete VERSION 1.2.7 LANGUAGES CXX)
+project(streaming_protocol_complete VERSION 1.2.8 LANGUAGES CXX)
+
+add_subdirectory(cmake)
 
 if (POLICY CMP0074)
     cmake_policy(SET CMP0074 NEW)
 endif()
 
+opendaq_get_cmake_mode(_opendaq_current_mode)
+if (NOT _opendaq_current_mode)
+    opendaq_set_cmake_mode(MODERN)
+endif()
+
 get_filename_component(ROOT_DIR ${CMAKE_SOURCE_DIR} REALPATH)
-if (NOT ${PROJECT_SOURCE_DIR} STREQUAL ${ROOT_DIR})
-    set(BUILDING_AS_SUBMODULE ON)
-    message(STATUS "Building as submodule")
-else()
+
+if (PROJECT_IS_TOP_LEVEL)
     message(STATUS "Building standalone")
-    set(CMAKE_FOLDER "${CMAKE_FOLDER}/openDaqStreaming")
     set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER ".CMakePredefinedTargets")
+else()
+    message(STATUS "Building as submodule")
 endif()
 
 option(STREAMING_PROTOCOL_SPECIFICATION "Enable building the specification" OFF)

@@ -1,6 +1,6 @@
 # option global for find_package was introduced with 3.24
 cmake_minimum_required(VERSION 3.24)
-set_cmake_folder_context(TARGET_FOLDER_NAME)
+opendaq_set_cmake_folder_context(TARGET_FOLDER_NAME)
 project(streaming_client VERSION 0.0.1 LANGUAGES CXX)
 
 if (POLICY CMP0074)

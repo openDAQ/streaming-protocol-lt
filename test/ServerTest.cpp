@@ -31,7 +31,7 @@ namespace daq::streaming_protocol {
 
     TEST(ServerTest, start_stop)
     {
-        unsigned int listeningPort = 5000;
+        unsigned int listeningPort = 5001;
         boost::asio::io_context ioc;
         Server server(ioc, listeningPort, logCallback);
         ASSERT_EQ(server.start(), 0);
@@ -42,7 +42,7 @@ namespace daq::streaming_protocol {
 
     TEST(ServerTest, stayingClient)
     {
-        unsigned int listeningPort = 5000;
+        unsigned int listeningPort = 5001;
         boost::asio::io_context ioc;
         Server server(ioc, listeningPort, logCallback);
         ASSERT_EQ(server.start(), 0);
@@ -84,7 +84,7 @@ namespace daq::streaming_protocol {
 
     TEST(ServerTest, temporaryClient)
     {
-        unsigned int listeningPort = 5000;
+        unsigned int listeningPort = 5001;
         boost::asio::io_context ioc;
         Server server(ioc, listeningPort, logCallback);
         ASSERT_EQ(server.start(), 0);
